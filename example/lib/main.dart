@@ -3958,6 +3958,37 @@ class _RadioDoc extends StatelessWidget {
             ],
           ),
         ),
+        const _DocSection(
+          label: '富内容选项',
+          box: _DemoBoxStyle.soft,
+          child: AnimalRadio<String>(
+            defaultValue: 'camera',
+            options: [
+              AnimalRadioOption(
+                value: 'camera',
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimalIcon(name: AnimalIconName.camera, size: 22),
+                    SizedBox(width: 6),
+                    Text('相机应用'),
+                  ],
+                ),
+              ),
+              AnimalRadioOption(
+                value: 'map',
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimalIcon(name: AnimalIconName.map, size: 22),
+                    SizedBox(width: 6),
+                    Text('地图应用'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
       code: _radioCode,
       api: _radioApi,
@@ -4008,6 +4039,20 @@ class _TagDoc extends StatelessWidget {
                 child: Text('可关闭'),
               ),
             ],
+          ),
+        ),
+        _DocSection(
+          label: '组合成状态面板',
+          box: _DemoBoxStyle.soft,
+          child: AnimalCard(
+            child: _DemoRow(
+              spacing: 8,
+              children: [
+                AnimalTag(color: AnimalTagColor.primary, child: Text('岛民')),
+                AnimalTag(color: AnimalTagColor.success, child: Text('在线')),
+                AnimalTag(color: AnimalTagColor.warning, child: Text('访客')),
+              ],
+            ),
           ),
         ),
       ],
@@ -4070,6 +4115,22 @@ class _BadgeDoc extends StatelessWidget {
             ],
           ),
         ),
+        _DocSection(
+          label: '和头像组合',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalBadge(dot: true, child: AnimalAvatar(child: Text('狸'))),
+              AnimalBadge(
+                count: 12,
+                child: AnimalAvatar(
+                  icon: AnimalIconName.chat,
+                  backgroundColor: Color(0xFFE6F9F6),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
       code: _badgeCode,
       api: _badgeApi,
@@ -4082,11 +4143,11 @@ class _TooltipDoc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _ComponentDoc(
+    return _ComponentDoc(
       title: 'Tooltip',
-      tags: ['提示'],
+      tags: const ['提示', '方位'],
       sections: [
-        _DocSection(
+        const _DocSection(
           label: '基础提示',
           box: _DemoBoxStyle.soft,
           child: _DemoRow(
@@ -4102,6 +4163,34 @@ class _TooltipDoc extends StatelessWidget {
                 message: '相机应用有新提示',
                 preferBelow: true,
                 child: AnimalIcon(name: AnimalIconName.camera, size: 42),
+              ),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: '上下左右位置',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalTooltip(
+                message: '上方提示',
+                placement: AnimalTooltipPlacement.top,
+                child: AnimalButton(child: Text('Top')),
+              ),
+              AnimalTooltip(
+                message: '右侧提示',
+                placement: AnimalTooltipPlacement.right,
+                child: AnimalButton(child: Text('Right')),
+              ),
+              AnimalTooltip(
+                message: '下方提示',
+                placement: AnimalTooltipPlacement.bottom,
+                child: AnimalButton(child: Text('Bottom')),
+              ),
+              AnimalTooltip(
+                message: '左侧提示',
+                placement: AnimalTooltipPlacement.left,
+                child: AnimalButton(child: Text('Left')),
               ),
             ],
           ),
@@ -4153,6 +4242,20 @@ class _MessageDoc extends StatelessWidget {
             ],
           ),
         ),
+        _DocSection(
+          label: '自定义显示时长',
+          box: _DemoBoxStyle.soft,
+          child: AnimalButton(
+            type: AnimalButtonType.primary,
+            onPressed: () => AnimalMessage.show(
+              context,
+              type: AnimalMessageType.info,
+              duration: const Duration(seconds: 4),
+              child: const Text('这条消息会停留 4 秒'),
+            ),
+            child: const Text('Custom duration'),
+          ),
+        ),
       ],
       code: _messageCode,
       api: _messageApi,
@@ -4201,6 +4304,20 @@ class _ProgressDoc extends StatelessWidget {
                 showLabel: false,
               ),
             ],
+          ),
+        ),
+        const _DocSection(
+          label: '组合在卡片中',
+          box: _DemoBoxStyle.soft,
+          child: AnimalCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('岛屿建设进度'),
+                SizedBox(height: 10),
+                AnimalProgress(value: 0.72),
+              ],
+            ),
           ),
         ),
       ],
@@ -4286,6 +4403,23 @@ class _EmptyDoc extends StatelessWidget {
           child: AnimalEmpty(
             description: '暂无聊天消息',
             icon: AnimalIcon(name: AnimalIconName.chat, size: 72),
+          ),
+        ),
+        const _DocSection(
+          label: '嵌入表格空状态',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 360,
+            child: AnimalTable<Map<String, String>>(
+              columns: [
+                AnimalTableColumn(
+                  title: Text('名称'),
+                  cellBuilder: _emptyNameCell,
+                ),
+              ],
+              rows: [],
+              empty: AnimalEmpty(description: '列表里还没有收藏项'),
+            ),
           ),
         ),
       ],
@@ -4491,6 +4625,26 @@ class _AlertDoc extends StatelessWidget {
             ],
           ),
         ),
+        _DocSection(
+          label: '配合操作按钮',
+          box: _DemoBoxStyle.soft,
+          child: AnimalAlert(
+            type: AnimalAlertType.info,
+            title: const Text('需要确认'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('是否把当前设置应用到整座岛？'),
+                const SizedBox(height: 10),
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {},
+                  child: const Text('应用设置'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
       code: _alertCode,
       api: _alertApi,
@@ -4539,6 +4693,18 @@ class _AvatarDoc extends StatelessWidget {
             ],
           ),
         ),
+        _DocSection(
+          label: '头像组和角标',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalBadge(dot: true, child: AnimalAvatar(child: Text('豆'))),
+              AnimalAvatar(child: Text('粒')),
+              AnimalAvatar(icon: AnimalIconName.camera),
+              AnimalAvatar(shape: AnimalAvatarShape.square, child: Text('+3')),
+            ],
+          ),
+        ),
       ],
       code: _avatarCode,
       api: _avatarApi,
@@ -4581,6 +4747,23 @@ class _BreadcrumbDoc extends StatelessWidget {
               AnimalBreadcrumbItem(label: Text('岛屿')),
               AnimalBreadcrumbItem(label: Text('居民'), disabled: true),
               AnimalBreadcrumbItem(label: Text('详情')),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '可点击路径',
+          box: _DemoBoxStyle.soft,
+          child: AnimalBreadcrumb(
+            items: [
+              AnimalBreadcrumbItem(
+                label: const Text('组件库'),
+                onTap: () => AnimalMessage.info(context, const Text('回到组件库')),
+              ),
+              AnimalBreadcrumbItem(
+                label: const Text('进阶组件'),
+                onTap: () => AnimalMessage.info(context, const Text('进阶组件')),
+              ),
+              const AnimalBreadcrumbItem(label: Text('Breadcrumb')),
             ],
           ),
         ),
@@ -4633,6 +4816,21 @@ class _StepsDoc extends StatelessWidget {
             ],
           ),
         ),
+        const _DocSection(
+          label: '混合状态',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSteps(
+            current: 2,
+            items: [
+              AnimalStepItem(
+                  title: Text('已完成'), status: AnimalStepStatus.finish),
+              AnimalStepItem(
+                  title: Text('进行中'), status: AnimalStepStatus.process),
+              AnimalStepItem(title: Text('待处理')),
+              AnimalStepItem(title: Text('异常'), status: AnimalStepStatus.error),
+            ],
+          ),
+        ),
       ],
       code: _stepsCode,
       api: _stepsApi,
@@ -4682,6 +4880,20 @@ class _SliderDoc extends StatelessWidget {
             ],
           ),
         ),
+        const _DocSection(
+          label: '用于设置面板',
+          box: _DemoBoxStyle.soft,
+          child: AnimalCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('背景音乐音量'),
+                SizedBox(height: 8),
+                AnimalSlider(defaultValue: 72, divisions: 8),
+              ],
+            ),
+          ),
+        ),
       ],
       code: _sliderCode,
       api: _sliderApi,
@@ -4718,6 +4930,20 @@ class _RateDoc extends StatelessWidget {
               AnimalRate(defaultValue: 6, count: 8),
               AnimalRate(defaultValue: 4, disabled: true),
             ],
+          ),
+        ),
+        const _DocSection(
+          label: '评价卡片',
+          box: _DemoBoxStyle.soft,
+          child: AnimalCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('今日岛屿满意度'),
+                SizedBox(height: 8),
+                AnimalRate(defaultValue: 5),
+              ],
+            ),
           ),
         ),
       ],
@@ -4792,6 +5018,23 @@ class _SegmentedDoc extends StatelessWidget {
             ],
           ),
         ),
+        const _DocSection(
+          label: '筛选工具条',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalSegmented<String>(
+                defaultValue: 'all',
+                options: [
+                  AnimalSegmentedOption(value: 'all', label: Text('全部')),
+                  AnimalSegmentedOption(value: 'new', label: Text('最新')),
+                  AnimalSegmentedOption(value: 'hot', label: Text('热门')),
+                ],
+              ),
+              AnimalButton(type: AnimalButtonType.primary, child: Text('筛选')),
+            ],
+          ),
+        ),
       ],
       code: _segmentedCode,
       api: _segmentedApi,
@@ -4830,6 +5073,13 @@ class _SkeletonDoc extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+        _DocSection(
+          label: '卡片加载占位',
+          box: _DemoBoxStyle.soft,
+          child: AnimalCard(
+            child: AnimalSkeleton(rows: 4, lineHeight: 16),
           ),
         ),
       ],
@@ -4951,6 +5201,11 @@ class _ApiRow {
   final String type;
   final String defaultVal;
   final bool required;
+}
+
+Widget _emptyNameCell(
+    BuildContext context, Map<String, String> row, int index) {
+  return Text(row['name'] ?? '');
 }
 
 class _CardColorInfo {
@@ -5412,9 +5667,11 @@ const _badgeApi = [
 const _tooltipApi = [
   _ApiRow('message', '提示文本', 'String', '-', required: true),
   _ApiRow('child', '触发提示的子元素', 'Widget', '-', required: true),
-  _ApiRow('preferBelow', '优先在下方显示', 'bool', 'false'),
+  _ApiRow('placement', '提示位置', 'AnimalTooltipPlacement', 'top'),
+  _ApiRow('preferBelow', '兼容旧写法：优先在下方显示', 'bool?', '-'),
   _ApiRow('waitDuration', '等待显示时间', 'Duration', '350ms'),
   _ApiRow('showDuration', '显示持续时间', 'Duration', '3s'),
+  _ApiRow('gap', '提示与触发元素间距', 'double', '10'),
 ];
 
 const _messageApi = [
@@ -6161,8 +6418,14 @@ const _tooltipCode = r'''const AnimalTooltip(
 )
 
 const AnimalTooltip(
-  message: '优先在下方显示',
-  preferBelow: true,
+  message: '右侧提示',
+  placement: AnimalTooltipPlacement.right,
+  child: Text('Right'),
+)
+
+const AnimalTooltip(
+  message: '下方提示',
+  placement: AnimalTooltipPlacement.bottom,
   child: Text('提示文本'),
 )''';
 

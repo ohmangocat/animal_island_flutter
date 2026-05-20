@@ -247,7 +247,17 @@ enum AnimalTagSize { small, middle, large }
 
 AnimalTag({required Widget child, AnimalTagColor color = AnimalTagColor.defaultColor})
 AnimalBadge({Widget? child, int? count, String? text, bool dot = false})
-AnimalTooltip({required String message, required Widget child})
+enum AnimalTooltipPlacement { top, right, bottom, left }
+
+AnimalTooltip({
+  required String message,
+  required Widget child,
+  AnimalTooltipPlacement placement = AnimalTooltipPlacement.top,
+  bool? preferBelow,
+  Duration waitDuration = const Duration(milliseconds: 350),
+  Duration showDuration = const Duration(seconds: 3),
+  double gap = 10,
+})
 AnimalMessage.success(context, const Text('Saved'))
 AnimalProgress(value: 0.6)
 AnimalPagination(current: 1, total: 80, onChanged: (page) {})

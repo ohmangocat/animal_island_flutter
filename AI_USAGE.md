@@ -423,10 +423,16 @@ AnimalBadge({
 ```
 
 ```dart
+enum AnimalTooltipPlacement { top, right, bottom, left }
+
 AnimalTooltip({
   required String message,
   required Widget child,
-  bool preferBelow = false,
+  AnimalTooltipPlacement placement = AnimalTooltipPlacement.top,
+  bool? preferBelow,
+  Duration waitDuration = const Duration(milliseconds: 350),
+  Duration showDuration = const Duration(seconds: 3),
+  double gap = 10,
 })
 
 AnimalMessage.success(context, const Text('保存成功'));

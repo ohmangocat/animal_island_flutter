@@ -1,4 +1,5 @@
 import 'package:animal_island_flutter/animal_island_flutter.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -315,6 +316,42 @@ void main() {
     );
 
     expect(find.text('0'), findsOneWidget);
+  });
+
+  testWidgets('tooltip can render in a configured placement', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: Center(
+              child: AnimalTooltip(
+                message: 'Right side',
+                placement: AnimalTooltipPlacement.right,
+                waitDuration: Duration.zero,
+                child: Text('Hover me'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final gesture =
+        await tester.startGesture(tester.getCenter(find.text('Hover me')));
+    await tester.pump(kLongPressTimeout);
+
+    expect(find.text('Right side'), findsOneWidget);
+    final bubble = find.ancestor(
+      of: find.text('Right side'),
+      matching: find.byWidgetPredicate(
+        (widget) => widget is Container && widget.decoration is BoxDecoration,
+      ),
+    );
+    expect(bubble, findsOneWidget);
+    expect(tester.getSize(bubble).width, lessThan(300));
+    expect(tester.getSize(bubble).height, lessThan(80));
+
+    await gesture.up();
   });
 
   testWidgets('message overlay appears and then dismisses', (tester) async {
