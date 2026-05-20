@@ -137,7 +137,6 @@ class _AnimalTooltipOverlay extends StatelessWidget {
           ),
           child: _TooltipBubble(
             message: message,
-            placement: placement,
           ),
         ),
       ),
@@ -210,11 +209,9 @@ class _TooltipPositionDelegate extends SingleChildLayoutDelegate {
 class _TooltipBubble extends StatelessWidget {
   const _TooltipBubble({
     required this.message,
-    required this.placement,
   });
 
   final String message;
-  final AnimalTooltipPlacement placement;
 
   @override
   Widget build(BuildContext context) {
@@ -224,110 +221,31 @@ class _TooltipBubble extends StatelessWidget {
       heightFactor: 1,
       child: Material(
         color: Colors.transparent,
-        child: CustomPaint(
-          painter: _TooltipArrowPainter(
-            placement: placement,
-            fill: const Color(0xFFFFF8D6),
-            stroke: const Color(0xFFD9C889),
-          ),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 240),
-            margin: _bubbleMargin(placement),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF8D6),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFD9C889), width: 2),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x33000000),
-                  offset: Offset(0, 3),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: Text(
-              message,
-              style: theme.textStyle(
-                size: 12,
-                weight: FontWeight.w700,
-                color: const Color(0xFF794F27),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 240),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF8D6),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFD9C889), width: 2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                offset: Offset(0, 3),
+                blurRadius: 0,
               ),
+            ],
+          ),
+          child: Text(
+            message,
+            style: theme.textStyle(
+              size: 12,
+              weight: FontWeight.w700,
+              color: const Color(0xFF794F27),
             ),
           ),
         ),
       ),
     );
-  }
-}
-
-EdgeInsets _bubbleMargin(AnimalTooltipPlacement placement) {
-  return switch (placement) {
-    AnimalTooltipPlacement.top => const EdgeInsets.only(bottom: 6),
-    AnimalTooltipPlacement.right => const EdgeInsets.only(left: 6),
-    AnimalTooltipPlacement.bottom => const EdgeInsets.only(top: 6),
-    AnimalTooltipPlacement.left => const EdgeInsets.only(right: 6),
-  };
-}
-
-class _TooltipArrowPainter extends CustomPainter {
-  const _TooltipArrowPainter({
-    required this.placement,
-    required this.fill,
-    required this.stroke,
-  });
-
-  final AnimalTooltipPlacement placement;
-  final Color fill;
-  final Color stroke;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const arrow = 8.0;
-    final path = Path();
-
-    switch (placement) {
-      case AnimalTooltipPlacement.top:
-        final x = size.width / 2;
-        path
-          ..moveTo(x - arrow, size.height - arrow - 1)
-          ..lineTo(x, size.height)
-          ..lineTo(x + arrow, size.height - arrow - 1);
-      case AnimalTooltipPlacement.bottom:
-        final x = size.width / 2;
-        path
-          ..moveTo(x - arrow, arrow + 1)
-          ..lineTo(x, 0)
-          ..lineTo(x + arrow, arrow + 1);
-      case AnimalTooltipPlacement.left:
-        final y = size.height / 2;
-        path
-          ..moveTo(size.width - arrow - 1, y - arrow)
-          ..lineTo(size.width, y)
-          ..lineTo(size.width - arrow - 1, y + arrow);
-      case AnimalTooltipPlacement.right:
-        final y = size.height / 2;
-        path
-          ..moveTo(arrow + 1, y - arrow)
-          ..lineTo(0, y)
-          ..lineTo(arrow + 1, y + arrow);
-    }
-
-    path.close();
-    canvas.drawPath(path, Paint()..color = fill);
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = stroke
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _TooltipArrowPainter oldDelegate) {
-    return oldDelegate.placement != placement ||
-        oldDelegate.fill != fill ||
-        oldDelegate.stroke != stroke;
   }
 }
