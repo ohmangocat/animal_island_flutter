@@ -822,7 +822,7 @@ class _VersionPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: const Text(
-        'v0.8.1',
+        'v$_packageVersion',
         style: TextStyle(
           color: Color(0xFF19C8B9),
           fontSize: 12,
