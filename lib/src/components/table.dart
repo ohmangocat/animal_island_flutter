@@ -44,6 +44,7 @@ class AnimalTable<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
+    final tableWidth = _tableWidth;
 
     return Container(
       width: double.infinity,
@@ -58,58 +59,20 @@ class AnimalTable<T> extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: _tableWidth,
+                minWidth: tableWidth,
                 maxHeight: maxHeight ?? double.infinity,
               ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (showHeader) _Header<T>(columns: columns),
-                    if (rows.isEmpty)
-                      SizedBox(
-                        width: _tableWidth,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 56, horizontal: 20),
-                          child: Center(
-                            child: empty ??
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CustomPaint(
-                                      size: const Size.square(48),
-                                      painter: _TableEmptyIconPainter(
-                                        theme.secondaryTextColor
-                                            .withValues(alpha: 0.5),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      emptyText ?? '暂无数据',
-                                      style: theme.textStyle(
-                                        color: theme.secondaryTextColor,
-                                        weight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                          ),
-                        ),
-                      )
-                    else
-                      for (final indexed in rows.indexed)
-                        _Row<T>(
-                          row: indexed.$2,
-                          rowIndex: indexed.$1,
-                          columns: columns,
-                          striped: striped && indexed.$1.isOdd,
-                          onTap: onRowTap == null
-                              ? null
-                              : () => onRowTap!(indexed.$2, indexed.$1),
-                        ),
-                  ],
-                ),
+              child: _TableContent<T>(
+                columns: columns,
+                rows: rows,
+                tableWidth: tableWidth,
+                empty: empty,
+                emptyText: emptyText,
+                striped: striped,
+                showHeader: showHeader,
+                maxHeight: maxHeight,
+                onRowTap: onRowTap,
+                theme: theme,
               ),
             ),
           ),
@@ -139,6 +102,146 @@ class AnimalTable<T> extends StatelessWidget {
       total += column.width ?? 160;
     }
     return total;
+  }
+}
+
+class _TableContent<T> extends StatelessWidget {
+  const _TableContent({
+    required this.columns,
+    required this.rows,
+    required this.tableWidth,
+    required this.empty,
+    required this.emptyText,
+    required this.striped,
+    required this.showHeader,
+    required this.maxHeight,
+    required this.onRowTap,
+    required this.theme,
+  });
+
+  final List<AnimalTableColumn<T>> columns;
+  final List<T> rows;
+  final double tableWidth;
+  final Widget? empty;
+  final String? emptyText;
+  final bool striped;
+  final bool showHeader;
+  final double? maxHeight;
+  final void Function(T row, int index)? onRowTap;
+  final AnimalThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    if (rows.isEmpty) {
+      return SizedBox(
+        width: tableWidth,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showHeader) _Header<T>(columns: columns),
+              _EmptyTableBody(
+                tableWidth: tableWidth,
+                empty: empty,
+                emptyText: emptyText,
+                theme: theme,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (maxHeight != null) {
+      return SizedBox(
+        width: tableWidth,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (showHeader) _Header<T>(columns: columns),
+            Flexible(
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: rows.length,
+                itemBuilder: (context, index) {
+                  return _tableRow(index);
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: tableWidth,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (showHeader) _Header<T>(columns: columns),
+            for (final indexed in rows.indexed) _tableRow(indexed.$1),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _tableRow(int index) {
+    final row = rows[index];
+    return _Row<T>(
+      row: row,
+      rowIndex: index,
+      columns: columns,
+      striped: striped && index.isOdd,
+      onTap: onRowTap == null ? null : () => onRowTap!(row, index),
+    );
+  }
+}
+
+class _EmptyTableBody extends StatelessWidget {
+  const _EmptyTableBody({
+    required this.tableWidth,
+    required this.empty,
+    required this.emptyText,
+    required this.theme,
+  });
+
+  final double tableWidth;
+  final Widget? empty;
+  final String? emptyText;
+  final AnimalThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: tableWidth,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 56, horizontal: 20),
+        child: Center(
+          child: empty ??
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomPaint(
+                    size: const Size.square(48),
+                    painter: _TableEmptyIconPainter(
+                      theme.secondaryTextColor.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    emptyText ?? '暂无数据',
+                    style: theme.textStyle(
+                      color: theme.secondaryTextColor,
+                      weight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+        ),
+      ),
+    );
   }
 }
 

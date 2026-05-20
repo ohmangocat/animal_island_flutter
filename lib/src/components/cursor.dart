@@ -20,8 +20,14 @@ class AnimalCursor extends StatefulWidget {
 }
 
 class _AnimalCursorState extends State<AnimalCursor> {
-  Offset _position = Offset.zero;
-  bool _visible = false;
+  final ValueNotifier<_CursorState> _cursorState =
+      ValueNotifier<_CursorState>(_CursorState.hidden);
+
+  @override
+  void dispose() {
+    _cursorState.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,33 +46,49 @@ class _AnimalCursorState extends State<AnimalCursor> {
     return MouseRegion(
       cursor: widget.cursor,
       onEnter: (event) {
-        setState(() {
-          _visible = true;
-          _position = event.localPosition;
-        });
+        _cursorState.value = _CursorState(event.localPosition, true);
       },
-      onHover: (event) => setState(() => _position = event.localPosition),
-      onExit: (_) => setState(() => _visible = false),
+      onHover: (event) {
+        _cursorState.value = _CursorState(event.localPosition, true);
+      },
+      onExit: (_) => _cursorState.value = _CursorState.hidden,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           widget.child,
-          if (_visible)
-            Positioned(
-              left: _position.dx - 4,
-              top: _position.dy,
-              child: IgnorePointer(
-                child: Image.asset(
-                  'assets/animal_island/img/cursor/cursor-icon.png',
-                  package: 'animal_island_flutter',
-                  width: 49,
-                  height: 48,
-                  filterQuality: FilterQuality.high,
-                ),
+          ValueListenableBuilder<_CursorState>(
+            valueListenable: _cursorState,
+            builder: (context, state, child) {
+              if (!state.visible) {
+                return const SizedBox.shrink();
+              }
+              return Positioned(
+                left: state.position.dx - 4,
+                top: state.position.dy,
+                child: child!,
+              );
+            },
+            child: IgnorePointer(
+              child: Image.asset(
+                'assets/animal_island/img/cursor/cursor-icon.png',
+                package: 'animal_island_flutter',
+                width: 49,
+                height: 48,
+                filterQuality: FilterQuality.high,
               ),
             ),
+          ),
         ],
       ),
     );
   }
+}
+
+class _CursorState {
+  const _CursorState(this.position, this.visible);
+
+  static const hidden = _CursorState(Offset.zero, false);
+
+  final Offset position;
+  final bool visible;
 }

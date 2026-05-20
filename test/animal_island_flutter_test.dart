@@ -1,7 +1,10 @@
 import 'package:animal_island_flutter/animal_island_flutter.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+void _noopString(String value) {}
 
 void main() {
   testWidgets('renders primary button', (tester) async {
@@ -134,6 +137,42 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(selected, 'beach');
+  });
+
+  testWidgets('select shows the animal cursor on hovered option',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: Center(
+              child: AnimalSelect<String>(
+                value: 'forest',
+                options: [
+                  AnimalSelectOption(key: 'forest', label: '森林'),
+                  AnimalSelectOption(key: 'beach', label: '海滩'),
+                ],
+                onChanged: _noopString,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(AnimalSelect<String>));
+    await tester.pumpAndSettle();
+    await tester.sendEventToBinding(
+      PointerHoverEvent(position: tester.getCenter(find.text('海滩').last)),
+    );
+    await tester.pump();
+
+    final cursor = find.byWidgetPredicate(
+      (widget) =>
+          widget is SvgPicture &&
+          widget.bytesLoader.toString().contains('select-cursor.svg'),
+    );
+    expect(cursor, findsOneWidget);
   });
 
   testWidgets('tabs can be controlled and emit changes', (tester) async {
