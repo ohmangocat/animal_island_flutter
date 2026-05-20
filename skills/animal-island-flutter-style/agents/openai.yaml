@@ -1,0 +1,5 @@
+interface:
+  display_name: "Animal Island Flutter Style"
+  short_description: "Pixel-perfect Flutter UI library guidance"
+  brand_color: "#19C8B9"
+  default_prompt: "Use $animal-island-flutter-style to maintain animal_island_flutter while preserving its Flutter API and cozy island visual language."
