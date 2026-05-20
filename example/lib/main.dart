@@ -45,6 +45,9 @@ class _DocsHomePageState extends State<DocsHomePage> {
   var _islandChecks = <String>['beach', 'garden'];
   var _critterChecks = <String>[];
   var _tabsActiveKey = 'tab1';
+  var _radioValue = 'apple';
+  var _paginationPage = 2;
+  var _progressValue = 0.64;
   var _typewriterReplayKey = 0;
   var _loadingActive = true;
   var _tableStriped = true;
@@ -278,6 +281,21 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        group: '基础组件',
+        navTitle: 'Extended 扩展',
+        title: 'Extended 扩展基础组件',
+        summary:
+            '扩展基础组件 — Radio / Tag / Badge / Tooltip / Message / Progress / Pagination / Empty',
+        body: _ExtendedBasicsDoc(
+          radioValue: _radioValue,
+          paginationPage: _paginationPage,
+          progressValue: _progressValue,
+          onRadioChanged: (value) => setState(() => _radioValue = value),
+          onPageChanged: (value) => setState(() => _paginationPage = value),
+          onProgressChanged: (value) => setState(() => _progressValue = value),
+        ),
+      ),
+      _DocPage(
         group: '复杂组件',
         navTitle: 'Time 时间',
         title: 'Time 时间',
@@ -324,8 +342,18 @@ class _DocsHomePageState extends State<DocsHomePage> {
       'codeblock' => 14,
       'loading' => 15,
       'table' => 16,
-      'time' => 17,
-      'phone' => 18,
+      'extended' ||
+      'radio' ||
+      'tag' ||
+      'badge' ||
+      'tooltip' ||
+      'message' ||
+      'progress' ||
+      'pagination' ||
+      'empty' =>
+        17,
+      'time' => 18,
+      'phone' => 19,
       _ => 0,
     };
     if (_activeIndex >= 0) {
@@ -3546,6 +3574,161 @@ class _HobbyTag extends StatelessWidget {
   }
 }
 
+class _ExtendedBasicsDoc extends StatelessWidget {
+  const _ExtendedBasicsDoc({
+    required this.radioValue,
+    required this.paginationPage,
+    required this.progressValue,
+    required this.onRadioChanged,
+    required this.onPageChanged,
+    required this.onProgressChanged,
+  });
+
+  final String radioValue;
+  final int paginationPage;
+  final double progressValue;
+  final ValueChanged<String> onRadioChanged;
+  final ValueChanged<int> onPageChanged;
+  final ValueChanged<double> onProgressChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Extended',
+      tags: const ['扩展基础组件'],
+      sections: [
+        _DocSection(
+          label: 'Radio 单选框',
+          box: _DemoBoxStyle.soft,
+          child: AnimalRadio<String>(
+            value: radioValue,
+            options: const [
+              AnimalRadioOption(value: 'apple', label: Text('苹果岛')),
+              AnimalRadioOption(value: 'peach', label: Text('桃子岛')),
+              AnimalRadioOption(
+                value: 'locked',
+                label: Text('神秘岛'),
+                disabled: true,
+              ),
+            ],
+            onChanged: onRadioChanged,
+          ),
+        ),
+        const _DocSection(
+          label: 'Tag 标签',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalTag(color: AnimalTagColor.primary, child: Text('新组件')),
+              AnimalTag(color: AnimalTagColor.success, child: Text('可用')),
+              AnimalTag(color: AnimalTagColor.warning, child: Text('注意')),
+              AnimalTag(
+                  color: AnimalTagColor.danger,
+                  closable: true,
+                  child: Text('关闭')),
+              AnimalTag(
+                  color: AnimalTagColor.purple,
+                  icon: Text('✦'),
+                  child: Text('稀有')),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: 'Badge 角标',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalBadge(
+                  count: 5,
+                  child: AnimalIcon(name: AnimalIconName.chat, size: 42)),
+              AnimalBadge(
+                  count: 120,
+                  child: AnimalIcon(name: AnimalIconName.shopping, size: 42)),
+              AnimalBadge(
+                  dot: true,
+                  status: AnimalBadgeStatus.success,
+                  child: AnimalIcon(name: AnimalIconName.camera, size: 42)),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: 'Tooltip 提示',
+          box: _DemoBoxStyle.soft,
+          child: AnimalTooltip(
+            message: '今天也要整理背包哦',
+            child: AnimalButton(
+              type: AnimalButtonType.primary,
+              child: Text('悬停查看'),
+            ),
+          ),
+        ),
+        _DocSection(
+          label: 'Message 轻提示',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalButton(
+                type: AnimalButtonType.primary,
+                onPressed: () => AnimalMessage.success(
+                  context,
+                  const Text('保存成功'),
+                ),
+                child: const Text('Success'),
+              ),
+              AnimalButton(
+                onPressed: () => AnimalMessage.warning(
+                  context,
+                  const Text('背包快满了'),
+                ),
+                child: const Text('Warning'),
+              ),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: 'Progress 进度条',
+          box: _DemoBoxStyle.soft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimalProgress(value: progressValue),
+              const SizedBox(height: 12),
+              Slider(
+                value: progressValue,
+                activeColor: const Color(0xFF19C8B9),
+                onChanged: onProgressChanged,
+              ),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: 'Pagination 分页',
+          box: _DemoBoxStyle.soft,
+          child: AnimalPagination(
+            current: paginationPage,
+            total: 86,
+            onChanged: onPageChanged,
+          ),
+        ),
+        _DocSection(
+          label: 'Empty 空状态',
+          box: _DemoBoxStyle.soft,
+          child: AnimalEmpty(
+            description: '今天还没有岛民记录',
+            action: AnimalButton(
+              type: AnimalButtonType.primary,
+              onPressed: () {},
+              child: const Text('添加记录'),
+            ),
+          ),
+        ),
+      ],
+      code: _extendedBasicsCode,
+      api: _extendedBasicsApi,
+    );
+  }
+}
+
 class _TimeDoc extends StatelessWidget {
   const _TimeDoc();
 
@@ -3683,9 +3866,9 @@ const _homeFeatures = [
   ),
   _FeatureInfo(
     icon: _DemoAssets.shopping,
-    title: '18 个组件',
+    title: '27 个组件',
     description:
-        'Button / Input / Switch / Modal / Typewriter / Card / Collapse / Cursor / Divider / Time / Phone / Footer / Icon / Checkbox / Select / Tabs / CodeBlock / Loading 等',
+        'Button / Input / Switch / Modal / Table / Radio / Tag / Badge / Message / Progress / Pagination / Empty 等',
   ),
   _FeatureInfo(
     icon: _DemoAssets.camera,
@@ -3735,6 +3918,15 @@ const _homeComponents = [
   _ComponentInfo(key: 'phone', name: 'Phone', description: 'Phone 模拟器'),
   _ComponentInfo(key: 'codeblock', name: 'CodeBlock', description: '代码语法高亮组件'),
   _ComponentInfo(key: 'loading', name: 'Loading', description: '动森风格小岛加载动画'),
+  _ComponentInfo(key: 'table', name: 'Table', description: '斑马纹表格、加载与空状态'),
+  _ComponentInfo(key: 'radio', name: 'Radio', description: '单选框组件，支持尺寸与排列方向'),
+  _ComponentInfo(key: 'tag', name: 'Tag', description: '彩色标签、图标与可关闭状态'),
+  _ComponentInfo(key: 'badge', name: 'Badge', description: '角标、数字上限与小红点'),
+  _ComponentInfo(key: 'tooltip', name: 'Tooltip', description: '动森风提示气泡'),
+  _ComponentInfo(key: 'message', name: 'Message', description: '顶部轻提示反馈'),
+  _ComponentInfo(key: 'progress', name: 'Progress', description: '条纹进度条'),
+  _ComponentInfo(key: 'pagination', name: 'Pagination', description: '分页器组件'),
+  _ComponentInfo(key: 'empty', name: 'Empty', description: '空状态占位'),
 ];
 
 const _cardColors = [
@@ -4029,6 +4221,22 @@ const _tableApi = [
   _ApiRow('emptyText', '空数据显示文本', 'String?', '暂无数据'),
   _ApiRow('maxHeight', '表格最大高度', 'double?', '-'),
   _ApiRow('onRowTap', '行点击回调', 'void Function(T row, int index)?', '-'),
+];
+
+const _extendedBasicsApi = [
+  _ApiRow('AnimalRadio.options', '单选项列表', 'List<AnimalRadioOption<T>>', '-',
+      required: true),
+  _ApiRow('AnimalRadio.value', '受控选中值', 'T?', '-'),
+  _ApiRow('AnimalRadio.defaultValue', '默认选中值', 'T?', '-'),
+  _ApiRow('AnimalTag.color', '标签颜色', 'AnimalTagColor', 'defaultColor'),
+  _ApiRow('AnimalTag.closable', '是否显示关闭按钮', 'bool', 'false'),
+  _ApiRow('AnimalBadge.count', '数字角标', 'int?', '-'),
+  _ApiRow('AnimalBadge.dot', '小圆点模式', 'bool', 'false'),
+  _ApiRow('AnimalTooltip.message', '提示文本', 'String', '-', required: true),
+  _ApiRow('AnimalProgress.value', '进度比例 0..1', 'double', '-', required: true),
+  _ApiRow('AnimalPagination.current', '当前页', 'int', '-', required: true),
+  _ApiRow('AnimalPagination.total', '总条数', 'int', '-', required: true),
+  _ApiRow('AnimalEmpty.description', '空状态文案', 'String', '暂无数据'),
 ];
 
 const _timeApi = [
@@ -4500,6 +4708,56 @@ class App extends StatelessWidget {
       ],
       rows: data,
       striped: true,
+    );
+  }
+}''';
+
+const _extendedBasicsCode =
+    r'''import 'package:animal_island_flutter/animal_island_flutter.dart';
+import 'package:flutter/material.dart';
+
+class App extends StatefulWidget {
+  const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  var fruit = 'apple';
+  var page = 1;
+  var progress = 0.64;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimalRadio<String>(
+          value: fruit,
+          options: const [
+            AnimalRadioOption(value: 'apple', label: Text('苹果岛')),
+            AnimalRadioOption(value: 'peach', label: Text('桃子岛')),
+          ],
+          onChanged: (value) => setState(() => fruit = value),
+        ),
+        const AnimalTag(color: AnimalTagColor.primary, child: Text('新组件')),
+        const AnimalBadge(count: 5, child: AnimalIcon(name: AnimalIconName.chat)),
+        const AnimalTooltip(
+          message: '今天也要整理背包哦',
+          child: Text('悬停查看'),
+        ),
+        AnimalButton(
+          onPressed: () => AnimalMessage.success(context, const Text('保存成功')),
+          child: const Text('显示提示'),
+        ),
+        AnimalProgress(value: progress),
+        AnimalPagination(
+          current: page,
+          total: 86,
+          onChanged: (value) => setState(() => page = value),
+        ),
+        const AnimalEmpty(description: '今天还没有岛民记录'),
+      ],
     );
   }
 }''';

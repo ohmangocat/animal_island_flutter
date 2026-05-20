@@ -240,4 +240,113 @@ void main() {
     await tester.tap(find.text('Camera'));
     expect(tapped, 'Camera-0');
   });
+
+  testWidgets('radio emits one selected value', (tester) async {
+    var selected = 'beach';
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return AnimalRadio<String>(
+                  value: selected,
+                  options: const [
+                    AnimalRadioOption(value: 'beach', label: Text('Beach')),
+                    AnimalRadioOption(value: 'forest', label: Text('Forest')),
+                  ],
+                  onChanged: (value) => setState(() => selected = value),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Forest'));
+    await tester.pump();
+
+    expect(selected, 'forest');
+  });
+
+  testWidgets('pagination reports requested page', (tester) async {
+    var page = 1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return AnimalPagination(
+                  current: page,
+                  total: 80,
+                  onChanged: (value) => setState(() => page = value),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('2'));
+    await tester.pump();
+
+    expect(page, 2);
+  });
+
+  testWidgets('badge hides zero unless showZero is true', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: Column(
+              children: [
+                AnimalBadge(count: 0, child: Text('Hidden')),
+                AnimalBadge(count: 0, showZero: true, child: Text('Shown')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('0'), findsOneWidget);
+  });
+
+  testWidgets('message overlay appears and then dismisses', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: AnimalButton(
+                  onPressed: () => AnimalMessage.success(
+                    context,
+                    const Text('Saved'),
+                    duration: const Duration(milliseconds: 250),
+                  ),
+                  child: const Text('Show'),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Show'));
+    await tester.pump();
+
+    expect(find.text('Saved'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Saved'), findsNothing);
+  });
 }

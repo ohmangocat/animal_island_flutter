@@ -6,8 +6,7 @@
 
 ```yaml
 dependencies:
-  animal_island_flutter:
-    path: ../animal_island_flutter
+  animal_island_flutter: ^0.1.1
 ```
 
 ```dart
@@ -34,6 +33,7 @@ MaterialApp(
 
 ```dart
 export 'src/animal_theme.dart';
+export 'src/components/badge.dart';
 export 'src/components/button.dart';
 export 'src/components/card.dart';
 export 'src/components/checkbox.dart';
@@ -42,16 +42,23 @@ export 'src/components/collapse.dart';
 export 'src/components/cursor.dart';
 export 'src/components/dialog.dart';
 export 'src/components/divider.dart';
+export 'src/components/empty.dart';
 export 'src/components/footer.dart';
 export 'src/components/icon.dart';
 export 'src/components/input.dart';
 export 'src/components/loading.dart';
+export 'src/components/message.dart';
+export 'src/components/pagination.dart';
 export 'src/components/phone.dart';
+export 'src/components/progress.dart';
+export 'src/components/radio.dart';
 export 'src/components/select.dart';
 export 'src/components/switch.dart';
 export 'src/components/table.dart';
 export 'src/components/tabs.dart';
+export 'src/components/tag.dart';
 export 'src/components/time.dart';
+export 'src/components/tooltip.dart';
 export 'src/components/typewriter.dart';
 ```
 
@@ -351,6 +358,93 @@ AnimalTable<T>({
 })
 ```
 
+### 2.14 Extended Basics
+
+```dart
+enum AnimalRadioSize { small, middle, large }
+enum AnimalRadioDirection { horizontal, vertical }
+
+class AnimalRadioOption<T> {
+  const AnimalRadioOption({
+    required Widget label,
+    required T value,
+    bool disabled = false,
+  });
+}
+
+AnimalRadio<T>({
+  required List<AnimalRadioOption<T>> options,
+  T? value,
+  T? defaultValue,
+  AnimalRadioSize size = AnimalRadioSize.middle,
+  bool disabled = false,
+  AnimalRadioDirection direction = AnimalRadioDirection.horizontal,
+  ValueChanged<T>? onChanged,
+})
+```
+
+```dart
+enum AnimalTagColor {
+  defaultColor, primary, success, warning, danger, blue, purple, brown,
+}
+enum AnimalTagSize { small, middle, large }
+
+AnimalTag({
+  required Widget child,
+  AnimalTagColor color = AnimalTagColor.defaultColor,
+  AnimalTagSize size = AnimalTagSize.middle,
+  bool closable = false,
+  VoidCallback? onClose,
+  Widget? icon,
+})
+```
+
+```dart
+enum AnimalBadgeStatus { defaultStatus, primary, success, warning, danger }
+
+AnimalBadge({
+  Widget? child,
+  int? count,
+  String? text,
+  bool dot = false,
+  bool showZero = false,
+  int maxCount = 99,
+  AnimalBadgeStatus status = AnimalBadgeStatus.danger,
+  Offset offset = Offset.zero,
+})
+```
+
+```dart
+AnimalTooltip({
+  required String message,
+  required Widget child,
+  bool preferBelow = false,
+})
+
+AnimalMessage.success(context, const Text('保存成功'));
+
+AnimalProgress({
+  required double value, // 0..1
+  double height = 16,
+  bool showLabel = true,
+})
+
+AnimalPagination({
+  required int current,
+  required int total,
+  required ValueChanged<int> onChanged,
+  int pageSize = 10,
+  int maxVisiblePages = 5,
+  bool disabled = false,
+})
+
+AnimalEmpty({
+  String description = '暂无数据',
+  Widget? icon,
+  Widget? action,
+})
+```
+
 ## 3. Common Recipes
 
 ### Form
@@ -426,6 +520,8 @@ AnimalTable<Item>(
 8. `AnimalCodeBlock` 用于 Dart/JS/TS 示例显示，不提供 `language` 参数。
 9. 不要强行覆盖圆角和 3D 底部阴影；这是设计语言核心。
 10. Web 光标由 `AnimalCursor` 注入 CSS，Android/iOS 上不会显示鼠标图片光标。
+11. `AnimalProgress.value` 使用 `0..1` 比例，不是 `0..100`。
+12. 仓库内 `example/pubspec.yaml` 可使用 `path: ..`，对外文档安装示例使用 pub.dev 版本。
 
 ## 5. Minimal Boilerplate
 

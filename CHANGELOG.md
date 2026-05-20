@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added 8 extended basic components: Radio, Tag, Badge, Tooltip, Message, Progress, Pagination, and Empty.
+- Added demo documentation, public API exports, usage notes, and widget tests for the extended component set.
+
 ## 0.1.1
 
 - Updated the package README with pub.dev installation, dependency versions, platform compatibility, and preview image.

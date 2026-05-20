@@ -40,7 +40,15 @@ Minimum environment:
 - `AnimalCursor`
 - `AnimalSelect`
 - `AnimalCheckbox`
+- `AnimalRadio`
 - `AnimalTabs`
+- `AnimalTag`
+- `AnimalBadge`
+- `AnimalTooltip`
+- `AnimalMessage`
+- `AnimalProgress`
+- `AnimalPagination`
+- `AnimalEmpty`
 - `AnimalIcon`
 - `AnimalFooter`
 - `AnimalDivider`
@@ -210,6 +218,34 @@ AnimalTable<T>({
 })
 ```
 
+```dart
+enum AnimalRadioSize { small, middle, large }
+enum AnimalRadioDirection { horizontal, vertical }
+
+AnimalRadio<T>({
+  required List<AnimalRadioOption<T>> options,
+  T? value,
+  T? defaultValue,
+  AnimalRadioSize size = AnimalRadioSize.middle,
+  bool disabled = false,
+  AnimalRadioDirection direction = AnimalRadioDirection.horizontal,
+  ValueChanged<T>? onChanged,
+})
+```
+
+```dart
+enum AnimalTagColor { defaultColor, primary, success, warning, danger, blue, purple, brown }
+enum AnimalTagSize { small, middle, large }
+
+AnimalTag({required Widget child, AnimalTagColor color = AnimalTagColor.defaultColor})
+AnimalBadge({Widget? child, int? count, String? text, bool dot = false})
+AnimalTooltip({required String message, required Widget child})
+AnimalMessage.success(context, const Text('Saved'))
+AnimalProgress(value: 0.6)
+AnimalPagination(current: 1, total: 80, onChanged: (page) {})
+AnimalEmpty(description: '暂无数据')
+```
+
 ## Hard Rules
 
 1. Import public API from `package:animal_island_flutter/animal_island_flutter.dart`.
@@ -222,3 +258,5 @@ AnimalTable<T>({
 8. `AnimalCodeBlock` does not expose a `language` parameter.
 9. Do not remove pill radii or 3D bottom shadows.
 10. Custom image cursor is Web/desktop-oriented and should use `AnimalCursor`.
+11. `AnimalProgress.value` uses a `0..1` ratio.
+12. Public docs should show the pub.dev dependency; repository examples may use `path: ..`.
