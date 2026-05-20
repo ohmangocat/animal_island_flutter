@@ -1,0 +1,65 @@
+name: animal_island_flutter
+description: A cozy Animal Island inspired Flutter component library.
+version: 0.1.1
+homepage: https://github.com/ohmangocat/animal_island_flutter
+repository: https://github.com/ohmangocat/animal_island_flutter
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.17
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/animal_island/img/cursor/
+    - assets/animal_island/img/dividers/
+    - assets/animal_island/img/footer/
+    - assets/animal_island/img/icons/
+    - assets/animal_island/img/loading/
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/animal_island/fonts/nunito-latin-500-normal.woff2
+          weight: 500
+        - asset: assets/animal_island/fonts/nunito-latin-700-normal.woff2
+          weight: 700
+        - asset: assets/animal_island/fonts/nunito-latin-900-normal.woff2
+          weight: 900
+    - family: Noto Sans SC
+      fonts:
+        - asset: assets/animal_island/fonts/noto-sans-sc-latin-400-normal.woff2
+          weight: 400
+        - asset: assets/animal_island/fonts/noto-sans-sc-chinese-simplified-400-normal.woff2
+          weight: 400
+        - asset: assets/animal_island/fonts/noto-sans-sc-latin-500-normal.woff2
+          weight: 500
+        - asset: assets/animal_island/fonts/noto-sans-sc-chinese-simplified-500-normal.woff2
+          weight: 500
+        - asset: assets/animal_island/fonts/noto-sans-sc-latin-700-normal.woff2
+          weight: 700
+        - asset: assets/animal_island/fonts/noto-sans-sc-chinese-simplified-700-normal.woff2
+          weight: 700
+    - family: Zen Maru Gothic
+      fonts:
+        - asset: assets/animal_island/fonts/zen-maru-gothic-latin-500-normal.woff2
+          weight: 500
+        - asset: assets/animal_island/fonts/zen-maru-gothic-japanese-500-normal.woff2
+          weight: 500
+        - asset: assets/animal_island/fonts/zen-maru-gothic-latin-700-normal.woff2
+          weight: 700
+        - asset: assets/animal_island/fonts/zen-maru-gothic-japanese-700-normal.woff2
+          weight: 700
+        - asset: assets/animal_island/fonts/zen-maru-gothic-latin-900-normal.woff2
+          weight: 900
+        - asset: assets/animal_island/fonts/zen-maru-gothic-japanese-900-normal.woff2
+          weight: 900

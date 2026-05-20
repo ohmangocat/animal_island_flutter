@@ -1,0 +1,24 @@
+name: animal_island_flutter_example
+description: Example app for animal_island_flutter.
+publish_to: "none"
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  animal_island_flutter:
+    path: ..
+  flutter_svg: ^2.0.17
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/demo/img/
+    - assets/demo/img/nook-phone/
