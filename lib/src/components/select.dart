@@ -54,7 +54,7 @@ class _AnimalSelectState<T> extends State<AnimalSelect<T>> {
 
   @override
   void dispose() {
-    _removeOverlay(notify: false);
+    _removeOverlay();
     super.dispose();
   }
 
@@ -203,9 +203,6 @@ class _AnimalSelectState<T> extends State<AnimalSelect<T>> {
                       value: widget.value,
                       hoveredIndex: _hoveredIndex,
                       onHover: (index) {
-                        if (_hoveredIndex == index) {
-                          return;
-                        }
                         _hoveredIndex = index;
                         setOverlayState(() {});
                       },
@@ -226,11 +223,11 @@ class _AnimalSelectState<T> extends State<AnimalSelect<T>> {
     setState(() => _open = true);
   }
 
-  void _removeOverlay({bool notify = true}) {
+  void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
     _hoveredIndex = null;
-    if (notify && mounted && _open) {
+    if (mounted && _open) {
       setState(() => _open = false);
     }
   }
