@@ -53,4 +53,56 @@ void main() {
       findsNothing,
     );
   });
+
+  testWidgets('sidebar lists extended and advanced component pages',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(const AnimalIslandDocsApp());
+    await tester.pump();
+
+    await tester.tap(find.text('开始使用 ->'));
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 1500));
+    await tester.pump();
+
+    expect(find.text('Radio 单选框'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Tag 标签'),
+      160,
+      scrollable: find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget.runtimeType.toString() == '_Sidebar',
+        ),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    expect(find.text('Tag 标签'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Alert 警告'),
+      400,
+      scrollable: find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget.runtimeType.toString() == '_Sidebar',
+        ),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    expect(find.text('Alert 警告'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Skeleton 骨架屏'),
+      600,
+      scrollable: find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget.runtimeType.toString() == '_Sidebar',
+        ),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    expect(find.text('Skeleton 骨架屏'), findsOneWidget);
+  });
 }

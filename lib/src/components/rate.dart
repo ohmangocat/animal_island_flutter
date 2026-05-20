@@ -28,7 +28,7 @@ class _AnimalRateState extends State<AnimalRate> {
 
   int get _value => widget.value ?? _innerValue;
 
-  bool get _enabled => !widget.disabled && widget.onChanged != null;
+  bool get _enabled => !widget.disabled;
 
   @override
   void initState() {

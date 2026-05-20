@@ -126,6 +126,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
   List<_DocPage> _buildPages() {
     return [
       _DocPage(
+        routeKey: 'button',
         group: '基础组件',
         navTitle: 'Button 按钮',
         title: 'Button 按钮',
@@ -134,6 +135,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _ButtonDoc(),
       ),
       _DocPage(
+        routeKey: 'input',
         group: '基础组件',
         navTitle: 'Input 输入框',
         title: 'Input 输入框',
@@ -142,6 +144,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _InputDoc(),
       ),
       _DocPage(
+        routeKey: 'switch',
         group: '基础组件',
         navTitle: 'Switch 开关',
         title: 'Switch 开关',
@@ -152,6 +155,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        routeKey: 'card',
         group: '基础组件',
         navTitle: 'Card 卡片',
         title: 'Card 卡片',
@@ -159,6 +163,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _CardDoc(),
       ),
       _DocPage(
+        routeKey: 'collapse',
         group: '基础组件',
         navTitle: 'Collapse 折叠面板',
         title: 'Collapse 折叠面板',
@@ -166,6 +171,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _CollapseDoc(),
       ),
       _DocPage(
+        routeKey: 'cursor',
         group: '基础组件',
         navTitle: 'Cursor 光标',
         title: 'Cursor 光标',
@@ -173,6 +179,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _CursorDoc(),
       ),
       _DocPage(
+        routeKey: 'modal',
         group: '基础组件',
         navTitle: 'Modal 弹窗',
         title: 'Modal 弹窗',
@@ -185,6 +192,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        routeKey: 'typewriter',
         group: '基础组件',
         navTitle: 'Typewriter 打字机',
         title: 'Typewriter 打字机',
@@ -195,6 +203,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        routeKey: 'divider-comp',
         group: '基础组件',
         navTitle: 'Divider 分割线',
         title: 'Divider 分割线',
@@ -202,6 +211,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _DividerDoc(),
       ),
       _DocPage(
+        routeKey: 'icon',
         group: '基础组件',
         navTitle: 'Icon 图标',
         title: 'Icon 图标',
@@ -209,6 +219,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _IconDoc(),
       ),
       _DocPage(
+        routeKey: 'select',
         group: '基础组件',
         navTitle: 'Select 选择器',
         title: 'Select 选择器',
@@ -226,6 +237,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        routeKey: 'checkbox',
         group: '基础组件',
         navTitle: 'Checkbox 多选框',
         title: 'Checkbox 多选框',
@@ -239,6 +251,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        routeKey: 'tabs',
         group: '基础组件',
         navTitle: 'Tabs 标签页',
         title: 'Tabs 标签页',
@@ -249,6 +262,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        routeKey: 'footer',
         group: '基础组件',
         navTitle: 'Footer 页脚',
         title: 'Footer 底部装饰',
@@ -256,6 +270,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _FooterDoc(),
       ),
       _DocPage(
+        routeKey: 'codeblock',
         group: '基础组件',
         navTitle: 'CodeBlock 代码高亮',
         title: 'CodeBlock 代码高亮',
@@ -263,6 +278,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _CodeBlockDoc(),
       ),
       _DocPage(
+        routeKey: 'loading',
         group: '基础组件',
         navTitle: 'Loading 加载',
         title: 'Loading 加载',
@@ -273,6 +289,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        routeKey: 'table',
         group: '基础组件',
         navTitle: 'Table 表格',
         title: 'Table 表格',
@@ -285,7 +302,8 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
-        group: '基础组件',
+        routeKey: 'extended',
+        group: '扩展组件',
         navTitle: 'Extended 扩展',
         title: 'Extended 扩展基础组件',
         summary:
@@ -300,7 +318,81 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
-        group: '基础组件',
+        routeKey: 'radio',
+        group: '扩展组件',
+        navTitle: 'Radio 单选框',
+        title: 'Radio 单选框',
+        summary: '单选框组件 — 支持受控/非受控、水平/垂直排列、三种尺寸和禁用项',
+        body: _RadioDoc(
+          value: _radioValue,
+          onChanged: (value) => setState(() => _radioValue = value),
+        ),
+      ),
+      const _DocPage(
+        routeKey: 'tag',
+        group: '扩展组件',
+        navTitle: 'Tag 标签',
+        title: 'Tag 标签',
+        summary: '标签组件 — 支持多种语义颜色、尺寸、图标和可关闭状态',
+        body: _TagDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'badge',
+        group: '扩展组件',
+        navTitle: 'Badge 角标',
+        title: 'Badge 角标',
+        summary: '角标组件 — 支持数字、小红点、状态色、文本和数字上限',
+        body: _BadgeDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'tooltip',
+        group: '扩展组件',
+        navTitle: 'Tooltip 提示',
+        title: 'Tooltip 提示',
+        summary: '提示气泡组件 — 给按钮、图标或文字补充轻量说明',
+        body: _TooltipDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'message',
+        group: '扩展组件',
+        navTitle: 'Message 轻提示',
+        title: 'Message 轻提示',
+        summary: '顶部轻提示组件 — 支持 info / success / warning / error 状态反馈',
+        body: _MessageDoc(),
+      ),
+      _DocPage(
+        routeKey: 'progress',
+        group: '扩展组件',
+        navTitle: 'Progress 进度条',
+        title: 'Progress 进度条',
+        summary: '条纹进度条组件 — 支持受控进度、自定义高度、颜色和标签显示',
+        body: _ProgressDoc(
+          value: _progressValue,
+          onChanged: (value) => setState(() => _progressValue = value),
+        ),
+      ),
+      _DocPage(
+        routeKey: 'pagination',
+        group: '扩展组件',
+        navTitle: 'Pagination 分页',
+        title: 'Pagination 分页',
+        summary: '分页器组件 — 支持当前页、总条数、页大小、禁用和可见页数控制',
+        body: _PaginationDoc(
+          current: _paginationPage,
+          onChanged: (value) => setState(() => _paginationPage = value),
+        ),
+      ),
+      const _DocPage(
+        routeKey: 'empty',
+        group: '扩展组件',
+        navTitle: 'Empty 空状态',
+        title: 'Empty 空状态',
+        summary: '空状态组件 — 支持默认叶子图标、自定义图标、说明文案和行动按钮',
+        body: _EmptyDoc(),
+      ),
+      _DocPage(
+        routeKey: 'advanced',
+        group: '进阶组件',
         navTitle: 'Advanced 进阶',
         title: 'Advanced 进阶交互组件',
         summary:
@@ -317,7 +409,84 @@ class _DocsHomePageState extends State<DocsHomePage> {
               setState(() => _segmentedValue = value),
         ),
       ),
+      const _DocPage(
+        routeKey: 'alert',
+        group: '进阶组件',
+        navTitle: 'Alert 警告',
+        title: 'Alert 警告提示',
+        summary: '警告提示组件 — 支持标题、图标、四种状态和可关闭提示',
+        body: _AlertDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'avatar',
+        group: '进阶组件',
+        navTitle: 'Avatar 头像',
+        title: 'Avatar 头像',
+        summary: '头像组件 — 支持文字、图片、AnimalIcon、尺寸和圆形/方形形状',
+        body: _AvatarDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'breadcrumb',
+        group: '进阶组件',
+        navTitle: 'Breadcrumb 面包屑',
+        title: 'Breadcrumb 面包屑',
+        summary: '面包屑导航组件 — 支持可点击项、禁用项和自定义分隔符',
+        body: _BreadcrumbDoc(),
+      ),
       _DocPage(
+        routeKey: 'steps',
+        group: '进阶组件',
+        navTitle: 'Steps 步骤条',
+        title: 'Steps 步骤条',
+        summary: '步骤条组件 — 支持横向/纵向、受控切换、错误态和完成态',
+        body: _StepsDoc(
+          current: _stepsCurrent,
+          onChanged: (value) => setState(() => _stepsCurrent = value),
+        ),
+      ),
+      _DocPage(
+        routeKey: 'slider',
+        group: '进阶组件',
+        navTitle: 'Slider 滑动输入',
+        title: 'Slider 滑动输入',
+        summary: '滑动输入组件 — 支持受控数值、范围、分段、禁用和标签显示',
+        body: _SliderDoc(
+          value: _sliderValue,
+          onChanged: (value) => setState(() => _sliderValue = value),
+        ),
+      ),
+      _DocPage(
+        routeKey: 'rate',
+        group: '进阶组件',
+        navTitle: 'Rate 评分',
+        title: 'Rate 评分',
+        summary: '评分组件 — 支持受控评分、默认评分、评分数量和禁用态',
+        body: _RateDoc(
+          value: _rateValue,
+          onChanged: (value) => setState(() => _rateValue = value),
+        ),
+      ),
+      _DocPage(
+        routeKey: 'segmented',
+        group: '进阶组件',
+        navTitle: 'Segmented 分段',
+        title: 'Segmented 分段控制',
+        summary: '分段控制器 — 支持图标、禁用项、默认值和受控切换',
+        body: _SegmentedDoc(
+          value: _segmentedValue,
+          onChanged: (value) => setState(() => _segmentedValue = value),
+        ),
+      ),
+      const _DocPage(
+        routeKey: 'skeleton',
+        group: '进阶组件',
+        navTitle: 'Skeleton 骨架屏',
+        title: 'Skeleton 骨架屏',
+        summary: '骨架屏组件 — 支持行数、宽度、行高、动画和加载完成内容切换',
+        body: _SkeletonDoc(),
+      ),
+      _DocPage(
+        routeKey: 'time',
         group: '复杂组件',
         navTitle: 'Time 时间',
         title: 'Time 时间',
@@ -325,6 +494,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: const _TimeDoc(),
       ),
       _DocPage(
+        routeKey: 'phone',
         group: '复杂组件',
         navTitle: 'Phone 手机',
         title: 'Phone 手机',
@@ -346,48 +516,9 @@ class _DocsHomePageState extends State<DocsHomePage> {
   }
 
   Future<void> _openHomeTarget(String key) async {
-    final index = switch (key) {
-      'button' => 0,
-      'input' => 1,
-      'switch' => 2,
-      'card' => 3,
-      'collapse' => 4,
-      'cursor' => 5,
-      'modal' => 6,
-      'typewriter' => 7,
-      'divider-comp' => 8,
-      'icon' => 9,
-      'select' => 10,
-      'checkbox' => 11,
-      'tabs' => 12,
-      'footer' => 13,
-      'codeblock' => 14,
-      'loading' => 15,
-      'table' => 16,
-      'extended' ||
-      'radio' ||
-      'tag' ||
-      'badge' ||
-      'tooltip' ||
-      'message' ||
-      'progress' ||
-      'pagination' ||
-      'empty' =>
-        17,
-      'advanced' ||
-      'alert' ||
-      'avatar' ||
-      'breadcrumb' ||
-      'steps' ||
-      'slider' ||
-      'rate' ||
-      'segmented' ||
-      'skeleton' =>
-        18,
-      'time' => 19,
-      'phone' => 20,
-      _ => 0,
-    };
+    final pages = _buildPages();
+    final matchedIndex = pages.indexWhere((page) => page.routeKey == key);
+    final index = matchedIndex < 0 ? 0 : matchedIndex;
     if (_activeIndex >= 0) {
       setState(() => _activeIndex = index);
       return;
@@ -3761,6 +3892,409 @@ class _ExtendedBasicsDoc extends StatelessWidget {
   }
 }
 
+class _RadioDoc extends StatelessWidget {
+  const _RadioDoc({required this.value, required this.onChanged});
+
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Radio',
+      tags: const ['单选框', '受控'],
+      sections: [
+        _DocSection(
+          label: '基础受控用法',
+          box: _DemoBoxStyle.soft,
+          child: AnimalRadio<String>(
+            value: value,
+            options: const [
+              AnimalRadioOption(value: 'apple', label: Text('苹果岛')),
+              AnimalRadioOption(value: 'peach', label: Text('桃子岛')),
+              AnimalRadioOption(value: 'orange', label: Text('橘子岛')),
+            ],
+            onChanged: onChanged,
+          ),
+        ),
+        const _DocSection(
+          label: '尺寸与垂直排列',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalRadio<String>(
+                size: AnimalRadioSize.small,
+                defaultValue: 'small',
+                options: [
+                  AnimalRadioOption(value: 'small', label: Text('Small')),
+                  AnimalRadioOption(value: 'middle', label: Text('Middle')),
+                ],
+              ),
+              AnimalRadio<String>(
+                direction: AnimalRadioDirection.vertical,
+                defaultValue: 'morning',
+                options: [
+                  AnimalRadioOption(value: 'morning', label: Text('上午')),
+                  AnimalRadioOption(value: 'night', label: Text('夜晚')),
+                  AnimalRadioOption(
+                    value: 'locked',
+                    label: Text('未开放'),
+                    disabled: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: '禁用全部',
+          box: _DemoBoxStyle.soft,
+          child: AnimalRadio<String>(
+            disabled: true,
+            defaultValue: 'one',
+            options: [
+              AnimalRadioOption(value: 'one', label: Text('一号岛')),
+              AnimalRadioOption(value: 'two', label: Text('二号岛')),
+            ],
+          ),
+        ),
+      ],
+      code: _radioCode,
+      api: _radioApi,
+    );
+  }
+}
+
+class _TagDoc extends StatelessWidget {
+  const _TagDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Tag',
+      tags: ['标签', '状态'],
+      sections: [
+        _DocSection(
+          label: '颜色',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalTag(child: Text('Default')),
+              AnimalTag(color: AnimalTagColor.primary, child: Text('Primary')),
+              AnimalTag(color: AnimalTagColor.success, child: Text('Success')),
+              AnimalTag(color: AnimalTagColor.warning, child: Text('Warning')),
+              AnimalTag(color: AnimalTagColor.danger, child: Text('Danger')),
+              AnimalTag(color: AnimalTagColor.blue, child: Text('Blue')),
+              AnimalTag(color: AnimalTagColor.purple, child: Text('Purple')),
+              AnimalTag(color: AnimalTagColor.brown, child: Text('Brown')),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '尺寸、图标和可关闭',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalTag(size: AnimalTagSize.small, child: Text('Small')),
+              AnimalTag(size: AnimalTagSize.large, child: Text('Large')),
+              AnimalTag(
+                color: AnimalTagColor.purple,
+                icon: Text('✦'),
+                child: Text('稀有'),
+              ),
+              AnimalTag(
+                color: AnimalTagColor.danger,
+                closable: true,
+                child: Text('可关闭'),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _tagCode,
+      api: _tagApi,
+    );
+  }
+}
+
+class _BadgeDoc extends StatelessWidget {
+  const _BadgeDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Badge',
+      tags: ['角标', '通知'],
+      sections: [
+        _DocSection(
+          label: '数字角标',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalBadge(
+                count: 5,
+                child: AnimalIcon(name: AnimalIconName.chat, size: 44),
+              ),
+              AnimalBadge(
+                count: 120,
+                child: AnimalIcon(name: AnimalIconName.shopping, size: 44),
+              ),
+              AnimalBadge(
+                count: 0,
+                showZero: true,
+                child: AnimalIcon(name: AnimalIconName.map, size: 44),
+              ),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '小圆点、文本和偏移',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalBadge(
+                dot: true,
+                status: AnimalBadgeStatus.success,
+                child: AnimalIcon(name: AnimalIconName.camera, size: 44),
+              ),
+              AnimalBadge(
+                text: 'NEW',
+                status: AnimalBadgeStatus.primary,
+                child: AnimalIcon(name: AnimalIconName.diy, size: 44),
+              ),
+              AnimalBadge(
+                count: 8,
+                offset: Offset(6, 4),
+                child: AnimalIcon(name: AnimalIconName.variant, size: 44),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _badgeCode,
+      api: _badgeApi,
+    );
+  }
+}
+
+class _TooltipDoc extends StatelessWidget {
+  const _TooltipDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Tooltip',
+      tags: ['提示'],
+      sections: [
+        _DocSection(
+          label: '基础提示',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalTooltip(
+                message: '今天也要整理背包哦',
+                child: AnimalButton(
+                  type: AnimalButtonType.primary,
+                  child: Text('悬停查看'),
+                ),
+              ),
+              AnimalTooltip(
+                message: '相机应用有新提示',
+                preferBelow: true,
+                child: AnimalIcon(name: AnimalIconName.camera, size: 42),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _tooltipCode,
+      api: _tooltipApi,
+    );
+  }
+}
+
+class _MessageDoc extends StatelessWidget {
+  const _MessageDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Message',
+      tags: const ['反馈', 'Overlay'],
+      sections: [
+        _DocSection(
+          label: '四种反馈',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalButton(
+                type: AnimalButtonType.primary,
+                onPressed: () =>
+                    AnimalMessage.info(context, const Text('新的岛屿公告')),
+                child: const Text('Info'),
+              ),
+              AnimalButton(
+                type: AnimalButtonType.primary,
+                onPressed: () =>
+                    AnimalMessage.success(context, const Text('保存成功')),
+                child: const Text('Success'),
+              ),
+              AnimalButton(
+                onPressed: () =>
+                    AnimalMessage.warning(context, const Text('背包快满了')),
+                child: const Text('Warning'),
+              ),
+              AnimalButton(
+                danger: true,
+                onPressed: () =>
+                    AnimalMessage.error(context, const Text('操作失败')),
+                child: const Text('Error'),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _messageCode,
+      api: _messageApi,
+    );
+  }
+}
+
+class _ProgressDoc extends StatelessWidget {
+  const _ProgressDoc({required this.value, required this.onChanged});
+
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Progress',
+      tags: const ['进度', '条纹'],
+      sections: [
+        _DocSection(
+          label: '受控进度',
+          box: _DemoBoxStyle.soft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimalProgress(value: value),
+              const SizedBox(height: 12),
+              Slider(
+                value: value,
+                activeColor: const Color(0xFF19C8B9),
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: '高度、颜色和无标签',
+          box: _DemoBoxStyle.soft,
+          child: Column(
+            children: [
+              AnimalProgress(value: 0.32, height: 10),
+              SizedBox(height: 12),
+              AnimalProgress(
+                value: 0.82,
+                color: Color(0xFFF5C31C),
+                showLabel: false,
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _progressCode,
+      api: _progressApi,
+    );
+  }
+}
+
+class _PaginationDoc extends StatelessWidget {
+  const _PaginationDoc({required this.current, required this.onChanged});
+
+  final int current;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Pagination',
+      tags: const ['分页', '导航'],
+      sections: [
+        _DocSection(
+          label: '基础分页',
+          box: _DemoBoxStyle.soft,
+          child: AnimalPagination(
+            current: current,
+            total: 86,
+            onChanged: onChanged,
+          ),
+        ),
+        _DocSection(
+          label: '页大小、可见页数和禁用',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalPagination(
+                current: 4,
+                total: 160,
+                pageSize: 20,
+                maxVisiblePages: 7,
+                onChanged: (_) {},
+              ),
+              AnimalPagination(
+                current: 2,
+                total: 40,
+                disabled: true,
+                onChanged: (_) {},
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _paginationCode,
+      api: _paginationApi,
+    );
+  }
+}
+
+class _EmptyDoc extends StatelessWidget {
+  const _EmptyDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Empty',
+      tags: const ['空状态'],
+      sections: [
+        _DocSection(
+          label: '基础空状态',
+          box: _DemoBoxStyle.soft,
+          child: AnimalEmpty(
+            description: '今天还没有岛民记录',
+            action: AnimalButton(
+              type: AnimalButtonType.primary,
+              onPressed: () {},
+              child: const Text('添加记录'),
+            ),
+          ),
+        ),
+        const _DocSection(
+          label: '自定义图标',
+          box: _DemoBoxStyle.soft,
+          child: AnimalEmpty(
+            description: '暂无聊天消息',
+            icon: AnimalIcon(name: AnimalIconName.chat, size: 72),
+          ),
+        ),
+      ],
+      code: _emptyCode,
+      api: _emptyApi,
+    );
+  }
+}
+
 class _AdvancedBasicsDoc extends StatelessWidget {
   const _AdvancedBasicsDoc({
     required this.stepsCurrent,
@@ -3906,6 +4440,405 @@ class _AdvancedBasicsDoc extends StatelessWidget {
   }
 }
 
+class _AlertDoc extends StatelessWidget {
+  const _AlertDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Alert',
+      tags: const ['提示', '反馈'],
+      sections: [
+        const _DocSection(
+          label: '四种状态',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalAlert(
+                type: AnimalAlertType.info,
+                title: Text('岛屿公告'),
+                child: Text('今天商店会提前打烊，请记得早点采购。'),
+              ),
+              AnimalAlert(
+                type: AnimalAlertType.success,
+                child: Text('资料已经保存成功。'),
+              ),
+              AnimalAlert(
+                type: AnimalAlertType.warning,
+                child: Text('背包空间不足，请整理后继续。'),
+              ),
+              AnimalAlert(
+                type: AnimalAlertType.error,
+                child: Text('网络连接失败，请稍后再试。'),
+              ),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '可关闭与隐藏图标',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalAlert(
+                type: AnimalAlertType.warning,
+                closable: true,
+                child: const Text('这条提示可以关闭。'),
+              ),
+              const AnimalAlert(
+                showIcon: false,
+                child: Text('没有图标时更适合短提示。'),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _alertCode,
+      api: _alertApi,
+    );
+  }
+}
+
+class _AvatarDoc extends StatelessWidget {
+  const _AvatarDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Avatar',
+      tags: ['头像', '展示'],
+      sections: [
+        _DocSection(
+          label: '尺寸和内容',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalAvatar(size: AnimalAvatarSize.small, child: Text('豆')),
+              AnimalAvatar(child: Text('狸')),
+              AnimalAvatar(size: AnimalAvatarSize.large, child: Text('岛')),
+              AnimalAvatar(
+                size: AnimalAvatarSize.large,
+                icon: AnimalIconName.camera,
+              ),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '方形、颜色和图片',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalAvatar(
+                shape: AnimalAvatarShape.square,
+                child: Text('方'),
+              ),
+              AnimalAvatar(
+                backgroundColor: Color(0xFFE6F9F6),
+                foregroundColor: Color(0xFF19C8B9),
+                child: Text('青'),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _avatarCode,
+      api: _avatarApi,
+    );
+  }
+}
+
+class _BreadcrumbDoc extends StatelessWidget {
+  const _BreadcrumbDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Breadcrumb',
+      tags: const ['导航'],
+      sections: [
+        _DocSection(
+          label: '基础用法',
+          box: _DemoBoxStyle.soft,
+          child: AnimalBreadcrumb(
+            items: [
+              AnimalBreadcrumbItem(
+                label: const Text('首页'),
+                onTap: () {},
+              ),
+              AnimalBreadcrumbItem(
+                label: const Text('组件'),
+                onTap: () {},
+              ),
+              const AnimalBreadcrumbItem(label: Text('Breadcrumb')),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: '禁用项和自定义分隔符',
+          box: _DemoBoxStyle.soft,
+          child: AnimalBreadcrumb(
+            separator: Text('>'),
+            items: [
+              AnimalBreadcrumbItem(label: Text('岛屿')),
+              AnimalBreadcrumbItem(label: Text('居民'), disabled: true),
+              AnimalBreadcrumbItem(label: Text('详情')),
+            ],
+          ),
+        ),
+      ],
+      code: _breadcrumbCode,
+      api: _breadcrumbApi,
+    );
+  }
+}
+
+class _StepsDoc extends StatelessWidget {
+  const _StepsDoc({required this.current, required this.onChanged});
+
+  final int current;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Steps',
+      tags: const ['步骤', '流程'],
+      sections: [
+        _DocSection(
+          label: '横向受控步骤',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSteps(
+            current: current,
+            onChanged: onChanged,
+            items: const [
+              AnimalStepItem(title: Text('出发'), description: Text('整理背包')),
+              AnimalStepItem(title: Text('采集'), description: Text('收集素材')),
+              AnimalStepItem(title: Text('完成'), description: Text('回到服务处')),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: '纵向、错误态和禁用项',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSteps(
+            current: 1,
+            direction: AnimalStepsDirection.vertical,
+            items: [
+              AnimalStepItem(title: Text('申请')),
+              AnimalStepItem(
+                title: Text('审核'),
+                description: Text('材料缺失'),
+                status: AnimalStepStatus.error,
+              ),
+              AnimalStepItem(title: Text('完成'), disabled: true),
+            ],
+          ),
+        ),
+      ],
+      code: _stepsCode,
+      api: _stepsApi,
+    );
+  }
+}
+
+class _SliderDoc extends StatelessWidget {
+  const _SliderDoc({required this.value, required this.onChanged});
+
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Slider',
+      tags: const ['输入', '范围'],
+      sections: [
+        _DocSection(
+          label: '受控滑动',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSlider(
+            value: value,
+            divisions: 10,
+            onChanged: onChanged,
+          ),
+        ),
+        const _DocSection(
+          label: '范围、无标签和禁用',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalSlider(
+                defaultValue: 3,
+                min: 1,
+                max: 5,
+                divisions: 4,
+              ),
+              AnimalSlider(
+                defaultValue: 0.35,
+                min: 0,
+                max: 1,
+                showLabel: false,
+              ),
+              AnimalSlider(defaultValue: 60, disabled: true),
+            ],
+          ),
+        ),
+      ],
+      code: _sliderCode,
+      api: _sliderApi,
+    );
+  }
+}
+
+class _RateDoc extends StatelessWidget {
+  const _RateDoc({required this.value, required this.onChanged});
+
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Rate',
+      tags: const ['评分'],
+      sections: [
+        _DocSection(
+          label: '受控评分',
+          box: _DemoBoxStyle.soft,
+          child: AnimalRate(
+            value: value,
+            onChanged: onChanged,
+          ),
+        ),
+        const _DocSection(
+          label: '默认值、数量和禁用',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalRate(defaultValue: 3),
+              AnimalRate(defaultValue: 6, count: 8),
+              AnimalRate(defaultValue: 4, disabled: true),
+            ],
+          ),
+        ),
+      ],
+      code: _rateCode,
+      api: _rateApi,
+    );
+  }
+}
+
+class _SegmentedDoc extends StatelessWidget {
+  const _SegmentedDoc({required this.value, required this.onChanged});
+
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Segmented',
+      tags: const ['分段', '切换'],
+      sections: [
+        _DocSection(
+          label: '受控分段',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSegmented<String>(
+            value: value,
+            onChanged: onChanged,
+            options: const [
+              AnimalSegmentedOption(
+                value: 'list',
+                label: Text('列表'),
+                icon: Icon(Icons.list_rounded),
+              ),
+              AnimalSegmentedOption(
+                value: 'grid',
+                label: Text('网格'),
+                icon: Icon(Icons.grid_view_rounded),
+              ),
+              AnimalSegmentedOption(
+                value: 'map',
+                label: Text('地图'),
+                icon: Icon(Icons.map_rounded),
+              ),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: '默认值、禁用项和整体禁用',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalSegmented<String>(
+                defaultValue: 'morning',
+                options: [
+                  AnimalSegmentedOption(value: 'morning', label: Text('上午')),
+                  AnimalSegmentedOption(value: 'night', label: Text('夜晚')),
+                  AnimalSegmentedOption(
+                    value: 'locked',
+                    label: Text('未开放'),
+                    disabled: true,
+                  ),
+                ],
+              ),
+              AnimalSegmented<String>(
+                disabled: true,
+                defaultValue: 'a',
+                options: [
+                  AnimalSegmentedOption(value: 'a', label: Text('A')),
+                  AnimalSegmentedOption(value: 'b', label: Text('B')),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _segmentedCode,
+      api: _segmentedApi,
+    );
+  }
+}
+
+class _SkeletonDoc extends StatelessWidget {
+  const _SkeletonDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Skeleton',
+      tags: ['加载', '占位'],
+      sections: [
+        _DocSection(
+          label: '基础骨架屏',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 360,
+            child: AnimalSkeleton(rows: 4),
+          ),
+        ),
+        _DocSection(
+          label: '宽度、行高和加载完成内容',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalSkeleton(rows: 2, width: 260, lineHeight: 18),
+              AnimalSkeleton(
+                active: false,
+                child: AnimalAlert(
+                  type: AnimalAlertType.success,
+                  child: Text('加载完成'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _skeletonCode,
+      api: _skeletonApi,
+    );
+  }
+}
+
 class _TimeDoc extends StatelessWidget {
   const _TimeDoc();
 
@@ -3952,6 +4885,7 @@ class _PhoneDoc extends StatelessWidget {
 
 class _DocPage {
   const _DocPage({
+    required this.routeKey,
     required this.group,
     required this.navTitle,
     required this.title,
@@ -3959,6 +4893,7 @@ class _DocPage {
     required this.body,
   });
 
+  final String routeKey;
   final String group;
   final String navTitle;
   final String title;
@@ -4441,6 +5376,143 @@ const _advancedBasicsApi = [
       'AnimalSegmented.options', '分段选项', 'List<AnimalSegmentedOption<T>>', '-',
       required: true),
   _ApiRow('AnimalSkeleton.active', '是否显示骨架屏', 'bool', 'true'),
+];
+
+const _radioApi = [
+  _ApiRow('options', '单选项列表', 'List<AnimalRadioOption<T>>', '-',
+      required: true),
+  _ApiRow('value', '受控选中值', 'T?', '-'),
+  _ApiRow('defaultValue', '默认选中值', 'T?', '-'),
+  _ApiRow('size', '尺寸', 'AnimalRadioSize', 'middle'),
+  _ApiRow('disabled', '是否禁用全部', 'bool', 'false'),
+  _ApiRow('direction', '排列方向', 'AnimalRadioDirection', 'horizontal'),
+  _ApiRow('onChanged', '选中变化回调', 'ValueChanged<T>?', '-'),
+];
+
+const _tagApi = [
+  _ApiRow('child', '标签内容', 'Widget', '-', required: true),
+  _ApiRow('color', '标签颜色', 'AnimalTagColor', 'defaultColor'),
+  _ApiRow('size', '标签尺寸', 'AnimalTagSize', 'middle'),
+  _ApiRow('closable', '是否显示关闭按钮', 'bool', 'false'),
+  _ApiRow('onClose', '关闭回调', 'VoidCallback?', '-'),
+  _ApiRow('icon', '前置图标', 'Widget?', '-'),
+];
+
+const _badgeApi = [
+  _ApiRow('child', '被包裹的内容', 'Widget?', '-'),
+  _ApiRow('count', '数字角标', 'int?', '-'),
+  _ApiRow('text', '文本角标', 'String?', '-'),
+  _ApiRow('dot', '小圆点模式', 'bool', 'false'),
+  _ApiRow('showZero', '是否显示 0', 'bool', 'false'),
+  _ApiRow('maxCount', '最大数字', 'int', '99'),
+  _ApiRow('status', '状态色', 'AnimalBadgeStatus', 'danger'),
+  _ApiRow('offset', '偏移量', 'Offset', 'Offset.zero'),
+];
+
+const _tooltipApi = [
+  _ApiRow('message', '提示文本', 'String', '-', required: true),
+  _ApiRow('child', '触发提示的子元素', 'Widget', '-', required: true),
+  _ApiRow('preferBelow', '优先在下方显示', 'bool', 'false'),
+  _ApiRow('waitDuration', '等待显示时间', 'Duration', '350ms'),
+  _ApiRow('showDuration', '显示持续时间', 'Duration', '3s'),
+];
+
+const _messageApi = [
+  _ApiRow('context', '上下文', 'BuildContext', '-', required: true),
+  _ApiRow('child', '提示内容', 'Widget', '-', required: true),
+  _ApiRow('type', '提示类型', 'AnimalMessageType', 'info'),
+  _ApiRow('duration', '显示时长', 'Duration', '2s'),
+];
+
+const _progressApi = [
+  _ApiRow('value', '进度比例 0..1', 'double', '-', required: true),
+  _ApiRow('height', '进度条高度', 'double', '16'),
+  _ApiRow('showLabel', '是否显示百分比', 'bool', 'true'),
+  _ApiRow('color', '填充色', 'Color?', '-'),
+  _ApiRow('backgroundColor', '背景色', 'Color?', '-'),
+];
+
+const _paginationApi = [
+  _ApiRow('current', '当前页', 'int', '-', required: true),
+  _ApiRow('total', '总条数', 'int', '-', required: true),
+  _ApiRow('onChanged', '页码变化回调', 'ValueChanged<int>', '-', required: true),
+  _ApiRow('pageSize', '每页条数', 'int', '10'),
+  _ApiRow('maxVisiblePages', '最大可见页数', 'int', '5'),
+  _ApiRow('disabled', '是否禁用', 'bool', 'false'),
+];
+
+const _emptyApi = [
+  _ApiRow('description', '空状态文案', 'String', '暂无数据'),
+  _ApiRow('icon', '自定义图标', 'Widget?', '-'),
+  _ApiRow('action', '行动按钮或操作区', 'Widget?', '-'),
+];
+
+const _alertApi = [
+  _ApiRow('title', '标题', 'Widget?', '-'),
+  _ApiRow('child', '提示内容', 'Widget', '-', required: true),
+  _ApiRow('type', '提示类型', 'AnimalAlertType', 'info'),
+  _ApiRow('showIcon', '是否显示图标', 'bool', 'true'),
+  _ApiRow('closable', '是否可关闭', 'bool', 'false'),
+  _ApiRow('onClose', '关闭回调', 'VoidCallback?', '-'),
+];
+
+const _avatarApi = [
+  _ApiRow('child', '文字或自定义内容', 'Widget?', '-'),
+  _ApiRow('image', '图片源', 'ImageProvider?', '-'),
+  _ApiRow('imageUrl', '网络图片地址', 'String?', '-'),
+  _ApiRow('icon', 'Animal 图标名', 'AnimalIconName?', '-'),
+  _ApiRow('size', '头像尺寸', 'AnimalAvatarSize', 'middle'),
+  _ApiRow('shape', '头像形状', 'AnimalAvatarShape', 'circle'),
+  _ApiRow('backgroundColor', '背景色', 'Color?', '-'),
+  _ApiRow('foregroundColor', '前景色', 'Color?', '-'),
+];
+
+const _breadcrumbApi = [
+  _ApiRow('items', '面包屑项', 'List<AnimalBreadcrumbItem>', '-', required: true),
+  _ApiRow('separator', '自定义分隔符', 'Widget?', '/'),
+];
+
+const _stepsApi = [
+  _ApiRow('items', '步骤项', 'List<AnimalStepItem>', '-', required: true),
+  _ApiRow('current', '当前步骤索引', 'int', '0'),
+  _ApiRow('direction', '排列方向', 'AnimalStepsDirection', 'horizontal'),
+  _ApiRow('onChanged', '步骤点击回调', 'ValueChanged<int>?', '-'),
+];
+
+const _sliderApi = [
+  _ApiRow('value', '受控数值', 'double?', '-'),
+  _ApiRow('defaultValue', '默认数值', 'double', '0'),
+  _ApiRow('min', '最小值', 'double', '0'),
+  _ApiRow('max', '最大值', 'double', '100'),
+  _ApiRow('divisions', '分段数量', 'int?', '-'),
+  _ApiRow('disabled', '是否禁用', 'bool', 'false'),
+  _ApiRow('showLabel', '是否显示标签', 'bool', 'true'),
+  _ApiRow('onChanged', '数值变化回调', 'ValueChanged<double>?', '-'),
+];
+
+const _rateApi = [
+  _ApiRow('value', '受控评分', 'int?', '-'),
+  _ApiRow('defaultValue', '默认评分', 'int', '0'),
+  _ApiRow('count', '评分总数', 'int', '5'),
+  _ApiRow('disabled', '是否禁用', 'bool', 'false'),
+  _ApiRow('onChanged', '评分变化回调', 'ValueChanged<int>?', '-'),
+];
+
+const _segmentedApi = [
+  _ApiRow('options', '分段选项', 'List<AnimalSegmentedOption<T>>', '-',
+      required: true),
+  _ApiRow('value', '受控选中值', 'T?', '-'),
+  _ApiRow('defaultValue', '默认选中值', 'T?', '第一个选项'),
+  _ApiRow('disabled', '是否整体禁用', 'bool', 'false'),
+  _ApiRow('onChanged', '选中变化回调', 'ValueChanged<T>?', '-'),
+];
+
+const _skeletonApi = [
+  _ApiRow('active', '是否显示骨架屏', 'bool', 'true'),
+  _ApiRow('rows', '行数', 'int', '3'),
+  _ApiRow('width', '固定宽度', 'double?', '-'),
+  _ApiRow('lineHeight', '行高', 'double', '14'),
+  _ApiRow('child', '加载完成内容', 'Widget?', '-'),
 ];
 
 const _timeApi = [
@@ -5031,6 +6103,234 @@ class _AppState extends State<App> {
     );
   }
 }''';
+
+const _radioCode = r'''AnimalRadio<String>(
+  value: value,
+  options: const [
+    AnimalRadioOption(value: 'apple', label: Text('苹果岛')),
+    AnimalRadioOption(value: 'peach', label: Text('桃子岛')),
+    AnimalRadioOption(value: 'locked', label: Text('未开放'), disabled: true),
+  ],
+  onChanged: (next) => setState(() => value = next),
+)
+
+const AnimalRadio<String>(
+  direction: AnimalRadioDirection.vertical,
+  defaultValue: 'morning',
+  options: [
+    AnimalRadioOption(value: 'morning', label: Text('上午')),
+    AnimalRadioOption(value: 'night', label: Text('夜晚')),
+  ],
+)''';
+
+const _tagCode =
+    r'''const AnimalTag(color: AnimalTagColor.primary, child: Text('新组件'))
+
+AnimalTag(
+  color: AnimalTagColor.danger,
+  closable: true,
+  onClose: () {},
+  child: const Text('可关闭'),
+)
+
+const AnimalTag(
+  size: AnimalTagSize.large,
+  icon: Text('✦'),
+  child: Text('稀有'),
+)''';
+
+const _badgeCode = r'''const AnimalBadge(
+  count: 120,
+  child: AnimalIcon(name: AnimalIconName.shopping, size: 44),
+)
+
+const AnimalBadge(
+  dot: true,
+  status: AnimalBadgeStatus.success,
+  child: AnimalIcon(name: AnimalIconName.camera, size: 44),
+)
+
+const AnimalBadge(text: 'NEW', child: Text('消息'))''';
+
+const _tooltipCode = r'''const AnimalTooltip(
+  message: '今天也要整理背包哦',
+  child: AnimalButton(
+    type: AnimalButtonType.primary,
+    child: Text('悬停查看'),
+  ),
+)
+
+const AnimalTooltip(
+  message: '优先在下方显示',
+  preferBelow: true,
+  child: Text('提示文本'),
+)''';
+
+const _messageCode = r'''AnimalButton(
+  onPressed: () => AnimalMessage.success(context, const Text('保存成功')),
+  child: const Text('Success'),
+)
+
+AnimalMessage.show(
+  context,
+  type: AnimalMessageType.warning,
+  duration: const Duration(seconds: 3),
+  child: const Text('背包快满了'),
+)''';
+
+const _progressCode = r'''AnimalProgress(value: progress)
+
+const AnimalProgress(
+  value: 0.82,
+  height: 12,
+  color: Color(0xFFF5C31C),
+  showLabel: false,
+)''';
+
+const _paginationCode = r'''AnimalPagination(
+  current: page,
+  total: 86,
+  onChanged: (next) => setState(() => page = next),
+)
+
+AnimalPagination(
+  current: 4,
+  total: 160,
+  pageSize: 20,
+  maxVisiblePages: 7,
+  onChanged: (next) {},
+)''';
+
+const _emptyCode = r'''AnimalEmpty(
+  description: '今天还没有岛民记录',
+  action: AnimalButton(
+    type: AnimalButtonType.primary,
+    onPressed: () {},
+    child: const Text('添加记录'),
+  ),
+)
+
+const AnimalEmpty(
+  description: '暂无聊天消息',
+  icon: AnimalIcon(name: AnimalIconName.chat, size: 72),
+)''';
+
+const _alertCode = r'''const AnimalAlert(
+  type: AnimalAlertType.info,
+  title: Text('岛屿公告'),
+  child: Text('今天商店会提前打烊。'),
+)
+
+AnimalAlert(
+  type: AnimalAlertType.warning,
+  closable: true,
+  onClose: () {},
+  child: const Text('这条提示可以关闭。'),
+)''';
+
+const _avatarCode = r'''const AnimalAvatar(child: Text('狸'))
+
+const AnimalAvatar(
+  size: AnimalAvatarSize.large,
+  icon: AnimalIconName.camera,
+)
+
+const AnimalAvatar(
+  shape: AnimalAvatarShape.square,
+  backgroundColor: Color(0xFFE6F9F6),
+  child: Text('岛'),
+)''';
+
+const _breadcrumbCode = r'''AnimalBreadcrumb(
+  items: [
+    AnimalBreadcrumbItem(label: const Text('首页'), onTap: () {}),
+    AnimalBreadcrumbItem(label: const Text('组件'), onTap: () {}),
+    const AnimalBreadcrumbItem(label: Text('Breadcrumb')),
+  ],
+)
+
+const AnimalBreadcrumb(
+  separator: Text('>'),
+  items: [
+    AnimalBreadcrumbItem(label: Text('岛屿')),
+    AnimalBreadcrumbItem(label: Text('居民'), disabled: true),
+    AnimalBreadcrumbItem(label: Text('详情')),
+  ],
+)''';
+
+const _stepsCode = r'''AnimalSteps(
+  current: step,
+  onChanged: (next) => setState(() => step = next),
+  items: const [
+    AnimalStepItem(title: Text('出发'), description: Text('整理背包')),
+    AnimalStepItem(title: Text('采集'), description: Text('收集素材')),
+    AnimalStepItem(title: Text('完成'), description: Text('回到服务处')),
+  ],
+)
+
+const AnimalSteps(
+  direction: AnimalStepsDirection.vertical,
+  current: 1,
+  items: [
+    AnimalStepItem(title: Text('申请')),
+    AnimalStepItem(title: Text('审核'), status: AnimalStepStatus.error),
+    AnimalStepItem(title: Text('完成'), disabled: true),
+  ],
+)''';
+
+const _sliderCode = r'''AnimalSlider(
+  value: slider,
+  divisions: 10,
+  onChanged: (next) => setState(() => slider = next),
+)
+
+const AnimalSlider(
+  defaultValue: 3,
+  min: 1,
+  max: 5,
+  divisions: 4,
+)
+
+const AnimalSlider(defaultValue: 60, disabled: true)''';
+
+const _rateCode = r'''AnimalRate(
+  value: rate,
+  onChanged: (next) => setState(() => rate = next),
+)
+
+const AnimalRate(defaultValue: 3)
+const AnimalRate(defaultValue: 6, count: 8)
+const AnimalRate(defaultValue: 4, disabled: true)''';
+
+const _segmentedCode = r'''AnimalSegmented<String>(
+  value: mode,
+  onChanged: (next) => setState(() => mode = next),
+  options: const [
+    AnimalSegmentedOption(value: 'list', label: Text('列表')),
+    AnimalSegmentedOption(value: 'grid', label: Text('网格')),
+  ],
+)
+
+const AnimalSegmented<String>(
+  defaultValue: 'morning',
+  options: [
+    AnimalSegmentedOption(value: 'morning', label: Text('上午')),
+    AnimalSegmentedOption(value: 'night', label: Text('夜晚')),
+    AnimalSegmentedOption(value: 'locked', label: Text('未开放'), disabled: true),
+  ],
+)''';
+
+const _skeletonCode = r'''const AnimalSkeleton(rows: 4)
+
+const AnimalSkeleton(rows: 2, width: 260, lineHeight: 18)
+
+const AnimalSkeleton(
+  active: false,
+  child: AnimalAlert(
+    type: AnimalAlertType.success,
+    child: Text('加载完成'),
+  ),
+)''';
 
 const _timeCode =
     r'''import 'package:animal_island_flutter/animal_island_flutter.dart';

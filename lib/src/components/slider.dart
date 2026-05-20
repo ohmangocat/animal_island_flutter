@@ -37,8 +37,7 @@ class _AnimalSliderState extends State<AnimalSlider> {
 
   double get _value => widget.value ?? _innerValue;
 
-  bool get _enabled =>
-      !widget.disabled && widget.max > widget.min && widget.onChanged != null;
+  bool get _enabled => !widget.disabled && widget.max > widget.min;
 
   @override
   void initState() {
