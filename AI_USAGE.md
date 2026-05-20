@@ -33,7 +33,10 @@ MaterialApp(
 
 ```dart
 export 'src/animal_theme.dart';
+export 'src/components/alert.dart';
+export 'src/components/avatar.dart';
 export 'src/components/badge.dart';
+export 'src/components/breadcrumb.dart';
 export 'src/components/button.dart';
 export 'src/components/card.dart';
 export 'src/components/checkbox.dart';
@@ -52,7 +55,12 @@ export 'src/components/pagination.dart';
 export 'src/components/phone.dart';
 export 'src/components/progress.dart';
 export 'src/components/radio.dart';
+export 'src/components/rate.dart';
+export 'src/components/segmented.dart';
 export 'src/components/select.dart';
+export 'src/components/skeleton.dart';
+export 'src/components/slider.dart';
+export 'src/components/steps.dart';
 export 'src/components/switch.dart';
 export 'src/components/table.dart';
 export 'src/components/tabs.dart';
@@ -445,6 +453,88 @@ AnimalEmpty({
 })
 ```
 
+### 2.15 Advanced Basics
+
+```dart
+enum AnimalAlertType { info, success, warning, error }
+
+AnimalAlert({
+  Widget? title,
+  required Widget child,
+  AnimalAlertType type = AnimalAlertType.info,
+  bool showIcon = true,
+  bool closable = false,
+  VoidCallback? onClose,
+})
+```
+
+```dart
+enum AnimalAvatarSize { small, middle, large }
+enum AnimalAvatarShape { circle, square }
+
+AnimalAvatar({
+  Widget? child,
+  ImageProvider? image,
+  String? imageUrl,
+  AnimalIconName? icon,
+  AnimalAvatarSize size = AnimalAvatarSize.middle,
+  AnimalAvatarShape shape = AnimalAvatarShape.circle,
+})
+```
+
+```dart
+AnimalBreadcrumb({
+  required List<AnimalBreadcrumbItem> items,
+  Widget? separator,
+})
+
+AnimalSteps({
+  required List<AnimalStepItem> items,
+  int current = 0,
+  AnimalStepsDirection direction = AnimalStepsDirection.horizontal,
+  ValueChanged<int>? onChanged,
+})
+```
+
+```dart
+AnimalSlider({
+  double? value,
+  double defaultValue = 0,
+  double min = 0,
+  double max = 100,
+  int? divisions,
+  bool disabled = false,
+  bool showLabel = true,
+  ValueChanged<double>? onChanged,
+})
+
+AnimalRate({
+  int? value,
+  int defaultValue = 0,
+  int count = 5,
+  bool disabled = false,
+  ValueChanged<int>? onChanged,
+})
+```
+
+```dart
+AnimalSegmented<T>({
+  required List<AnimalSegmentedOption<T>> options,
+  T? value,
+  T? defaultValue,
+  bool disabled = false,
+  ValueChanged<T>? onChanged,
+})
+
+AnimalSkeleton({
+  bool active = true,
+  int rows = 3,
+  double? width,
+  double lineHeight = 14,
+  Widget? child,
+})
+```
+
 ## 3. Common Recipes
 
 ### Form
@@ -522,6 +612,8 @@ AnimalTable<Item>(
 10. Web 光标由 `AnimalCursor` 注入 CSS，Android/iOS 上不会显示鼠标图片光标。
 11. `AnimalProgress.value` 使用 `0..1` 比例，不是 `0..100`。
 12. 仓库内 `example/pubspec.yaml` 可使用 `path: ..`，对外文档安装示例使用 pub.dev 版本。
+13. `AnimalSlider.value` 使用 `min..max` 范围内数值；`AnimalProgress.value` 才使用 `0..1` 比例。
+14. `AnimalSteps.current` 是从 `0` 开始的步骤索引。
 
 ## 5. Minimal Boilerplate
 

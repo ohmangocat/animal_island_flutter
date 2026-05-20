@@ -162,10 +162,11 @@ class App extends StatelessWidget {
 | `Loading` | `AnimalLoading` |
 | `Table` | `AnimalTable` |
 | Extended basics | `AnimalRadio` / `AnimalTag` / `AnimalBadge` / `AnimalTooltip` / `AnimalMessage` / `AnimalProgress` / `AnimalPagination` / `AnimalEmpty` |
+| Advanced basics | `AnimalAlert` / `AnimalAvatar` / `AnimalBreadcrumb` / `AnimalSteps` / `AnimalSlider` / `AnimalRate` / `AnimalSegmented` / `AnimalSkeleton` |
 
 ## Component Coverage
 
-The package currently includes 27 Flutter components: `Button`, `Input`, `Switch`, `Modal`, `Card`, `Collapse`, `Cursor`, `Time`, `Phone`, `Footer`, `Divider`, `Typewriter`, `Icon`, `Select`, `Tabs`, `Checkbox`, `CodeBlock`, `Loading`, `Table`, `Radio`, `Tag`, `Badge`, `Tooltip`, `Message`, `Progress`, `Pagination`, and `Empty`.
+The package currently includes 35 Flutter components: `Button`, `Input`, `Switch`, `Modal`, `Card`, `Collapse`, `Cursor`, `Time`, `Phone`, `Footer`, `Divider`, `Typewriter`, `Icon`, `Select`, `Tabs`, `Checkbox`, `CodeBlock`, `Loading`, `Table`, `Radio`, `Tag`, `Badge`, `Tooltip`, `Message`, `Progress`, `Pagination`, `Empty`, `Alert`, `Avatar`, `Breadcrumb`, `Steps`, `Slider`, `Rate`, `Segmented`, and `Skeleton`.
 
 The Flutter version keeps the visual and interaction semantics aligned with the React version where possible. A few web-specific APIs are translated into Flutter conventions:
 

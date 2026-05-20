@@ -162,10 +162,11 @@ class App extends StatelessWidget {
 | `Loading` | `AnimalLoading` |
 | `Table` | `AnimalTable` |
 | Extended basics | `AnimalRadio` / `AnimalTag` / `AnimalBadge` / `AnimalTooltip` / `AnimalMessage` / `AnimalProgress` / `AnimalPagination` / `AnimalEmpty` |
+| Advanced basics | `AnimalAlert` / `AnimalAvatar` / `AnimalBreadcrumb` / `AnimalSteps` / `AnimalSlider` / `AnimalRate` / `AnimalSegmented` / `AnimalSkeleton` |
 
 ## 组件覆盖
 
-当前包含 27 个 Flutter 组件：`Button`、`Input`、`Switch`、`Modal`、`Card`、`Collapse`、`Cursor`、`Time`、`Phone`、`Footer`、`Divider`、`Typewriter`、`Icon`、`Select`、`Tabs`、`Checkbox`、`CodeBlock`、`Loading`、`Table`、`Radio`、`Tag`、`Badge`、`Tooltip`、`Message`、`Progress`、`Pagination`、`Empty`。
+当前包含 35 个 Flutter 组件：`Button`、`Input`、`Switch`、`Modal`、`Card`、`Collapse`、`Cursor`、`Time`、`Phone`、`Footer`、`Divider`、`Typewriter`、`Icon`、`Select`、`Tabs`、`Checkbox`、`CodeBlock`、`Loading`、`Table`、`Radio`、`Tag`、`Badge`、`Tooltip`、`Message`、`Progress`、`Pagination`、`Empty`、`Alert`、`Avatar`、`Breadcrumb`、`Steps`、`Slider`、`Rate`、`Segmented`、`Skeleton`。
 
 Flutter 版本会优先保持视觉和交互语义一致；少量 Web/React 专属 API 会转换成 Flutter 习惯写法：
 

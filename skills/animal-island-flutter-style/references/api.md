@@ -58,6 +58,14 @@ Minimum environment:
 - `AnimalCodeBlock`
 - `AnimalLoading`
 - `AnimalTable`
+- `AnimalAlert`
+- `AnimalAvatar`
+- `AnimalBreadcrumb`
+- `AnimalSteps`
+- `AnimalSlider`
+- `AnimalRate`
+- `AnimalSegmented`
+- `AnimalSkeleton`
 
 ## Key APIs
 
@@ -246,6 +254,23 @@ AnimalPagination(current: 1, total: 80, onChanged: (page) {})
 AnimalEmpty(description: '暂无数据')
 ```
 
+```dart
+enum AnimalAlertType { info, success, warning, error }
+enum AnimalAvatarSize { small, middle, large }
+enum AnimalAvatarShape { circle, square }
+enum AnimalStepsDirection { horizontal, vertical }
+enum AnimalStepStatus { wait, process, finish, error }
+
+AnimalAlert({required Widget child, Widget? title, AnimalAlertType type = AnimalAlertType.info})
+AnimalAvatar({Widget? child, ImageProvider? image, String? imageUrl, AnimalIconName? icon})
+AnimalBreadcrumb({required List<AnimalBreadcrumbItem> items})
+AnimalSteps({required List<AnimalStepItem> items, int current = 0, ValueChanged<int>? onChanged})
+AnimalSlider(value: 46, min: 0, max: 100, divisions: 10, onChanged: (value) {})
+AnimalRate(value: 4, onChanged: (score) {})
+AnimalSegmented<String>(options: options, value: 'list', onChanged: (value) {})
+AnimalSkeleton(active: true, rows: 3)
+```
+
 ## Hard Rules
 
 1. Import public API from `package:animal_island_flutter/animal_island_flutter.dart`.
@@ -260,3 +285,5 @@ AnimalEmpty(description: '暂无数据')
 10. Custom image cursor is Web/desktop-oriented and should use `AnimalCursor`.
 11. `AnimalProgress.value` uses a `0..1` ratio.
 12. Public docs should show the pub.dev dependency; repository examples may use `path: ..`.
+13. `AnimalSlider.value` uses the `min..max` numeric range, not a `0..1` ratio.
+14. `AnimalSteps.current` is a zero-based index.

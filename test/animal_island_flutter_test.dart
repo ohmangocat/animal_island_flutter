@@ -349,4 +349,133 @@ void main() {
 
     expect(find.text('Saved'), findsNothing);
   });
+
+  testWidgets('alert can close itself', (tester) async {
+    var closed = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalAlert(
+              title: const Text('Notice'),
+              closable: true,
+              onClose: () => closed = true,
+              child: const Text('Island updated'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pump();
+
+    expect(closed, isTrue);
+    expect(find.text('Island updated'), findsNothing);
+  });
+
+  testWidgets('segmented emits selected option', (tester) async {
+    var value = 'list';
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return AnimalSegmented<String>(
+                  value: value,
+                  options: const [
+                    AnimalSegmentedOption(value: 'list', label: Text('List')),
+                    AnimalSegmentedOption(value: 'grid', label: Text('Grid')),
+                  ],
+                  onChanged: (next) => setState(() => value = next),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Grid'));
+    await tester.pump();
+
+    expect(value, 'grid');
+  });
+
+  testWidgets('rate emits selected score', (tester) async {
+    var score = 2;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return AnimalRate(
+                  value: score,
+                  onChanged: (next) => setState(() => score = next),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.star_rounded).at(3));
+    await tester.pump();
+
+    expect(score, 4);
+  });
+
+  testWidgets('steps reports selected index', (tester) async {
+    var current = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return AnimalSteps(
+                  current: current,
+                  onChanged: (index) => setState(() => current = index),
+                  items: const [
+                    AnimalStepItem(title: Text('Start')),
+                    AnimalStepItem(title: Text('Pack')),
+                    AnimalStepItem(title: Text('Arrive')),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Pack'));
+    await tester.pump();
+
+    expect(current, 1);
+  });
+
+  testWidgets('skeleton reveals child when inactive', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalSkeleton(
+              active: false,
+              child: Text('Loaded'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Loaded'), findsOneWidget);
+  });
 }

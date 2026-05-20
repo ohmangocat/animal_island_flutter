@@ -48,6 +48,10 @@ class _DocsHomePageState extends State<DocsHomePage> {
   var _radioValue = 'apple';
   var _paginationPage = 2;
   var _progressValue = 0.64;
+  var _stepsCurrent = 1;
+  var _sliderValue = 46.0;
+  var _rateValue = 4;
+  var _segmentedValue = 'list';
   var _typewriterReplayKey = 0;
   var _loadingActive = true;
   var _tableStriped = true;
@@ -296,6 +300,24 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       _DocPage(
+        group: '基础组件',
+        navTitle: 'Advanced 进阶',
+        title: 'Advanced 进阶交互组件',
+        summary:
+            '进阶交互组件 — Alert / Avatar / Breadcrumb / Steps / Slider / Rate / Segmented / Skeleton',
+        body: _AdvancedBasicsDoc(
+          stepsCurrent: _stepsCurrent,
+          sliderValue: _sliderValue,
+          rateValue: _rateValue,
+          segmentedValue: _segmentedValue,
+          onStepChanged: (value) => setState(() => _stepsCurrent = value),
+          onSliderChanged: (value) => setState(() => _sliderValue = value),
+          onRateChanged: (value) => setState(() => _rateValue = value),
+          onSegmentedChanged: (value) =>
+              setState(() => _segmentedValue = value),
+        ),
+      ),
+      _DocPage(
         group: '复杂组件',
         navTitle: 'Time 时间',
         title: 'Time 时间',
@@ -352,8 +374,18 @@ class _DocsHomePageState extends State<DocsHomePage> {
       'pagination' ||
       'empty' =>
         17,
-      'time' => 18,
-      'phone' => 19,
+      'advanced' ||
+      'alert' ||
+      'avatar' ||
+      'breadcrumb' ||
+      'steps' ||
+      'slider' ||
+      'rate' ||
+      'segmented' ||
+      'skeleton' =>
+        18,
+      'time' => 19,
+      'phone' => 20,
       _ => 0,
     };
     if (_activeIndex >= 0) {
@@ -3729,6 +3761,151 @@ class _ExtendedBasicsDoc extends StatelessWidget {
   }
 }
 
+class _AdvancedBasicsDoc extends StatelessWidget {
+  const _AdvancedBasicsDoc({
+    required this.stepsCurrent,
+    required this.sliderValue,
+    required this.rateValue,
+    required this.segmentedValue,
+    required this.onStepChanged,
+    required this.onSliderChanged,
+    required this.onRateChanged,
+    required this.onSegmentedChanged,
+  });
+
+  final int stepsCurrent;
+  final double sliderValue;
+  final int rateValue;
+  final String segmentedValue;
+  final ValueChanged<int> onStepChanged;
+  final ValueChanged<double> onSliderChanged;
+  final ValueChanged<int> onRateChanged;
+  final ValueChanged<String> onSegmentedChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Advanced',
+      tags: const ['进阶交互组件'],
+      sections: [
+        const _DocSection(
+          label: 'Alert 警告提示',
+          box: _DemoBoxStyle.soft,
+          child: Column(
+            children: [
+              AnimalAlert(
+                type: AnimalAlertType.info,
+                title: Text('岛屿公告'),
+                child: Text('今天商店会提前打烊，请记得早点采购。'),
+              ),
+              SizedBox(height: 12),
+              AnimalAlert(
+                type: AnimalAlertType.success,
+                showIcon: true,
+                child: Text('资料已经保存成功。'),
+              ),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: 'Avatar 头像',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalAvatar(child: Text('狸')),
+              AnimalAvatar(
+                size: AnimalAvatarSize.large,
+                icon: AnimalIconName.chat,
+              ),
+              AnimalAvatar(
+                size: AnimalAvatarSize.small,
+                shape: AnimalAvatarShape.square,
+                child: Text('岛'),
+              ),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: 'Breadcrumb 面包屑',
+          box: _DemoBoxStyle.soft,
+          child: AnimalBreadcrumb(
+            items: [
+              AnimalBreadcrumbItem(label: Text('首页')),
+              AnimalBreadcrumbItem(label: Text('组件')),
+              AnimalBreadcrumbItem(label: Text('Advanced')),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: 'Steps 步骤条',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSteps(
+            current: stepsCurrent,
+            onChanged: onStepChanged,
+            items: const [
+              AnimalStepItem(title: Text('出发'), description: Text('整理背包')),
+              AnimalStepItem(title: Text('采集'), description: Text('收集素材')),
+              AnimalStepItem(title: Text('完成'), description: Text('回到服务处')),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: 'Slider 滑动输入',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSlider(
+            value: sliderValue,
+            divisions: 10,
+            onChanged: onSliderChanged,
+          ),
+        ),
+        _DocSection(
+          label: 'Rate 评分',
+          box: _DemoBoxStyle.soft,
+          child: AnimalRate(
+            value: rateValue,
+            onChanged: onRateChanged,
+          ),
+        ),
+        _DocSection(
+          label: 'Segmented 分段控制',
+          box: _DemoBoxStyle.soft,
+          child: AnimalSegmented<String>(
+            value: segmentedValue,
+            onChanged: onSegmentedChanged,
+            options: const [
+              AnimalSegmentedOption(
+                value: 'list',
+                label: Text('列表'),
+                icon: Icon(Icons.list_rounded),
+              ),
+              AnimalSegmentedOption(
+                value: 'grid',
+                label: Text('网格'),
+                icon: Icon(Icons.grid_view_rounded),
+              ),
+              AnimalSegmentedOption(
+                value: 'map',
+                label: Text('地图'),
+                icon: Icon(Icons.map_rounded),
+              ),
+            ],
+          ),
+        ),
+        const _DocSection(
+          label: 'Skeleton 骨架屏',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 320,
+            child: AnimalSkeleton(rows: 4),
+          ),
+        ),
+      ],
+      code: _advancedBasicsCode,
+      api: _advancedBasicsApi,
+    );
+  }
+}
+
 class _TimeDoc extends StatelessWidget {
   const _TimeDoc();
 
@@ -3866,9 +4043,9 @@ const _homeFeatures = [
   ),
   _FeatureInfo(
     icon: _DemoAssets.shopping,
-    title: '27 个组件',
+    title: '35 个组件',
     description:
-        'Button / Input / Switch / Modal / Table / Radio / Tag / Badge / Message / Progress / Pagination / Empty 等',
+        'Button / Input / Switch / Modal / Table / Radio / Alert / Avatar / Steps / Slider / Rate / Skeleton 等',
   ),
   _FeatureInfo(
     icon: _DemoAssets.camera,
@@ -3927,6 +4104,14 @@ const _homeComponents = [
   _ComponentInfo(key: 'progress', name: 'Progress', description: '条纹进度条'),
   _ComponentInfo(key: 'pagination', name: 'Pagination', description: '分页器组件'),
   _ComponentInfo(key: 'empty', name: 'Empty', description: '空状态占位'),
+  _ComponentInfo(key: 'alert', name: 'Alert', description: '警告提示、图标与可关闭状态'),
+  _ComponentInfo(key: 'avatar', name: 'Avatar', description: '头像、文字、图片与图标占位'),
+  _ComponentInfo(key: 'breadcrumb', name: 'Breadcrumb', description: '面包屑导航路径'),
+  _ComponentInfo(key: 'steps', name: 'Steps', description: '横向/纵向步骤条'),
+  _ComponentInfo(key: 'slider', name: 'Slider', description: '滑动输入、分段与数值展示'),
+  _ComponentInfo(key: 'rate', name: 'Rate', description: '评分选择控件'),
+  _ComponentInfo(key: 'segmented', name: 'Segmented', description: '分段控制器'),
+  _ComponentInfo(key: 'skeleton', name: 'Skeleton', description: '骨架屏加载占位'),
 ];
 
 const _cardColors = [
@@ -4237,6 +4422,25 @@ const _extendedBasicsApi = [
   _ApiRow('AnimalPagination.current', '当前页', 'int', '-', required: true),
   _ApiRow('AnimalPagination.total', '总条数', 'int', '-', required: true),
   _ApiRow('AnimalEmpty.description', '空状态文案', 'String', '暂无数据'),
+];
+
+const _advancedBasicsApi = [
+  _ApiRow('AnimalAlert.type', '提示类型', 'AnimalAlertType', 'info'),
+  _ApiRow('AnimalAlert.closable', '是否可关闭', 'bool', 'false'),
+  _ApiRow('AnimalAvatar.size', '头像尺寸', 'AnimalAvatarSize', 'middle'),
+  _ApiRow('AnimalAvatar.shape', '头像形状', 'AnimalAvatarShape', 'circle'),
+  _ApiRow('AnimalBreadcrumb.items', '面包屑项', 'List<AnimalBreadcrumbItem>', '-',
+      required: true),
+  _ApiRow('AnimalSteps.items', '步骤项', 'List<AnimalStepItem>', '-',
+      required: true),
+  _ApiRow('AnimalSteps.current', '当前步骤索引', 'int', '0'),
+  _ApiRow('AnimalSlider.value', '受控数值', 'double?', '-'),
+  _ApiRow('AnimalSlider.divisions', '分段数量', 'int?', '-'),
+  _ApiRow('AnimalRate.value', '受控评分', 'int?', '-'),
+  _ApiRow(
+      'AnimalSegmented.options', '分段选项', 'List<AnimalSegmentedOption<T>>', '-',
+      required: true),
+  _ApiRow('AnimalSkeleton.active', '是否显示骨架屏', 'bool', 'true'),
 ];
 
 const _timeApi = [
@@ -4757,6 +4961,72 @@ class _AppState extends State<App> {
           onChanged: (value) => setState(() => page = value),
         ),
         const AnimalEmpty(description: '今天还没有岛民记录'),
+      ],
+    );
+  }
+}''';
+
+const _advancedBasicsCode =
+    r'''import 'package:animal_island_flutter/animal_island_flutter.dart';
+import 'package:flutter/material.dart';
+
+class App extends StatefulWidget {
+  const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  var step = 1;
+  var slider = 46.0;
+  var rate = 4;
+  var segment = 'list';
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const AnimalAlert(
+          type: AnimalAlertType.info,
+          title: Text('岛屿公告'),
+          child: Text('今天商店会提前打烊。'),
+        ),
+        const AnimalAvatar(child: Text('狸')),
+        const AnimalBreadcrumb(
+          items: [
+            AnimalBreadcrumbItem(label: Text('首页')),
+            AnimalBreadcrumbItem(label: Text('组件')),
+            AnimalBreadcrumbItem(label: Text('Advanced')),
+          ],
+        ),
+        AnimalSteps(
+          current: step,
+          onChanged: (value) => setState(() => step = value),
+          items: const [
+            AnimalStepItem(title: Text('出发')),
+            AnimalStepItem(title: Text('采集')),
+            AnimalStepItem(title: Text('完成')),
+          ],
+        ),
+        AnimalSlider(
+          value: slider,
+          divisions: 10,
+          onChanged: (value) => setState(() => slider = value),
+        ),
+        AnimalRate(
+          value: rate,
+          onChanged: (value) => setState(() => rate = value),
+        ),
+        AnimalSegmented<String>(
+          value: segment,
+          onChanged: (value) => setState(() => segment = value),
+          options: const [
+            AnimalSegmentedOption(value: 'list', label: Text('列表')),
+            AnimalSegmentedOption(value: 'grid', label: Text('网格')),
+          ],
+        ),
+        const AnimalSkeleton(rows: 3),
       ],
     );
   }
