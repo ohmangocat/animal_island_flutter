@@ -11,6 +11,12 @@
 
 这个示例项目复刻了 React `animal-island-ui` demo 的页面编排，并把所有示例改写为 Flutter 使用方式。它用于预览首页、组件列表、组件详情页、代码示例和跨端视觉效果。
 
+## 项目链接
+
+- GitHub: https://github.com/ohmangocat/animal_island_flutter
+- Pub.dev: https://pub.dev/packages/animal_island_flutter
+- 当前发布版本：`0.1.1`
+
 ## 运行
 
 ```powershell
@@ -29,10 +35,18 @@ flutter run -d chrome
 
 | 项目 | 版本 |
 | --- | --- |
+| `animal_island_flutter` | 发布版 `^0.1.1` |
+| GitHub | `https://github.com/ohmangocat/animal_island_flutter` |
 | Flutter SDK | `>=3.19.0` |
 | Dart SDK | `>=3.3.0 <4.0.0` |
-| `animal_island_flutter` | 本地 path 依赖 `../` |
 | `flutter_svg` | 由组件库依赖 `^2.0.17` |
+
+仓库内的 example 为了方便本地调试，`pubspec.yaml` 使用 `path: ..` 指向当前源码；业务项目安装时请使用发布版：
+
+```yaml
+dependencies:
+  animal_island_flutter: ^0.1.1
+```
 
 ## 页面内容
 

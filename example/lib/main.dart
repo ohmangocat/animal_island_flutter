@@ -4,6 +4,10 @@ import 'package:animal_island_flutter/animal_island_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+const _githubUrl = 'https://github.com/ohmangocat/animal_island_flutter';
+const _pubDevUrl = 'https://pub.dev/packages/animal_island_flutter';
+const _packageVersion = '0.1.1';
+
 void main() {
   runApp(const AnimalIslandDocsApp());
 }
@@ -502,8 +506,7 @@ class _HomePageState extends State<_HomePage>
                   child: const _HomeCodeBlock(
                     code: '# pubspec.yaml\n'
                         'dependencies:\n'
-                        '  animal_island_flutter:\n'
-                        '    path: ../animal_island_flutter',
+                        '  animal_island_flutter: ^$_packageVersion',
                   ),
                 ),
                 _HomeDivider(isMobile: isMobile),
@@ -1196,7 +1199,8 @@ class _HomeFooter extends StatelessWidget {
                   child: Text('组件文档', style: linkStyle),
                 ),
               ),
-              Text('GitHub', style: linkStyle),
+              Text('GitHub: $_githubUrl', style: linkStyle),
+              Text('Pub.dev: $_pubDevUrl', style: linkStyle),
             ],
           ),
           const SizedBox(height: 12),
