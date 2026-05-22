@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -102,6 +103,79 @@ class _AnimalCheckboxState<T> extends State<AnimalCheckbox<T>> {
   }
 }
 
+class AnimalCheckboxFormField<T> extends FormField<List<T>> {
+  AnimalCheckboxFormField({
+    super.key,
+    required List<AnimalCheckboxOption<T>> options,
+    List<T>? value,
+    List<T> defaultValue = const [],
+    AnimalCheckboxSize size = AnimalCheckboxSize.middle,
+    bool disabled = false,
+    AnimalCheckboxDirection direction = AnimalCheckboxDirection.horizontal,
+    ValueChanged<List<T>>? onChanged,
+    super.autovalidateMode = AutovalidateMode.disabled,
+    super.onSaved,
+    super.validator,
+    super.restorationId,
+  }) : super(
+          initialValue: value ?? defaultValue,
+          enabled: !disabled,
+          builder: (field) {
+            return _CheckboxFormFieldShell(
+              errorText: field.errorText,
+              child: AnimalCheckbox<T>(
+                options: options,
+                value: field.value ?? const [],
+                size: size,
+                disabled: disabled,
+                direction: direction,
+                onChanged: (next) {
+                  field.didChange(next);
+                  onChanged?.call(next);
+                },
+              ),
+            );
+          },
+        );
+}
+
+class _CheckboxFormFieldShell extends StatelessWidget {
+  const _CheckboxFormFieldShell({
+    required this.child,
+    this.errorText,
+  });
+
+  final Widget child;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        child,
+        if (errorText != null) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 14),
+            child: Text(
+              errorText!,
+              style: theme.textStyle(
+                size: 12,
+                weight: FontWeight.w700,
+                color: theme.errorColor,
+                height: 1.2,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _AnimalCheckboxItem<T> extends StatefulWidget {
   const _AnimalCheckboxItem({
     required this.option,
@@ -122,70 +196,100 @@ class _AnimalCheckboxItem<T> extends StatefulWidget {
 }
 
 class _AnimalCheckboxItemState<T> extends State<_AnimalCheckboxItem<T>> {
+  var _focused = false;
+
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
     final metrics = _checkboxMetrics(widget.size);
     final enabled = !widget.disabled;
+    final highlighted = enabled && _focused;
 
-    return MouseRegion(
-      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      child: GestureDetector(
-        onTap: enabled ? widget.onTap : null,
-        child: Opacity(
-          opacity: enabled ? 1 : 0.55,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: metrics.boxSize,
-                height: metrics.boxSize,
-                decoration: BoxDecoration(
-                  color: widget.checked
-                      ? theme.primaryColor
-                      : enabled
-                          ? const Color(0xFFF7F3DF)
-                          : theme.disabledBackgroundColor,
-                  borderRadius: BorderRadius.circular(metrics.radius),
-                  border: Border.all(
+    return FocusableActionDetector(
+      enabled: enabled,
+      mouseCursor:
+          enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onShowFocusHighlight: (value) {
+        if (mounted) {
+          setState(() => _focused = value);
+        }
+      },
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            if (enabled) {
+              widget.onTap();
+            }
+            return null;
+          },
+        ),
+      },
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        child: GestureDetector(
+          onTap: enabled ? widget.onTap : null,
+          child: Opacity(
+            opacity: enabled ? 1 : 0.55,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: metrics.boxSize,
+                  height: metrics.boxSize,
+                  decoration: BoxDecoration(
                     color: widget.checked
-                        ? theme.primaryActiveColor
-                        : theme.disabledTextColor,
-                    width: 2,
+                        ? theme.primaryColor
+                        : enabled
+                            ? theme.contentBackgroundColor
+                            : theme.disabledBackgroundColor,
+                    borderRadius: BorderRadius.circular(metrics.radius),
+                    border: Border.all(
+                      color: widget.checked || highlighted
+                          ? theme.primaryActiveColor
+                          : theme.disabledTextColor,
+                      width: 2,
+                    ),
+                    boxShadow: highlighted ? theme.shadowSmall : null,
                   ),
-                ),
-                child: widget.checked
-                    ? Center(
-                        child: TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0.4, end: 1),
-                          duration: const Duration(milliseconds: 150),
-                          curve: Curves.easeOutBack,
-                          builder: (context, scale, child) {
-                            return Transform.scale(scale: scale, child: child);
-                          },
-                          child: SizedBox.square(
-                            dimension: metrics.checkSize,
-                            child: const CustomPaint(
-                              painter: _CheckboxCheckPainter(),
+                  child: widget.checked
+                      ? Center(
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.4, end: 1),
+                            duration: const Duration(milliseconds: 150),
+                            curve: Curves.easeOutBack,
+                            builder: (context, scale, child) {
+                              return Transform.scale(
+                                scale: scale,
+                                child: child,
+                              );
+                            },
+                            child: SizedBox.square(
+                              dimension: metrics.checkSize,
+                              child: const CustomPaint(
+                                painter: _CheckboxCheckPainter(),
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 8),
-              DefaultTextStyle.merge(
-                style: theme.textStyle(
-                  size: metrics.fontSize,
-                  weight: FontWeight.w500,
-                  color: enabled
-                      ? const Color(0xFF725D42)
-                      : theme.disabledTextColor,
+                        )
+                      : null,
                 ),
-                child: widget.option.label,
-              ),
-            ],
+                const SizedBox(width: 8),
+                DefaultTextStyle.merge(
+                  style: theme.textStyle(
+                    size: metrics.fontSize,
+                    weight: FontWeight.w500,
+                    color:
+                        enabled ? theme.bodyTextColor : theme.disabledTextColor,
+                  ),
+                  child: widget.option.label,
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -43,6 +44,7 @@ class _AnimalButtonState extends State<AnimalButton>
   late final AnimationController _loadingController;
   bool _hovered = false;
   bool _pressed = false;
+  bool _focused = false;
 
   bool get _enabled =>
       widget.onPressed != null && !widget.disabled && !widget.loading;
@@ -71,6 +73,7 @@ class _AnimalButtonState extends State<AnimalButton>
     if (!_enabled) {
       _hovered = false;
       _pressed = false;
+      _focused = false;
     }
   }
 
@@ -85,18 +88,28 @@ class _AnimalButtonState extends State<AnimalButton>
     final theme = AnimalTheme.of(context);
     final metrics = _metricsFor(theme, widget.size);
     final colors = _colorsFor(theme);
+    final highlighted = _hovered || _focused;
     final bottomShadow =
-        _enabled ? (_pressed ? 1.0 : (_hovered ? 6.0 : 5.0)) : 5.0;
-    final yOffset = _enabled ? (_pressed ? 2.0 : (_hovered ? -1.0 : 0.0)) : 0.0;
+        _enabled ? (_pressed ? 1.0 : (highlighted ? 6.0 : 5.0)) : 5.0;
+    final yOffset =
+        _enabled ? (_pressed ? 2.0 : (highlighted ? -1.0 : 0.0)) : 0.0;
     final showBottomShadow =
         widget.type == AnimalButtonType.primary && !widget.ghost;
 
+    final buttonTextStyle = theme.textStyle(
+      size: metrics.fontSize,
+      weight: FontWeight.w600,
+      color: widget.disabled ? theme.disabledTextColor : colors.foreground,
+    );
     final buttonChild = DefaultTextStyle.merge(
-      style: theme.textStyle(
-        size: metrics.fontSize,
-        weight: FontWeight.w600,
-        color: widget.disabled ? theme.disabledTextColor : colors.foreground,
-      ),
+      style: theme
+          .textStyle(
+            size: metrics.fontSize,
+            weight: FontWeight.w600,
+            color:
+                widget.disabled ? theme.disabledTextColor : colors.foreground,
+          )
+          .copyWith(overflow: TextOverflow.ellipsis),
       child: IconTheme.merge(
         data: IconThemeData(
           color: widget.disabled ? theme.disabledTextColor : colors.foreground,
@@ -110,7 +123,19 @@ class _AnimalButtonState extends State<AnimalButton>
               widget.icon!,
               const SizedBox(width: 8),
             ],
-            if (widget.block) Flexible(child: widget.child) else widget.child,
+            if (widget.block)
+              Flexible(child: widget.child)
+            else
+              Flexible(
+                fit: FlexFit.loose,
+                child: DefaultTextStyle.merge(
+                  style: buttonTextStyle.copyWith(
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  maxLines: 1,
+                  child: widget.child,
+                ),
+              ),
           ],
         ),
       ),
@@ -131,6 +156,8 @@ class _AnimalButtonState extends State<AnimalButton>
                   decoration: _ButtonLoadingStripeDecoration(
                     progress: _loadingController.value,
                     borderColor: colors.border,
+                    backgroundColor: colors.background,
+                    stripeColor: theme.primaryStripeColor,
                   ),
                   child: Padding(
                     padding: metrics.padding,
@@ -172,19 +199,43 @@ class _AnimalButtonState extends State<AnimalButton>
         _hovered = false;
         _pressed = false;
       }),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: _enabled ? (_) => setState(() => _pressed = true) : null,
-        onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
-        onTapUp: _enabled
-            ? (_) {
-                setState(() => _pressed = false);
+      child: FocusableActionDetector(
+        enabled: _enabled,
+        mouseCursor:
+            _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        onShowFocusHighlight: (value) {
+          if (mounted) {
+            setState(() => _focused = value);
+          }
+        },
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              if (_enabled) {
                 widget.onPressed?.call();
               }
-            : null,
-        child: Opacity(
-          opacity: widget.disabled ? 0.5 : 1,
-          child: content,
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: _enabled ? (_) => setState(() => _pressed = true) : null,
+          onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
+          onTapUp: _enabled
+              ? (_) {
+                  setState(() => _pressed = false);
+                  widget.onPressed?.call();
+                }
+              : null,
+          child: Opacity(
+            opacity: widget.disabled ? 0.5 : 1,
+            child: content,
+          ),
         ),
       ),
     );
@@ -193,10 +244,24 @@ class _AnimalButtonState extends State<AnimalButton>
       return SizedBox(width: double.infinity, child: interactive);
     }
 
-    return UnconstrainedBox(
-      alignment: Alignment.centerLeft,
-      constrainedAxis: Axis.vertical,
-      child: interactive,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.hasBoundedWidth &&
+            constraints.maxWidth.isFinite &&
+            constraints.maxWidth <
+                metrics.height + metrics.padding.horizontal) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+            child: interactive,
+          );
+        }
+
+        return UnconstrainedBox(
+          alignment: Alignment.centerLeft,
+          constrainedAxis: Axis.vertical,
+          child: interactive,
+        );
+      },
     );
   }
 
@@ -227,31 +292,34 @@ class _AnimalButtonState extends State<AnimalButton>
                   BoxShadow(
                     color: widget.danger
                         ? const Color(0xFFC94444)
-                        : const Color(0xFFBDAEA0),
+                        : theme.tactileShadowColor,
                     offset: Offset(0, bottomShadow),
                     blurRadius: 0,
                   ),
                 ]
-              : (_hovered ? theme.shadowBase : theme.shadowSmall),
+              : (_hovered || _focused ? theme.shadowBase : theme.shadowSmall),
     );
   }
 
   _ButtonColors _colorsFor(AnimalThemeData theme) {
     if (widget.loading) {
-      return const _ButtonColors(
-        background: Color(0xFF0EC4B6),
+      return _ButtonColors(
+        background: theme.primaryStripeBackgroundColor,
         foreground: Colors.white,
-        border: Color(0xFF4DE2DA),
+        border: theme.primaryStripeBorderColor,
       );
     }
 
     if (widget.ghost && widget.type == AnimalButtonType.primary) {
       return _ButtonColors(
-        background: _hovered
+        background: _hovered || _focused
             ? theme.primaryColor.withValues(alpha: 0.08)
             : Colors.transparent,
-        foreground: _hovered ? theme.primaryHoverColor : theme.primaryColor,
-        border: _hovered ? theme.primaryHoverColor : theme.backgroundColor,
+        foreground:
+            _hovered || _focused ? theme.primaryHoverColor : theme.primaryColor,
+        border: _hovered || _focused
+            ? theme.primaryHoverColor
+            : theme.backgroundColor,
       );
     }
 
@@ -283,19 +351,22 @@ class _AnimalButtonState extends State<AnimalButton>
       case AnimalButtonType.defaultType:
         return _ButtonColors(
           background: theme.backgroundColor,
-          foreground: _hovered ? theme.primaryColor : theme.textColor,
-          border: _hovered ? theme.primaryColor : theme.borderColor,
+          foreground:
+              _hovered || _focused ? theme.primaryColor : theme.textColor,
+          border: _hovered || _focused ? theme.primaryColor : theme.borderColor,
         );
       case AnimalButtonType.dashed:
         return _ButtonColors(
           background: theme.backgroundColor,
-          foreground: _hovered ? theme.primaryColor : theme.textColor,
-          border: _hovered ? theme.primaryColor : theme.borderColor,
+          foreground:
+              _hovered || _focused ? theme.primaryColor : theme.textColor,
+          border: _hovered || _focused ? theme.primaryColor : theme.borderColor,
         );
       case AnimalButtonType.text:
         return _ButtonColors(
-          background:
-              _hovered ? theme.secondaryBackgroundColor : Colors.transparent,
+          background: _hovered || _focused
+              ? theme.secondaryBackgroundColor
+              : Colors.transparent,
           foreground: widget.danger ? Colors.white : theme.textColor,
           border: Colors.transparent,
         );
@@ -313,10 +384,14 @@ class _ButtonLoadingStripeDecoration extends Decoration {
   const _ButtonLoadingStripeDecoration({
     required this.progress,
     required this.borderColor,
+    required this.backgroundColor,
+    required this.stripeColor,
   });
 
   final double progress;
   final Color borderColor;
+  final Color backgroundColor;
+  final Color stripeColor;
 
   @override
   BoxPainter createBoxPainter([VoidCallback? onChanged]) {
@@ -330,8 +405,6 @@ class _ButtonLoadingStripeDecoration extends Decoration {
 class _ButtonLoadingStripePainter extends BoxPainter {
   _ButtonLoadingStripePainter(this.decoration, super.onChanged);
 
-  static const _backgroundColor = Color(0xFF0EC4B6);
-  static const _stripeColor = Color(0xFF01B0A7);
   static const _borderWidth = 4.0;
   static const _stripePeriod = 28.28;
   static const _stripeWidth = _stripePeriod / 2;
@@ -354,9 +427,9 @@ class _ButtonLoadingStripePainter extends BoxPainter {
 
     canvas.save();
     canvas.clipRRect(rrect);
-    canvas.drawRRect(rrect, Paint()..color = _backgroundColor);
+    canvas.drawRRect(rrect, Paint()..color = decoration.backgroundColor);
 
-    final stripePaint = Paint()..color = _stripeColor;
+    final stripePaint = Paint()..color = decoration.stripeColor;
     final shift = decoration.progress * _animationDistance;
     for (var x = rect.left - size.height * 2 - shift;
         x < rect.right + size.height * 2;

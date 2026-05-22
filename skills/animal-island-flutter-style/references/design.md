@@ -55,6 +55,11 @@ Body weight should be `500`; buttons and headings should be `600-700`; time digi
 - Every tactile control needs a bottom-only 3D shadow.
 - Hover moves up slightly; press moves down and reduces shadow.
 - Avoid generic Material elevation shadows.
+- FormField wrappers should keep Animal error text, spacing, and warm theme colors instead of Material default blue form styling.
+- `AnimalForm` and `AnimalFormItem` should own label, required mark, help/error text, and horizontal/inline alignment so business pages do not drift from the design system.
+- Overlay widgets (`AnimalPopover`, `AnimalDropdown`, `AnimalDrawer`, `AnimalConfirmDialog`) use warm floating surfaces, warm borders, rounded corners, and tactile shadows instead of default Material blue/gray elevation.
+- Data-display widgets (`AnimalDescriptions`, `AnimalStatistic`, `AnimalTimeline`) should keep clear hierarchy, warm text colors, and theme status colors for success/warning/error/primary states.
+- Phase 4 widgets (`AnimalCalendar`, `AnimalUpload`, `AnimalTree`, `AnimalResult`) use warm business surfaces, rounded cells/rows, clear hover/focus/disabled states, and semantic success/warning/error/info colors instead of default Material pickers or plain list tiles.
 
 ## Loading
 

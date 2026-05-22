@@ -1,0 +1,23 @@
+name: animal_island_mobile_preview
+description: Mobile preview app for animal_island_flutter docs.
+publish_to: "none"
+version: 0.1.2+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  animal_island_flutter:
+    path: ../..
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/demo/img/

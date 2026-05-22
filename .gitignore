@@ -6,6 +6,10 @@ pubspec.lock
 example/.dart_tool/
 example/build/
 example/pubspec.lock
+example/web/mobile_preview/
+example/mobile_preview/.dart_tool/
+example/mobile_preview/build/
+example/mobile_preview/pubspec.lock
 example/flutter_web*.log
 example/flutter_*.log
 

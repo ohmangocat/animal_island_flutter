@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../animal_theme.dart';
+
 class AnimalSkeleton extends StatefulWidget {
   const AnimalSkeleton({
     super.key,
@@ -91,6 +93,7 @@ class _SkeletonBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
     return FractionallySizedBox(
       widthFactor: width == null ? widthFactor : null,
       child: SizedBox(
@@ -103,14 +106,14 @@ class _SkeletonBar extends StatelessWidget {
               height: height,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(height),
-                border: Border.all(color: const Color(0xFFE3D6BE), width: 1),
+                border: Border.all(color: theme.lightBorderColor, width: 1),
                 gradient: LinearGradient(
                   begin: Alignment(-1.6 + progress * 3.2, 0),
                   end: Alignment(-0.6 + progress * 3.2, 0),
-                  colors: const [
-                    Color(0xFFF0E8D8),
-                    Color(0xFFFFF8D6),
-                    Color(0xFFF0E8D8),
+                  colors: [
+                    theme.secondaryBackgroundColor,
+                    theme.elevatedBackgroundColor,
+                    theme.secondaryBackgroundColor,
                   ],
                 ),
               ),

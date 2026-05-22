@@ -32,6 +32,10 @@ Disabled text: #c4b89e
 Primary mint teal: #19c8b9
 Primary hover: #3dd4c6
 Primary active: #11a89b
+Primary stripe: #01b0a7
+Floating surface: #fff8d6
+Control border: #d8ccb8
+Warm border: #d9c889
 Focus yellow: #ffcc00
 Success green: #6fba2c
 Warning yellow: #f5c31c
@@ -61,6 +65,12 @@ AnimalButton, AnimalInput, AnimalSwitch, AnimalDialog, AnimalCard,
 AnimalCollapse, AnimalSelect, AnimalTabs, AnimalCheckbox, AnimalCodeBlock,
 AnimalLoading, AnimalTable, AnimalTime, AnimalPhone, AnimalFooter, AnimalDivider,
 AnimalIcon and AnimalCursor.
+Phase 3 business widgets should also be covered:
+AnimalForm, AnimalTextarea, AnimalPasswordInput, AnimalSearchInput,
+AnimalNumberInput, AnimalPopover, AnimalDropdown, AnimalDrawer,
+AnimalConfirmDialog, AnimalDescriptions, AnimalStatistic and AnimalTimeline.
+Phase 4 complex widgets should also be covered:
+AnimalCalendar, AnimalUpload, AnimalTree and AnimalResult.
 
 === LOADING ===
 Button loading uses smooth diagonal stripes:
@@ -110,6 +120,11 @@ high resolution, clean component library documentation screen.
 | 标题文字 | `#794f27` | 标题、侧栏 |
 | 主色 | `#19c8b9` | 主操作、选中态 |
 | hover 主色 | `#3dd4c6` | hover |
+| 实心强调 | `#0cc0b5` | Tabs active、强调底色 |
+| Loading 条纹 | `#0ec4b6 / #01b0a7` | Button / Loading stripes |
+| 浮层背景 | `#fff8d6` | Tooltip / Message / Avatar |
+| 控件边框 | `#d8ccb8` | Slider / Segmented / Steps |
+| 暖色边框 | `#d9c889` | Empty / Tooltip / Avatar |
 | focus 黄 | `#ffcc00` | 输入框焦点 |
 | 按钮阴影 | `#bdaea0` | 3D 按键底边 |
 | 输入阴影 | `#d4c9b4` | 输入框底边 |
@@ -127,7 +142,18 @@ high resolution, clean component library documentation screen.
 ## Flutter 设计约束
 
 - 使用 `AnimalThemeData` 的主题色和字体，不要在业务页面随意改成 Material 默认蓝。
+- 自定义品牌色优先使用 `AnimalThemeData.fromPrimary(...)`，让 hover、active、浅背景由同一主色派生。
+- 完整换肤需要同步考虑中立色令牌：`backgroundColor`、`secondaryBackgroundColor`、`textColor`、`borderColor`、`lightBorderColor`。组件会继续派生 `contentBackgroundColor`、`elevatedBackgroundColor`、`controlBorderColor`、`bodyTextColor` 和 `tactileShadowColor`。
+- Button/Loading 的条纹色不要手写固定色，使用主题派生的 `primaryStripeBackgroundColor`、`primaryStripeColor` 和 `primaryStripeBorderColor`。
+- 如果业务 App 使用自己的字体，主题里设置 `fontPackage: null`，并提供 `fontFamilyFallback`。
 - 所有可点击 Widget 都需要明确 hover/pressed/disabled 状态。
+- 可点击卡片、面包屑、折叠面板和开关需要同时支持桌面小手、focus 高亮、pressed 位移和 `Enter` / `Space` 键盘触发；没有交互回调的展示型组件不要显示小手。
+- Alert/Tag 的关闭按钮、Input 清除按钮、密码显隐、搜索提交和数字步进属于高频小动作，也要做成可聚焦按钮，保留小圆形 hover 背景和轻微 pressed 位移。
+- 表单组件优先使用 `AnimalInputFormField`、`AnimalSelectFormField`、`AnimalCheckboxFormField`、`AnimalRadioFormField`、`AnimalSwitchFormField`、`AnimalSliderFormField` 和 `AnimalRateFormField`；错误文本使用主题 `errorColor`，不要混用 Material 默认蓝色表单样式。
+- 阶段三表单布局使用 `AnimalForm` / `AnimalFormItem` 统一 label、必填星号、帮助文本、错误文本和 horizontal/inline spacing；不要让业务页自己随意拼接不对齐的表单行。
+- `AnimalPopover`、`AnimalDropdown`、`AnimalDrawer`、`AnimalConfirmDialog` 属于浮层体系，背景使用 `elevatedBackgroundColor` 或 `contentBackgroundColor`，保留暖色边框、圆角和底部阴影，不使用 Material 默认蓝灰阴影。
+- `AnimalDescriptions`、`AnimalStatistic`、`AnimalTimeline` 属于详情展示体系，适合详情页、抽屉和仪表盘；文字层级要清晰，状态点使用主题 success/warning/error/primary，不要变成冷色 SaaS 面板。详情表在窄容器中应自动减少列数，可点击时间线节点需要 hover、小手、focus 和键盘触发状态。
+- `AnimalCalendar`、`AnimalUpload`、`AnimalTree`、`AnimalResult` 属于阶段四复杂业务组件；保留暖色容器、圆角、手型光标、键盘可达性和明确的 success/warning/error/info 语义，不要直接使用默认 Material 日期选择器、上传面板或结果页样式。上传文件删除按钮也要作为真正的交互按钮处理。
 - Web/Windows 需要鼠标 hover 和手型光标；Android/iOS 需要触摸反馈自然。
 - 固定尺寸装饰组件要保留 `AspectRatio` 或约束，避免小屏溢出。
 - 代码示例必须是 Dart，不写 JSX、TSX、CSS Modules。

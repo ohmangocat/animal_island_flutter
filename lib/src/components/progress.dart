@@ -30,9 +30,9 @@ class AnimalProgress extends StatelessWidget {
           child: Container(
             height: height,
             decoration: BoxDecoration(
-              color: backgroundColor ?? const Color(0xFFF0E8D8),
+              color: backgroundColor ?? theme.secondaryBackgroundColor,
               borderRadius: BorderRadius.circular(height),
-              border: Border.all(color: const Color(0xFFD8CCB8), width: 2),
+              border: Border.all(color: theme.lightBorderColor, width: 2),
             ),
             clipBehavior: Clip.antiAlias,
             child: Stack(
@@ -81,7 +81,7 @@ class AnimalProgress extends StatelessWidget {
               style: theme.textStyle(
                 size: 12,
                 weight: FontWeight.w800,
-                color: const Color(0xFF794F27),
+                color: theme.textColor,
               ),
             ),
           ),

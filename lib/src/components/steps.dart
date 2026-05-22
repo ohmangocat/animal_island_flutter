@@ -165,7 +165,7 @@ class _VerticalStep extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: status == AnimalStepStatus.finish
                           ? theme.primaryColor
-                          : const Color(0xFFE0D8C8),
+                          : theme.lightBorderColor,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -205,7 +205,7 @@ class _StepConnector extends StatelessWidget {
       decoration: BoxDecoration(
         color: status == AnimalStepStatus.finish
             ? theme.primaryColor
-            : const Color(0xFFE0D8C8),
+            : theme.lightBorderColor,
         borderRadius: BorderRadius.circular(3),
       ),
     );
@@ -246,16 +246,16 @@ class _StepDot extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(
           color: status == AnimalStepStatus.wait || disabled
-              ? const Color(0xFFD8CCB8)
+              ? theme.controlBorderColor
               : color,
           width: 2,
         ),
         boxShadow: disabled
             ? null
-            : const [
+            : [
                 BoxShadow(
-                  color: Color(0xFFBDAEA0),
-                  offset: Offset(0, 3),
+                  color: theme.tactileShadowColor,
+                  offset: const Offset(0, 3),
                   blurRadius: 0,
                 ),
               ],
@@ -367,7 +367,7 @@ class _StepTapRegionState extends State<_StepTapRegion> {
 
 Color _stepColor(AnimalThemeData theme, AnimalStepStatus status) {
   return switch (status) {
-    AnimalStepStatus.wait => const Color(0xFFF7F3DF),
+    AnimalStepStatus.wait => theme.contentBackgroundColor,
     AnimalStepStatus.process => theme.primaryColor,
     AnimalStepStatus.finish => theme.successColor,
     AnimalStepStatus.error => theme.errorColor,

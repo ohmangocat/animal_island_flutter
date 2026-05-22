@@ -1,12 +1,15 @@
 import 'dart:ui' as ui;
 
 import 'package:animal_island_flutter/animal_island_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'mobile_preview_embed.dart';
+
 const _githubUrl = 'https://github.com/ohmangocat/animal_island_flutter';
 const _pubDevUrl = 'https://pub.dev/packages/animal_island_flutter';
-const _packageVersion = '0.1.1';
+const _packageVersion = '0.1.2';
 
 void main() {
   runApp(const AnimalIslandDocsApp());
@@ -35,6 +38,8 @@ class DocsHomePage extends StatefulWidget {
 
 class _DocsHomePageState extends State<DocsHomePage> {
   var _activeIndex = -1;
+  var _docSearchQuery = '';
+  var _mobilePreviewOpen = false;
   var _routeLoadingActive = false;
   var _routeLoadingMounted = false;
   var _switchChecked = false;
@@ -60,45 +65,89 @@ class _DocsHomePageState extends State<DocsHomePage> {
   @override
   Widget build(BuildContext context) {
     final pages = _buildPages();
+    final visiblePages = _filterDocPages(pages, _docSearchQuery);
+    final width = MediaQuery.sizeOf(context).width;
 
     Widget body;
     Color backgroundColor;
 
-    if (_activeIndex < 0) {
+    if (_mobilePreviewOpen) {
+      backgroundColor = const Color(0xFFF8F4E8);
+      body = SafeArea(
+        child: _MobilePreviewHost(
+          onClose: _closeMobilePreview,
+        ),
+      );
+    } else if (_activeIndex < 0) {
       backgroundColor = const Color(0xFF7DC395);
       body = _HomePage(onNavigate: _openHomeTarget);
     } else {
       final safeIndex = _activeIndex.clamp(0, pages.length - 1);
-      final activePage = pages[safeIndex];
+      final activeVisible = visiblePages.contains(pages[safeIndex]);
+      final displayIndex = activeVisible || visiblePages.isEmpty
+          ? safeIndex
+          : pages.indexOf(visiblePages.first);
+      final activePage = pages[displayIndex];
       backgroundColor = const Color(0xFFF8F4E8);
       body = SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _Sidebar(
-              pages: pages,
-              activeIndex: safeIndex,
-              onHome: () => setState(() => _activeIndex = -1),
-              onSelect: (index) => setState(() => _activeIndex = index),
-            ),
-            Expanded(
-              child: _DocsDetailShell(
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: _DocsHeader(onOpenDialog: _openWelcomeDialog),
-                    ),
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(40, 0, 40, 64),
-                      sliver: SliverToBoxAdapter(
-                        child: _DocArticle(activePage),
-                      ),
-                    ),
-                  ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final useMobileDocs = width < 760 || constraints.maxWidth < 760;
+
+            if (useMobileDocs) {
+              return _MobileDocsLayout(
+                pages: pages,
+                visiblePages: visiblePages,
+                activeIndex: displayIndex,
+                activePage: activePage,
+                searchQuery: _docSearchQuery,
+                onSearchChanged: (value) {
+                  setState(() => _docSearchQuery = value);
+                },
+                onHome: () => setState(() => _activeIndex = -1),
+                onSelect: (index) => setState(() => _activeIndex = index),
+                onOpenDialog: _openWelcomeDialog,
+                onOpenMobilePreview: _openMobilePreview,
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _Sidebar(
+                  pages: pages,
+                  visiblePages: visiblePages,
+                  activeIndex: displayIndex,
+                  searchQuery: _docSearchQuery,
+                  onSearchChanged: (value) {
+                    setState(() => _docSearchQuery = value);
+                  },
+                  onHome: () => setState(() => _activeIndex = -1),
+                  onSelect: (index) => setState(() => _activeIndex = index),
                 ),
-              ),
-            ),
-          ],
+                Expanded(
+                  child: _DocsDetailShell(
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: _DocsHeader(
+                            onOpenDialog: _openWelcomeDialog,
+                            onOpenMobilePreview: _openMobilePreview,
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(40, 0, 40, 64),
+                          sliver: SliverToBoxAdapter(
+                            child: _DocArticle(activePage),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       );
     }
@@ -124,10 +173,10 @@ class _DocsHomePageState extends State<DocsHomePage> {
   }
 
   List<_DocPage> _buildPages() {
-    return [
+    final pages = [
       _DocPage(
         routeKey: 'button',
-        group: '基础组件',
+        group: '主题与基础',
         navTitle: 'Button 按钮',
         title: 'Button 按钮',
         summary:
@@ -136,7 +185,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'input',
-        group: '基础组件',
+        group: '表单输入',
         navTitle: 'Input 输入框',
         title: 'Input 输入框',
         summary:
@@ -145,7 +194,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'switch',
-        group: '基础组件',
+        group: '表单输入',
         navTitle: 'Switch 开关',
         title: 'Switch 开关',
         summary: '开关组件 — 支持受控 / 非受控、自定义文案、small 尺寸、loading 状态',
@@ -156,7 +205,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'card',
-        group: '基础组件',
+        group: '布局与容器',
         navTitle: 'Card 卡片',
         title: 'Card 卡片',
         summary: '卡片容器组件 — 支持 default / title 两种类型，13 种背景颜色',
@@ -164,7 +213,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'collapse',
-        group: '基础组件',
+        group: '布局与容器',
         navTitle: 'Collapse 折叠面板',
         title: 'Collapse 折叠面板',
         summary: '折叠面板组件 — 支持展开/收起、默认展开、禁用状态',
@@ -172,7 +221,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'cursor',
-        group: '基础组件',
+        group: 'Animal 特色',
         navTitle: 'Cursor 光标',
         title: 'Cursor 光标',
         summary: '光标组件 — 自定义手指光标，支持自定义尺寸、点击动画',
@@ -180,7 +229,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'modal',
-        group: '基础组件',
+        group: '浮层',
         navTitle: 'Modal 弹窗',
         title: 'Modal 弹窗',
         summary: '模态弹窗组件 — SVG 有机形状裁切、支持标题、关闭按钮、自定义 Footer、ESC / 遮罩关闭',
@@ -193,7 +242,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'typewriter',
-        group: '基础组件',
+        group: 'Animal 特色',
         navTitle: 'Typewriter 打字机',
         title: 'Typewriter 打字机',
         summary: '打字机组件 — 按字符逐个显示文本，支持多行与 Widget 富内容，不改变原有样式',
@@ -204,7 +253,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'divider-comp',
-        group: '基础组件',
+        group: '布局与容器',
         navTitle: 'Divider 分割线',
         title: 'Divider 分割线',
         summary: '分割线组件 — 装饰性分割线',
@@ -212,7 +261,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'icon',
-        group: '基础组件',
+        group: '主题与基础',
         navTitle: 'Icon 图标',
         title: 'Icon 图标',
         summary: '图标组件 — 动森风格图标集，包含 10 个可爱图标，支持自定义尺寸',
@@ -220,7 +269,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'select',
-        group: '基础组件',
+        group: '表单输入',
         navTitle: 'Select 选择器',
         title: 'Select 选择器',
         summary: '下拉选择器组件 — 支持自定义选项列表，高亮当前选中项',
@@ -238,7 +287,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'checkbox',
-        group: '基础组件',
+        group: '表单输入',
         navTitle: 'Checkbox 多选框',
         title: 'Checkbox 多选框',
         summary: '多选框组件 — 支持受控/非受控、水平/垂直排列、三种尺寸、禁用单项或全部禁用',
@@ -252,7 +301,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'tabs',
-        group: '基础组件',
+        group: '导航',
         navTitle: 'Tabs 标签页',
         title: 'Tabs 标签页',
         summary: '标签页组件 — 支持受控/非受控模式切换',
@@ -263,7 +312,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'footer',
-        group: '基础组件',
+        group: 'Animal 特色',
         navTitle: 'Footer 页脚',
         title: 'Footer 底部装饰',
         summary: '页面底部装饰图片，支持树和海两种类型',
@@ -271,7 +320,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'codeblock',
-        group: '基础组件',
+        group: '数据展示',
         navTitle: 'CodeBlock 代码高亮',
         title: 'CodeBlock 代码高亮',
         summary: '代码高亮组件 — 语法高亮显示，支持自定义样式和类名',
@@ -279,7 +328,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'loading',
-        group: '基础组件',
+        group: '反馈',
         navTitle: 'Loading 加载',
         title: 'Loading 加载',
         summary: '动森风格小岛 Loading 动画组件，支持自定义样式和类名',
@@ -290,7 +339,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'table',
-        group: '基础组件',
+        group: '数据展示',
         navTitle: 'Table 表格',
         title: 'Table 表格',
         summary: '数据表格组件，支持斑马纹、边框、加载状态等常用功能',
@@ -303,7 +352,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'extended',
-        group: '扩展组件',
+        group: '反馈',
         navTitle: 'Extended 扩展',
         title: 'Extended 扩展基础组件',
         summary:
@@ -319,7 +368,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'radio',
-        group: '扩展组件',
+        group: '表单输入',
         navTitle: 'Radio 单选框',
         title: 'Radio 单选框',
         summary: '单选框组件 — 支持受控/非受控、水平/垂直排列、三种尺寸和禁用项',
@@ -330,7 +379,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'tag',
-        group: '扩展组件',
+        group: '主题与基础',
         navTitle: 'Tag 标签',
         title: 'Tag 标签',
         summary: '标签组件 — 支持多种语义颜色、尺寸、图标和可关闭状态',
@@ -338,7 +387,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'badge',
-        group: '扩展组件',
+        group: '主题与基础',
         navTitle: 'Badge 角标',
         title: 'Badge 角标',
         summary: '角标组件 — 支持数字、小红点、状态色、文本和数字上限',
@@ -346,7 +395,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'tooltip',
-        group: '扩展组件',
+        group: '反馈',
         navTitle: 'Tooltip 提示',
         title: 'Tooltip 提示',
         summary: '提示气泡组件 — 给按钮、图标或文字补充轻量说明',
@@ -354,7 +403,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'message',
-        group: '扩展组件',
+        group: '反馈',
         navTitle: 'Message 轻提示',
         title: 'Message 轻提示',
         summary: '顶部轻提示组件 — 支持 info / success / warning / error 状态反馈',
@@ -362,7 +411,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'progress',
-        group: '扩展组件',
+        group: '反馈',
         navTitle: 'Progress 进度条',
         title: 'Progress 进度条',
         summary: '条纹进度条组件 — 支持受控进度、自定义高度、颜色和标签显示',
@@ -373,7 +422,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'pagination',
-        group: '扩展组件',
+        group: '导航',
         navTitle: 'Pagination 分页',
         title: 'Pagination 分页',
         summary: '分页器组件 — 支持当前页、总条数、页大小、禁用和可见页数控制',
@@ -384,7 +433,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'empty',
-        group: '扩展组件',
+        group: '布局与容器',
         navTitle: 'Empty 空状态',
         title: 'Empty 空状态',
         summary: '空状态组件 — 支持默认叶子图标、自定义图标、说明文案和行动按钮',
@@ -392,7 +441,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'advanced',
-        group: '进阶组件',
+        group: '表单输入',
         navTitle: 'Advanced 进阶',
         title: 'Advanced 进阶交互组件',
         summary:
@@ -410,8 +459,16 @@ class _DocsHomePageState extends State<DocsHomePage> {
         ),
       ),
       const _DocPage(
+        routeKey: 'theme',
+        group: '主题与基础',
+        navTitle: 'Theme 主题',
+        title: 'Theme 主题定制',
+        summary: '主题能力 — 支持默认令牌、品牌主色派生、外部字体和局部覆盖',
+        body: _ThemeDoc(),
+      ),
+      const _DocPage(
         routeKey: 'alert',
-        group: '进阶组件',
+        group: '反馈',
         navTitle: 'Alert 警告',
         title: 'Alert 警告提示',
         summary: '警告提示组件 — 支持标题、图标、四种状态和可关闭提示',
@@ -419,7 +476,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'avatar',
-        group: '进阶组件',
+        group: '主题与基础',
         navTitle: 'Avatar 头像',
         title: 'Avatar 头像',
         summary: '头像组件 — 支持文字、图片、AnimalIcon、尺寸和圆形/方形形状',
@@ -427,7 +484,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'breadcrumb',
-        group: '进阶组件',
+        group: '导航',
         navTitle: 'Breadcrumb 面包屑',
         title: 'Breadcrumb 面包屑',
         summary: '面包屑导航组件 — 支持可点击项、禁用项和自定义分隔符',
@@ -435,7 +492,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'steps',
-        group: '进阶组件',
+        group: '导航',
         navTitle: 'Steps 步骤条',
         title: 'Steps 步骤条',
         summary: '步骤条组件 — 支持横向/纵向、受控切换、错误态和完成态',
@@ -446,7 +503,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'slider',
-        group: '进阶组件',
+        group: '表单输入',
         navTitle: 'Slider 滑动输入',
         title: 'Slider 滑动输入',
         summary: '滑动输入组件 — 支持受控数值、范围、分段、禁用和标签显示',
@@ -457,7 +514,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'rate',
-        group: '进阶组件',
+        group: '表单输入',
         navTitle: 'Rate 评分',
         title: 'Rate 评分',
         summary: '评分组件 — 支持受控评分、默认评分、评分数量和禁用态',
@@ -468,7 +525,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'segmented',
-        group: '进阶组件',
+        group: '表单输入',
         navTitle: 'Segmented 分段',
         title: 'Segmented 分段控制',
         summary: '分段控制器 — 支持图标、禁用项、默认值和受控切换',
@@ -479,15 +536,121 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       const _DocPage(
         routeKey: 'skeleton',
-        group: '进阶组件',
+        group: '布局与容器',
         navTitle: 'Skeleton 骨架屏',
         title: 'Skeleton 骨架屏',
         summary: '骨架屏组件 — 支持行数、宽度、行高、动画和加载完成内容切换',
         body: _SkeletonDoc(),
       ),
+      const _DocPage(
+        routeKey: 'form',
+        group: '表单输入',
+        navTitle: 'Form 表单布局',
+        title: 'Form 表单布局',
+        summary:
+            '表单布局组件 — 支持 vertical / horizontal / inline 三种排列、label 宽度、帮助文本和错误文本',
+        body: _FormDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'input-plus',
+        group: '表单输入',
+        navTitle: 'Input Plus 输入增强',
+        title: 'Input Plus 输入增强',
+        summary:
+            '输入增强组件 — Textarea / PasswordInput / SearchInput / NumberInput 覆盖更完整的业务输入场景',
+        body: _InputPlusDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'popover',
+        group: '浮层',
+        navTitle: 'Popover 气泡卡片',
+        title: 'Popover 气泡卡片',
+        summary: '气泡卡片组件 — 支持 click / hover / manual 触发和上下左右定位',
+        body: _PopoverDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'dropdown',
+        group: '浮层',
+        navTitle: 'Dropdown 下拉菜单',
+        title: 'Dropdown 下拉菜单',
+        summary: '下拉菜单组件 — 复用 Popover 浮层能力，支持图标、禁用项、选中回调和点击后自动关闭',
+        body: _DropdownDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'drawer',
+        group: '浮层',
+        navTitle: 'Drawer 抽屉',
+        title: 'Drawer 抽屉',
+        summary: '抽屉组件 — 支持左右方向、标题、底部操作区和遮罩关闭',
+        body: _DrawerDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'confirm-dialog',
+        group: '浮层',
+        navTitle: 'ConfirmDialog 确认框',
+        title: 'ConfirmDialog 确认框',
+        summary: '确认框组件 — 基于 AnimalDialog 封装常见确认流程，支持危险操作样式和返回结果',
+        body: _ConfirmDialogDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'descriptions',
+        group: '数据展示',
+        navTitle: 'Descriptions 描述列表',
+        title: 'Descriptions 描述列表',
+        summary: '描述列表组件 — 支持多列、span 合并、横向/纵向展示，用于详情页信息分组',
+        body: _DescriptionsDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'statistic',
+        group: '数据展示',
+        navTitle: 'Statistic 统计数值',
+        title: 'Statistic 统计数值',
+        summary: '统计数值组件 — 支持标题、前后缀、说明文本和强调色，用于仪表盘指标',
+        body: _StatisticDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'timeline',
+        group: '数据展示',
+        navTitle: 'Timeline 时间线',
+        title: 'Timeline 时间线',
+        summary: '时间线组件 — 支持状态色、图标、时间和描述，用于流程进展或日志展示',
+        body: _TimelineDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'calendar',
+        group: '数据录入',
+        navTitle: 'Calendar 日历',
+        title: 'Calendar 日历',
+        summary: '日历组件 — 支持日期选择、月份切换、受控值和日期范围限制',
+        body: _CalendarDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'upload',
+        group: '数据录入',
+        navTitle: 'Upload 上传',
+        title: 'Upload 上传',
+        summary: '上传组件 — 展示上传入口、文件列表、进度、成功/失败状态和删除回调',
+        body: _UploadDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'tree',
+        group: '数据录入',
+        navTitle: 'Tree 树形控件',
+        title: 'Tree 树形控件',
+        summary: '树形控件 — 支持层级节点、展开收起、选中项、禁用节点和图标',
+        body: _TreeDoc(),
+      ),
+      const _DocPage(
+        routeKey: 'result',
+        group: '反馈',
+        navTitle: 'Result 结果页',
+        title: 'Result 结果页',
+        summary: '结果页组件 — 用于成功、警告、错误和信息反馈场景，可配置额外内容与操作区',
+        body: _ResultDoc(),
+      ),
       _DocPage(
         routeKey: 'time',
-        group: '复杂组件',
+        group: 'Animal 特色',
         navTitle: 'Time 时间',
         title: 'Time 时间',
         summary: '经典 HUD 风格的时间显示组件，实时更新时间',
@@ -495,13 +658,14 @@ class _DocsHomePageState extends State<DocsHomePage> {
       ),
       _DocPage(
         routeKey: 'phone',
-        group: '复杂组件',
+        group: 'Animal 特色',
         navTitle: 'Phone 手机',
         title: 'Phone 手机',
         summary: '动森风格手机界面，包含对话框和背包功能',
         body: const _PhoneDoc(),
       ),
     ];
+    return _sortDocPages(pages);
   }
 
   Future<void> _simulateTableLoading() async {
@@ -513,6 +677,16 @@ class _DocsHomePageState extends State<DocsHomePage> {
     if (mounted) {
       setState(() => _tableLoading = false);
     }
+  }
+
+  void _openMobilePreview() {
+    setState(() {
+      _mobilePreviewOpen = true;
+    });
+  }
+
+  void _closeMobilePreview() {
+    setState(() => _mobilePreviewOpen = false);
   }
 
   Future<void> _openHomeTarget(String key) async {
@@ -890,113 +1064,121 @@ class _HomeHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
-    final textBlock = Column(
-      crossAxisAlignment:
-          isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-      children: [
-        Text.rich(
-          TextSpan(
-            children: [
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compactHero = isMobile || constraints.maxWidth < 760;
+        final textBlock = Column(
+          crossAxisAlignment: compactHero
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
+          children: [
+            Text.rich(
               TextSpan(
-                  text: isMobile
-                      ? 'Animal Island Flutter'
-                      : 'Animal\nIsland Flutter'),
-              const WidgetSpan(
-                alignment: PlaceholderAlignment.middle,
-                child: Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: _VersionPill(),
-                ),
+                children: [
+                  TextSpan(
+                    text: compactHero
+                        ? 'Animal Island Flutter'
+                        : 'Animal\nIsland Flutter',
+                  ),
+                  const WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 8),
+                      child: _VersionPill(),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          textAlign: isMobile ? TextAlign.center : TextAlign.left,
-          style: theme
-              .textStyle(
-            size: isMobile ? 37 : 60,
-            weight: FontWeight.w800,
-            color: const Color(0xFFFFF9E6),
-          )
-              .copyWith(
-            height: 1.1,
-            shadows: const [
-              Shadow(
-                color: Color(0x66000000),
-                offset: Offset(0, 4),
-                blurRadius: 1,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: SizedBox(
-            height: isMobile ? 72 : 88,
-            child: AnimalTypewriter(
-              text: 'Animal风格的 Flutter 组件库，基于 Dart Widget 构建，让跨端应用充满温暖质感',
-              speed: const Duration(milliseconds: 60),
+              textAlign: compactHero ? TextAlign.center : TextAlign.left,
               style: theme
                   .textStyle(
-                    size: isMobile ? 14 : 17,
-                    weight: FontWeight.w500,
-                    color: const Color(0xFF7C5734),
-                  )
-                  .copyWith(height: 1.7),
+                size: compactHero ? 37 : 60,
+                weight: FontWeight.w800,
+                color: const Color(0xFFFFF9E6),
+              )
+                  .copyWith(
+                height: 1.1,
+                shadows: const [
+                  Shadow(
+                    color: Color(0x66000000),
+                    offset: Offset(0, 4),
+                    blurRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: SizedBox(
+                height: compactHero ? 72 : 88,
+                child: AnimalTypewriter(
+                  text: 'Animal风格的 Flutter 组件库，基于 Dart Widget 构建，让跨端应用充满温暖质感',
+                  speed: const Duration(milliseconds: 60),
+                  style: theme
+                      .textStyle(
+                        size: compactHero ? 14 : 17,
+                        weight: FontWeight.w500,
+                        color: const Color(0xFF7C5734),
+                      )
+                      .copyWith(height: 1.7),
+                ),
+              ),
+            ),
+            SizedBox(height: compactHero ? 22 : 28),
+            Align(
+              alignment: compactHero ? Alignment.center : Alignment.centerLeft,
+              child: AnimalButton(
+                type: AnimalButtonType.primary,
+                size: AnimalButtonSize.large,
+                onPressed: onStart,
+                child: const Text('开始使用 ->'),
+              ),
+            ),
+          ],
+        );
+
+        final logo = Image.asset(
+          _DemoAssets.animalIcon,
+          width: compactHero ? 180 : 320,
+          height: compactHero ? 112 : 200,
+          fit: BoxFit.contain,
+        );
+
+        return ConstrainedBox(
+          constraints:
+              BoxConstraints(minHeight: MediaQuery.sizeOf(context).height),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              compactHero ? 24 : 40,
+              compactHero ? 56 : 60,
+              compactHero ? 24 : 40,
+              40,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 880),
+                child: compactHero
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          logo,
+                          const SizedBox(height: 24),
+                          textBlock,
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Expanded(child: textBlock),
+                          const SizedBox(width: 150),
+                          logo,
+                        ],
+                      ),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 28),
-        Align(
-          alignment: isMobile ? Alignment.center : Alignment.centerLeft,
-          child: AnimalButton(
-            type: AnimalButtonType.primary,
-            size: AnimalButtonSize.large,
-            onPressed: onStart,
-            child: const Text('开始使用 ->'),
-          ),
-        ),
-      ],
-    );
-
-    final logo = Image.asset(
-      _DemoAssets.animalIcon,
-      width: isMobile ? 180 : 320,
-      height: isMobile ? 112 : 200,
-      fit: BoxFit.contain,
-    );
-
-    return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: MediaQuery.sizeOf(context).height),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          isMobile ? 24 : 40,
-          isMobile ? 56 : 60,
-          isMobile ? 24 : 40,
-          40,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 880),
-            child: isMobile
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      logo,
-                      const SizedBox(height: 32),
-                      textBlock,
-                    ],
-                  )
-                : Row(
-                    children: [
-                      Expanded(child: textBlock),
-                      const SizedBox(width: 150),
-                      logo,
-                    ],
-                  ),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -1116,26 +1298,107 @@ class _HomeComponentGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth < 460
-            ? 1
-            : constraints.maxWidth < 700
-                ? 2
-                : constraints.maxWidth < 920
-                    ? 3
-                    : 4;
-        return _ResponsiveGrid(
+        final sections = _homeComponentGroups();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final indexed in sections.indexed) ...[
+              _HomeComponentSection(
+                section: indexed.$2,
+                maxWidth: constraints.maxWidth,
+                onNavigate: onNavigate,
+              ),
+              if (indexed.$1 != sections.length - 1) const SizedBox(height: 30),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _HomeComponentSection extends StatelessWidget {
+  const _HomeComponentSection({
+    required this.section,
+    required this.maxWidth,
+    required this.onNavigate,
+  });
+
+  final _HomeComponentGroup section;
+  final double maxWidth;
+  final ValueChanged<String> onNavigate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    final columns = maxWidth < 460
+        ? 1
+        : maxWidth < 700
+            ? 2
+            : maxWidth < 920
+                ? 3
+                : 4;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 10,
+          runSpacing: 6,
+          children: [
+            Text(
+              section.title,
+              style: theme.textStyle(
+                size: 18,
+                weight: FontWeight.w800,
+                color: const Color(0xFF725D42),
+              ),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFFE9F7EF),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: const Color(0xFF86CBB0)),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                child: Text(
+                  '${section.components.length} 个',
+                  style: theme.textStyle(
+                    size: 11,
+                    weight: FontWeight.w700,
+                    color: const Color(0xFF4E8F75),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          section.description,
+          style: theme.textStyle(
+            size: 12,
+            weight: FontWeight.w600,
+            color: const Color(0xFF8F7E62),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ResponsiveGrid(
           columns: columns,
-          maxWidth: constraints.maxWidth,
+          maxWidth: maxWidth,
           spacing: 12,
           children: [
-            for (final component in _homeComponents)
+            for (final component in section.components)
               _ComponentCard(
                 component: component,
                 onTap: () => onNavigate(component.key),
               ),
           ],
-        );
-      },
+        ),
+      ],
     );
   }
 }
@@ -1556,19 +1819,29 @@ class _DocsTiledBackground extends StatelessWidget {
 class _Sidebar extends StatelessWidget {
   const _Sidebar({
     required this.pages,
+    required this.visiblePages,
     required this.activeIndex,
+    required this.searchQuery,
+    required this.onSearchChanged,
     required this.onHome,
     required this.onSelect,
   });
 
   final List<_DocPage> pages;
+  final List<_DocPage> visiblePages;
   final int activeIndex;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
   final VoidCallback onHome;
   final ValueChanged<int> onSelect;
 
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
+    final groupCounts = <String, int>{};
+    for (final page in pages) {
+      groupCounts.update(page.group, (value) => value + 1, ifAbsent: () => 1);
+    }
 
     return SizedBox(
       width: 220,
@@ -1614,54 +1887,725 @@ class _Sidebar extends StatelessWidget {
                   ),
                 ),
                 const Divider(height: 1, color: Color(0xFFE8E2D6)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                  child: _DocSearchBox(
+                    value: searchQuery,
+                    onChanged: onSearchChanged,
+                  ),
+                ),
                 Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
-                    children: [
-                      for (final indexed in pages.indexed) ...[
-                        if (indexed.$1 == 0 ||
-                            pages[indexed.$1 - 1].group != indexed.$2.group)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Divider(
-                                    color: Color(0xFFA0936E),
-                                    height: 1,
-                                  ),
+                  child: KeyedSubtree(
+                    key: const ValueKey('docs-sidebar-scrollable'),
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+                      children: [
+                        if (visiblePages.isEmpty)
+                          _SearchEmptyState(query: searchQuery)
+                        else
+                          for (final page in visiblePages) ...[
+                            if (_isFirstVisibleInGroup(page, visiblePages))
+                              _NavGroupHeader(
+                                title: page.group,
+                                count: _visibleGroupCount(
+                                  page.group,
+                                  visiblePages,
                                 ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 6),
-                                  child: Text(
-                                    indexed.$2.group,
-                                    style: theme.textStyle(
-                                      size: 11,
-                                      weight: FontWeight.w600,
-                                      color: const Color(0xFFA0936E),
-                                    ),
-                                  ),
-                                ),
-                                const Expanded(
-                                  child: Divider(
-                                    color: Color(0xFFA0936E),
-                                    height: 1,
-                                  ),
-                                ),
-                              ],
+                              ),
+                            _NavItem(
+                              title: page.navTitle,
+                              active: pages.indexOf(page) == activeIndex,
+                              onTap: () => onSelect(pages.indexOf(page)),
                             ),
-                          ),
-                        _NavItem(
-                          title: indexed.$2.navTitle,
-                          active: indexed.$1 == activeIndex,
-                          onTap: () => onSelect(indexed.$1),
-                        ),
+                          ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MobileDocsLayout extends StatelessWidget {
+  const _MobileDocsLayout({
+    required this.pages,
+    required this.visiblePages,
+    required this.activeIndex,
+    required this.activePage,
+    required this.searchQuery,
+    required this.onSearchChanged,
+    required this.onHome,
+    required this.onSelect,
+    required this.onOpenDialog,
+    required this.onOpenMobilePreview,
+  });
+
+  final List<_DocPage> pages;
+  final List<_DocPage> visiblePages;
+  final int activeIndex;
+  final _DocPage activePage;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onHome;
+  final ValueChanged<int> onSelect;
+  final VoidCallback onOpenDialog;
+  final VoidCallback onOpenMobilePreview;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DocsDetailShell(
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: _MobileDocsTopBar(
+              pages: pages,
+              visiblePages: visiblePages,
+              activeIndex: activeIndex,
+              searchQuery: searchQuery,
+              onSearchChanged: onSearchChanged,
+              onHome: onHome,
+              onSelect: onSelect,
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _DocsHeader(
+                    onOpenDialog: onOpenDialog,
+                    onOpenMobilePreview: onOpenMobilePreview,
+                    compact: true,
+                  ),
+                  _DocArticle(
+                    activePage,
+                    compact: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MobileDocsTopBar extends StatelessWidget {
+  const _MobileDocsTopBar({
+    required this.pages,
+    required this.visiblePages,
+    required this.activeIndex,
+    required this.searchQuery,
+    required this.onSearchChanged,
+    required this.onHome,
+    required this.onSelect,
+  });
+
+  final List<_DocPage> pages;
+  final List<_DocPage> visiblePages;
+  final int activeIndex;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onHome;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    final activeGroup = pages[activeIndex].group;
+    final groups = [
+      for (final group in _docNavGroups)
+        if (visiblePages.any((page) => page.group == group)) group,
+    ];
+    final activeVisible = visiblePages.contains(pages[activeIndex]);
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8F4E8),
+        border: Border(bottom: BorderSide(color: Color(0xFFE8E2D6))),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: onHome,
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          _DemoAssets.nook1,
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Animal Docs',
+                          style: theme.textStyle(
+                            size: 16,
+                            weight: FontWeight.w800,
+                            color: const Color(0xFF725D42),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E2),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: const Color(0xFFE5D39D)),
+                  ),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                    child: Text(
+                      activeVisible ? '${visiblePages.length} 个结果' : '搜索中',
+                      style: theme.textStyle(
+                        size: 11,
+                        weight: FontWeight.w800,
+                        color: const Color(0xFF9C7A2D),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _DocSearchBox(
+              value: searchQuery,
+              onChanged: onSearchChanged,
+            ),
+            if (visiblePages.isEmpty) ...[
+              const SizedBox(height: 10),
+              _SearchEmptyState(query: searchQuery),
+            ] else ...[
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final group in groups) ...[
+                      _MobileGroupChip(
+                        title: group,
+                        count: _visibleGroupCount(group, visiblePages),
+                        active: activeGroup == group,
+                        onTap: () {
+                          final page = visiblePages.firstWhere(
+                            (candidate) => candidate.group == group,
+                          );
+                          onSelect(pages.indexOf(page));
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 42,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: visiblePages.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final page = visiblePages[index];
+                    final pageIndex = pages.indexOf(page);
+                    return _MobilePageChip(
+                      title: page.title,
+                      active: pageIndex == activeIndex,
+                      onTap: () => onSelect(pageIndex),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MobileGroupChip extends StatelessWidget {
+  const _MobileGroupChip({
+    required this.title,
+    required this.count,
+    required this.active,
+    required this.onTap,
+  });
+
+  final String title;
+  final int count;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFFB7C6E5) : Colors.white,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: active ? const Color(0xFF9AAED8) : const Color(0xFFE1D7C8),
+            ),
+          ),
+          child: Text(
+            '$title $count',
+            style: theme.textStyle(
+              size: 12,
+              weight: FontWeight.w800,
+              color: active ? Colors.white : const Color(0xFF8A7652),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MobilePageChip extends StatelessWidget {
+  const _MobilePageChip({
+    required this.title,
+    required this.active,
+    required this.onTap,
+  });
+
+  final String title;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          constraints: const BoxConstraints(maxWidth: 148),
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFFFFEEA0) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: active ? const Color(0xFFE5A928) : const Color(0xFFE1D7C8),
+              width: active ? 2 : 1,
+            ),
+          ),
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textStyle(
+              size: 13,
+              weight: FontWeight.w800,
+              color: const Color(0xFF725D42),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MobilePreviewHost extends StatelessWidget {
+  const _MobilePreviewHost({
+    required this.onClose,
+  });
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DocsDetailShell(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final fullScreen = constraints.maxWidth < 760;
+          final preview = kIsWeb
+              ? const MobilePreviewEmbed(
+                  key: ValueKey('mobile-preview-iframe'),
+                  source: 'mobile_preview/index.html',
+                )
+              : const _MobilePreviewFallback();
+
+          if (fullScreen) {
+            return Stack(
+              children: [
+                Positioned.fill(child: preview),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: _MobilePreviewFloatingClose(onClose: onClose),
+                ),
+              ],
+            );
+          }
+
+          return Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 330),
+                    child: _MobilePreviewIntro(onClose: onClose),
+                  ),
+                  const SizedBox(width: 42),
+                  _PhoneSimulatorFrame(child: preview),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _MobilePreviewFallback extends StatelessWidget {
+  const _MobilePreviewFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: Color(0xFFF8F4E8),
+      child: _MobilePreviewFallbackContent(),
+    );
+  }
+}
+
+class _MobilePreviewFallbackContent extends StatelessWidget {
+  const _MobilePreviewFallbackContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(_DemoAssets.nook1, width: 58, height: 58),
+            const SizedBox(height: 16),
+            Text(
+              '手机预览应用',
+              textAlign: TextAlign.center,
+              style: theme.textStyle(size: 24, weight: FontWeight.w900),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Web 文档通过 iframe 挂载独立 mobile_preview 应用。桌面或移动本地调试时，请单独运行 example/mobile_preview。',
+              textAlign: TextAlign.center,
+              style: theme.textStyle(
+                size: 13,
+                weight: FontWeight.w700,
+                color: const Color(0xFF7D684B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MobilePreviewFloatingClose extends StatelessWidget {
+  const _MobilePreviewFloatingClose({required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: _MobilePreviewIconButton(
+        icon: Icons.close_rounded,
+        onTap: onClose,
+      ),
+    );
+  }
+}
+
+class _MobilePreviewIntro extends StatelessWidget {
+  const _MobilePreviewIntro({required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SvgPicture.asset(_DemoAssets.nook1, width: 48, height: 48),
+        const SizedBox(height: 18),
+        Text(
+          '手机模拟器预览',
+          style: theme.textStyle(size: 30, weight: FontWeight.w900),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          '按移动端浏览路径体验组件：分类、列表、效果页。详情页只展示组件真实效果，不展示代码和 API。',
+          style: theme.textStyle(
+            size: 14,
+            weight: FontWeight.w700,
+            color: const Color(0xFF7D684B),
+          ),
+        ),
+        const SizedBox(height: 22),
+        AnimalButton(
+          icon: const Icon(Icons.arrow_back_rounded, size: 18),
+          onPressed: onClose,
+          child: const Text('返回文档'),
+        ),
+      ],
+    );
+  }
+}
+
+class _PhoneSimulatorFrame extends StatelessWidget {
+  const _PhoneSimulatorFrame({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
+    return Container(
+      width: 402,
+      height: height.clamp(680.0, 812.0),
+      padding: const EdgeInsets.fromLTRB(10, 14, 10, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4A3C2F),
+        borderRadius: BorderRadius.circular(46),
+        border: Border.all(color: const Color(0xFF2E251D), width: 4),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            offset: Offset(0, 16),
+            blurRadius: 30,
+          ),
+          BoxShadow(
+            color: Color(0x332B2118),
+            offset: Offset(0, 5),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 76,
+            height: 6,
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2B2118),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(34),
+              child: child,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MobilePreviewIconButton extends StatelessWidget {
+  const _MobilePreviewIconButton({required this.icon, this.onTap});
+
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return MouseRegion(
+      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: enabled ? Colors.white : const Color(0xFFF5EBC8),
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFFE0CCA0), width: 2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1A3D3428),
+                offset: Offset(0, 2),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: enabled ? const Color(0xFF725D42) : const Color(0xFFB9A783),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DocSearchBox extends StatelessWidget {
+  const _DocSearchBox({
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(
+      key: const ValueKey('docs-search-box'),
+      child: AnimalInput(
+        initialValue: value,
+        hintText: '搜索组件 / API / 关键词',
+        size: AnimalInputSize.small,
+        allowClear: true,
+        prefix: const Icon(Icons.search_rounded, size: 16),
+        onChanged: onChanged,
+        onClear: () => onChanged(''),
+      ),
+    );
+  }
+}
+
+class _SearchEmptyState extends StatelessWidget {
+  const _SearchEmptyState({required this.query});
+
+  final String query;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      child: Text(
+        query.trim().isEmpty ? '暂无组件' : '没有找到 “${query.trim()}”',
+        textAlign: TextAlign.center,
+        style: theme.textStyle(
+          size: 12,
+          weight: FontWeight.w700,
+          color: const Color(0xFF9A8465),
+        ),
+      ),
+    );
+  }
+}
+
+bool _isFirstVisibleInGroup(_DocPage page, List<_DocPage> pages) {
+  final index = pages.indexOf(page);
+  return index == 0 || pages[index - 1].group != page.group;
+}
+
+int _visibleGroupCount(String group, List<_DocPage> pages) {
+  return pages.where((page) => page.group == group).length;
+}
+
+List<_DocPage> _filterDocPages(List<_DocPage> pages, String query) {
+  final normalized = query.trim().toLowerCase();
+  if (normalized.isEmpty) {
+    return pages;
+  }
+
+  return [
+    for (final page in pages)
+      if (page.searchText.toLowerCase().contains(normalized)) page,
+  ];
+}
+
+class _NavGroupHeader extends StatelessWidget {
+  const _NavGroupHeader({
+    required this.title,
+    required this.count,
+  });
+
+  final String title;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 14, 5),
+      child: Row(
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Color(0xFF19C8B9),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textStyle(
+                size: 12,
+                weight: FontWeight.w800,
+                color: const Color(0xFF8A7652),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8E2),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: const Color(0xFFE5D39D)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+              child: Text(
+                '$count',
+                style: theme.textStyle(
+                  size: 10,
+                  weight: FontWeight.w800,
+                  color: const Color(0xFF9C7A2D),
+                ),
+              ),
             ),
           ),
         ],
@@ -1727,17 +2671,26 @@ class _NavItemState extends State<_NavItem> {
 }
 
 class _DocsHeader extends StatelessWidget {
-  const _DocsHeader({required this.onOpenDialog});
+  const _DocsHeader({
+    required this.onOpenDialog,
+    required this.onOpenMobilePreview,
+    this.compact = false,
+  });
 
   final VoidCallback onOpenDialog;
+  final VoidCallback onOpenMobilePreview;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(40, 32, 40, 28),
+      padding: compact
+          ? const EdgeInsets.fromLTRB(0, 12, 0, 18)
+          : const EdgeInsets.fromLTRB(40, 32, 40, 28),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(
@@ -1745,7 +2698,10 @@ class _DocsHeader extends StatelessWidget {
               children: [
                 Text(
                   'Animal Island Flutter',
-                  style: theme.textStyle(size: 30, weight: FontWeight.w900),
+                  style: theme.textStyle(
+                    size: compact ? 22 : 30,
+                    weight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -1758,6 +2714,26 @@ class _DocsHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (!compact) ...[
+            const SizedBox(width: 16),
+            AnimalButton(
+              type: AnimalButtonType.primary,
+              icon: const Icon(Icons.phone_iphone_rounded, size: 18),
+              onPressed: onOpenMobilePreview,
+              child: const Text('手机预览'),
+            ),
+          ] else ...[
+            const SizedBox(width: 12),
+            Tooltip(
+              message: '手机预览',
+              child: AnimalButton(
+                type: AnimalButtonType.primary,
+                icon: const Icon(Icons.phone_iphone_rounded, size: 17),
+                onPressed: onOpenMobilePreview,
+                child: const Text('预览'),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1765,9 +2741,13 @@ class _DocsHeader extends StatelessWidget {
 }
 
 class _DocArticle extends StatelessWidget {
-  const _DocArticle(this.page);
+  const _DocArticle(
+    this.page, {
+    this.compact = false,
+  });
 
   final _DocPage page;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -1779,14 +2759,14 @@ class _DocArticle extends StatelessWidget {
         Text(
           page.title,
           style: theme.textStyle(
-            size: 24,
+            size: compact ? 21 : 24,
             weight: FontWeight.w700,
             color: const Color(0xFF794F27),
           ),
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 44,
+          height: compact ? 72 : 44,
           child: AnimalTypewriter(
             key: ValueKey(page.title),
             trigger: page.title,
@@ -1799,9 +2779,33 @@ class _DocArticle extends StatelessWidget {
             ),
           ),
         ),
-        page.body,
+        _DocCompactScope(
+          compact: compact,
+          child: page.body,
+        ),
       ],
     );
+  }
+}
+
+class _DocCompactScope extends InheritedWidget {
+  const _DocCompactScope({
+    required this.compact,
+    required super.child,
+  });
+
+  final bool compact;
+
+  static bool of(BuildContext context) {
+    return context
+            .dependOnInheritedWidgetOfExactType<_DocCompactScope>()
+            ?.compact ??
+        false;
+  }
+
+  @override
+  bool updateShouldNotify(covariant _DocCompactScope oldWidget) {
+    return oldWidget.compact != compact;
   }
 }
 
@@ -1822,9 +2826,10 @@ class _ComponentDoc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = _DocCompactScope.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 36),
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(compact ? 14 : 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -1852,6 +2857,7 @@ class _ComponentTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
+    final compact = _DocCompactScope.of(context);
 
     return Wrap(
       spacing: 8,
@@ -1861,7 +2867,7 @@ class _ComponentTitle extends StatelessWidget {
         Text(
           title,
           style: theme.textStyle(
-            size: 18,
+            size: compact ? 17 : 18,
             weight: FontWeight.w600,
             color: const Color(0xFF725D42),
           ),
@@ -1913,11 +2919,15 @@ class _DocSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasLabel = label.isNotEmpty;
+    final compact = _DocCompactScope.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (hasLabel) _DemoLabel(label) else const SizedBox(height: 16),
+        if (hasLabel)
+          _DemoLabel(label)
+        else
+          SizedBox(height: compact ? 10 : 16),
         _SectionBox(style: box, child: child),
       ],
     );
@@ -1959,6 +2969,7 @@ class _SectionBox extends StatelessWidget {
       return child;
     }
 
+    final compact = _DocCompactScope.of(context);
     final dashed = style == _DemoBoxStyle.dashed;
     final radius = dashed ? 18.0 : 12.0;
 
@@ -1970,7 +2981,7 @@ class _SectionBox extends StatelessWidget {
             )
           : null,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(compact ? 10 : 16),
         decoration: BoxDecoration(
           color: dashed ? const Color(0xFFFAF8F2) : const Color(0xFFFAF8F3),
           borderRadius: BorderRadius.circular(radius),
@@ -2028,8 +3039,9 @@ class _UsageCode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = _DocCompactScope.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 36),
+      padding: EdgeInsets.only(top: compact ? 24 : 36),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2056,6 +3068,7 @@ class _ApiTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
+    final compact = _DocCompactScope.of(context);
 
     return Padding(
       padding: const EdgeInsets.only(top: 24),
@@ -2077,7 +3090,7 @@ class _ApiTable extends StatelessWidget {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 820),
+                constraints: BoxConstraints(minWidth: compact ? 720 : 820),
                 child: Column(
                   children: [
                     _ApiTableRow(
@@ -2259,6 +3272,22 @@ class _DemoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = _DocCompactScope.of(context);
+    if (compact) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final indexed in children.indexed) ...[
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: indexed.$2,
+            ),
+            if (indexed.$1 != children.length - 1) const SizedBox(height: 12),
+          ],
+        ],
+      );
+    }
+
     return Wrap(
       spacing: spacing,
       runSpacing: 16,
@@ -2530,9 +3559,75 @@ class _InputDoc extends StatelessWidget {
             ],
           ),
         ),
+        _DocSection(
+          label: 'Form 表单校验',
+          box: _DemoBoxStyle.soft,
+          child: _InputFormDemo(),
+        ),
       ],
       code: _inputCode,
       api: _inputApi,
+    );
+  }
+}
+
+class _InputFormDemo extends StatefulWidget {
+  const _InputFormDemo();
+
+  @override
+  State<_InputFormDemo> createState() => _InputFormDemoState();
+}
+
+class _InputFormDemoState extends State<_InputFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  var _saved = '未提交';
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 340,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimalInputFormField(
+              hintText: '岛民昵称',
+              allowClear: true,
+              textInputAction: TextInputAction.done,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入昵称';
+                }
+                return null;
+              },
+              onSaved: (value) => _saved = value ?? '',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {
+                    final state = _formKey.currentState!;
+                    if (state.validate()) {
+                      state.save();
+                    } else {
+                      _saved = '校验未通过';
+                    }
+                    setState(() {});
+                  },
+                  child: const Text('提交'),
+                ),
+                const SizedBox(width: 12),
+                Text(_saved),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -2595,9 +3690,69 @@ class _SwitchDoc extends StatelessWidget {
             ],
           ),
         ),
+        const _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: _SwitchFormDemo(),
+        ),
       ],
       code: _switchCode,
       api: _switchApi,
+    );
+  }
+}
+
+class _SwitchFormDemo extends StatefulWidget {
+  const _SwitchFormDemo();
+
+  @override
+  State<_SwitchFormDemo> createState() => _SwitchFormDemoState();
+}
+
+class _SwitchFormDemoState extends State<_SwitchFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  var _saved = '未提交';
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 320,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimalSwitchFormField(
+              checkedChild: const Text('开'),
+              uncheckedChild: const Text('关'),
+              validator: (value) => value == true ? null : '需要开启岛屿通知',
+              onSaved: (value) => _saved = value == true ? '已开启' : '未开启',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {
+                    final state = _formKey.currentState!;
+                    if (state.validate()) {
+                      state.save();
+                      setState(() {});
+                    } else {
+                      setState(() => _saved = '校验未通过');
+                    }
+                  },
+                  child: const Text('提交'),
+                ),
+                const SizedBox(width: 12),
+                Text(_saved),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -3213,9 +4368,70 @@ class _SelectDoc extends StatelessWidget {
             disabled: true,
           ),
         ),
+        const _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: _SelectFormDemo(),
+        ),
       ],
       code: _selectCode,
       api: _selectApi,
+    );
+  }
+}
+
+class _SelectFormDemo extends StatefulWidget {
+  const _SelectFormDemo();
+
+  @override
+  State<_SelectFormDemo> createState() => _SelectFormDemoState();
+}
+
+class _SelectFormDemoState extends State<_SelectFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  var _saved = '未提交';
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 340,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimalSelectFormField<String>(
+              options: _fruitOptions,
+              value: null,
+              placeholder: '请选择水果',
+              validator: (value) => value == null ? '请选择水果' : null,
+              onSaved: (value) => _saved = value ?? '',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {
+                    final state = _formKey.currentState!;
+                    if (state.validate()) {
+                      state.save();
+                      setState(() {});
+                    } else {
+                      setState(() => _saved = '校验未通过');
+                    }
+                  },
+                  child: const Text('提交'),
+                ),
+                const SizedBox(width: 12),
+                Text(_saved),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -3325,9 +4541,69 @@ class _CheckboxDoc extends StatelessWidget {
             disabled: true,
           ),
         ),
+        const _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: _CheckboxFormDemo(),
+        ),
       ],
       code: _checkboxCode,
       api: _checkboxApi,
+    );
+  }
+}
+
+class _CheckboxFormDemo extends StatefulWidget {
+  const _CheckboxFormDemo();
+
+  @override
+  State<_CheckboxFormDemo> createState() => _CheckboxFormDemoState();
+}
+
+class _CheckboxFormDemoState extends State<_CheckboxFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  var _saved = '未提交';
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 420,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimalCheckboxFormField<String>(
+              options: _islandShortOptions,
+              validator: (value) =>
+                  (value == null || value.isEmpty) ? '至少选择一个岛屿区域' : null,
+              onSaved: (value) => _saved = (value ?? const []).join('、'),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {
+                    final state = _formKey.currentState!;
+                    if (state.validate()) {
+                      state.save();
+                      setState(() {});
+                    } else {
+                      setState(() => _saved = '校验未通过');
+                    }
+                  },
+                  child: const Text('提交'),
+                ),
+                const SizedBox(width: 12),
+                Flexible(child: Text(_saved)),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -3989,9 +5265,71 @@ class _RadioDoc extends StatelessWidget {
             ],
           ),
         ),
+        const _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: _RadioFormDemo(),
+        ),
       ],
       code: _radioCode,
       api: _radioApi,
+    );
+  }
+}
+
+class _RadioFormDemo extends StatefulWidget {
+  const _RadioFormDemo();
+
+  @override
+  State<_RadioFormDemo> createState() => _RadioFormDemoState();
+}
+
+class _RadioFormDemoState extends State<_RadioFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  var _saved = '未提交';
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 380,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimalRadioFormField<String>(
+              options: const [
+                AnimalRadioOption(value: 'morning', label: Text('上午出发')),
+                AnimalRadioOption(value: 'night', label: Text('夜晚出发')),
+              ],
+              validator: (value) => value == null ? '请选择出发时间' : null,
+              onSaved: (value) => _saved = value ?? '',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {
+                    final state = _formKey.currentState!;
+                    if (state.validate()) {
+                      state.save();
+                      setState(() {});
+                    } else {
+                      setState(() => _saved = '校验未通过');
+                    }
+                  },
+                  child: const Text('提交'),
+                ),
+                const SizedBox(width: 12),
+                Text(_saved),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -4574,6 +5912,407 @@ class _AdvancedBasicsDoc extends StatelessWidget {
   }
 }
 
+class _ThemeDoc extends StatelessWidget {
+  const _ThemeDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    final forestTheme = AnimalThemeData.fromPrimary(
+      const Color(0xFF4E8F75),
+      textColor: const Color(0xFF5B4228),
+    ).copyWith(
+      radius: 22,
+      radiusLarge: 30,
+    );
+    final berryTheme = AnimalThemeData.fromPrimary(
+      const Color(0xFFD85C7D),
+    ).copyWith(
+      fontFamily: 'Noto Sans SC',
+    );
+    final neutralTheme = AnimalThemeData.fromPrimary(
+      const Color(0xFF4E8F75),
+      textColor: const Color(0xFF4C3525),
+    ).copyWith(
+      backgroundColor: const Color(0xFFF4F1E7),
+      secondaryBackgroundColor: const Color(0xFFE9DFCC),
+      borderColor: const Color(0xFFA89170),
+      lightBorderColor: const Color(0xFFE2D5BD),
+      disabledTextColor: const Color(0xFFC1AD91),
+    );
+    final appFontTheme = AnimalThemeData.fallback().copyWith(
+      fontFamily: 'Inter',
+      fontPackage: null,
+      fontFamilyFallback: const ['Noto Sans SC', 'sans-serif'],
+      textHeight: 1.45,
+    );
+
+    return _ComponentDoc(
+      title: 'Theme',
+      tags: const ['全局', '品牌色', '字体'],
+      sections: [
+        const _DocSection(
+          label: '主色切换（点击色块预览）',
+          box: _DemoBoxStyle.soft,
+          child: _ThemePrimarySwitcher(),
+        ),
+        _DocSection(
+          label: '品牌主色派生卡片',
+          box: _DemoBoxStyle.soft,
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: [
+              _ThemePreviewCard(
+                title: 'Forest',
+                theme: forestTheme,
+              ),
+              _ThemePreviewCard(
+                title: 'Berry',
+                theme: berryTheme,
+              ),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '中立色令牌',
+          box: _DemoBoxStyle.soft,
+          child: AnimalTheme(
+            data: neutralTheme,
+            child: const _ThemeNeutralPreview(),
+          ),
+        ),
+        _DocSection(
+          label: '外部字体',
+          box: _DemoBoxStyle.soft,
+          child: AnimalTheme(
+            data: appFontTheme,
+            child: const Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                AnimalTag(
+                    color: AnimalTagColor.primary, child: Text('App font')),
+                AnimalButton(child: Text('使用应用字体')),
+                SizedBox(
+                  width: 240,
+                  child: AnimalInput(
+                    initialValue: 'fontPackage: null',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const _DocSection(
+          label: '使用建议',
+          box: _DemoBoxStyle.dashed,
+          child: Text(
+            '推荐先使用 AnimalThemeData.fromPrimary 生成品牌主色，再通过 copyWith 覆盖字体、圆角、高度、背景、文字和边框等令牌。组件内部会继续读取 AnimalTheme.of(context)，不需要逐个传色值。',
+          ),
+        ),
+      ],
+      code: _themeCode,
+      api: _themeApi,
+    );
+  }
+}
+
+class _ThemeNeutralPreview extends StatelessWidget {
+  const _ThemeNeutralPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 360,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AnimalInput(
+            initialValue: 'Neutral surface',
+            prefix: Icon(Icons.tune_rounded),
+            shadow: true,
+          ),
+          SizedBox(height: 12),
+          AnimalCheckbox<String>(
+            value: ['surface'],
+            options: [
+              AnimalCheckboxOption(
+                value: 'surface',
+                label: Text('表单底色跟随主题'),
+              ),
+              AnimalCheckboxOption(
+                value: 'border',
+                label: Text('边框与文字派生'),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          AnimalSegmented<String>(
+            defaultValue: 'list',
+            options: [
+              AnimalSegmentedOption(value: 'list', label: Text('列表')),
+              AnimalSegmentedOption(value: 'grid', label: Text('网格')),
+            ],
+          ),
+          SizedBox(height: 12),
+          AnimalSlider(value: 42),
+          SizedBox(height: 12),
+          AnimalSkeleton(active: false, rows: 2, width: 280),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemePrimarySwitcher extends StatefulWidget {
+  const _ThemePrimarySwitcher();
+
+  @override
+  State<_ThemePrimarySwitcher> createState() => _ThemePrimarySwitcherState();
+}
+
+class _ThemePrimarySwitcherState extends State<_ThemePrimarySwitcher> {
+  var _selected = _themeSwatches.first;
+
+  @override
+  Widget build(BuildContext context) {
+    final previewTheme = AnimalThemeData.fromPrimary(
+      _selected.color,
+      textColor: const Color(0xFF5B4228),
+    );
+    final currentTheme = AnimalTheme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final swatch in _themeSwatches)
+              _ThemeSwatchButton(
+                swatch: swatch,
+                selected: swatch == _selected,
+                onTap: () => setState(() => _selected = swatch),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        AnimalTheme(
+          data: previewTheme,
+          child: Builder(
+            builder: (context) {
+              final theme = AnimalTheme.of(context);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${_selected.name} ${_selected.hex}',
+                    style: theme.textStyle(
+                      size: 15,
+                      weight: FontWeight.w900,
+                      color: theme.primaryActiveColor,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      AnimalButton(
+                        type: AnimalButtonType.primary,
+                        onPressed: () {},
+                        child: const Text('Primary'),
+                      ),
+                      const AnimalButton(
+                        type: AnimalButtonType.primary,
+                        loading: true,
+                        child: Text('Loading'),
+                      ),
+                      const AnimalTag(
+                        color: AnimalTagColor.primary,
+                        child: Text('Tag'),
+                      ),
+                      const SizedBox(
+                        width: 160,
+                        child: AnimalProgress(value: 0.64),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: 360,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: const [
+                        AnimalTabs(
+                          defaultActiveKey: 'button',
+                          items: [
+                            AnimalTabItem(
+                              key: 'button',
+                              label: Text('Button'),
+                              child: Text('主按钮、标签、进度条会跟随主色。'),
+                            ),
+                            AnimalTabItem(
+                              key: 'form',
+                              label: Text('Form'),
+                              child: Text('输入与选择组件继续保持暖色底。'),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12),
+                        AnimalInput(
+                            initialValue: 'AnimalThemeData.fromPrimary'),
+                        SizedBox(height: 12),
+                        AnimalSlider(value: 58),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Flutter 中主色通过 AnimalTheme(data: AnimalThemeData.fromPrimary(...)) 注入；这个演示只影响下方预览区域。',
+          style: currentTheme.textStyle(
+            size: 12,
+            color: const Color(0xFFA0936E),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemeSwatchButton extends StatelessWidget {
+  const _ThemeSwatchButton({
+    required this.swatch,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _ThemeSwatch swatch;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    final borderColor =
+        selected ? theme.primaryActiveColor : const Color(0xFFD8CCB8);
+
+    return Tooltip(
+      message: swatch.hex,
+      waitDuration: const Duration(milliseconds: 250),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            width: 92,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xFFFFF8D6) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor, width: selected ? 2 : 1),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFBDAEA0).withValues(alpha: 0.34),
+                  offset: Offset(0, selected ? 3 : 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: swatch.color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    swatch.name,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textStyle(
+                      size: 12,
+                      weight: FontWeight.w800,
+                      color: const Color(0xFF725D42),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemePreviewCard extends StatelessWidget {
+  const _ThemePreviewCard({
+    required this.title,
+    required this.theme,
+  });
+
+  final String title;
+  final AnimalThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimalTheme(
+      data: theme,
+      child: SizedBox(
+        width: 280,
+        child: AnimalCard(
+          color: AnimalCardColor.defaultColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: theme.textStyle(size: 18, weight: FontWeight.w900),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: AnimalButton(
+                      type: AnimalButtonType.primary,
+                      onPressed: () {},
+                      child: const Text('Primary'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  AnimalTag(
+                    color: AnimalTagColor.primary,
+                    child: const Text('Tag'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              AnimalProgress(value: 0.62, color: theme.primaryColor),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AlertDoc extends StatelessWidget {
   const _AlertDoc();
 
@@ -4894,9 +6633,69 @@ class _SliderDoc extends StatelessWidget {
             ),
           ),
         ),
+        const _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: _SliderFormDemo(),
+        ),
       ],
       code: _sliderCode,
       api: _sliderApi,
+    );
+  }
+}
+
+class _SliderFormDemo extends StatefulWidget {
+  const _SliderFormDemo();
+
+  @override
+  State<_SliderFormDemo> createState() => _SliderFormDemoState();
+}
+
+class _SliderFormDemoState extends State<_SliderFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  var _saved = '未提交';
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 360,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimalSliderFormField(
+              defaultValue: 30,
+              divisions: 10,
+              validator: (value) => (value ?? 0) >= 50 ? null : '音量至少需要 50',
+              onSaved: (value) => _saved = '${(value ?? 0).round()}',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {
+                    final state = _formKey.currentState!;
+                    if (state.validate()) {
+                      state.save();
+                      setState(() {});
+                    } else {
+                      setState(() => _saved = '校验未通过');
+                    }
+                  },
+                  child: const Text('提交'),
+                ),
+                const SizedBox(width: 12),
+                Text(_saved),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -4946,9 +6745,68 @@ class _RateDoc extends StatelessWidget {
             ),
           ),
         ),
+        const _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: _RateFormDemo(),
+        ),
       ],
       code: _rateCode,
       api: _rateApi,
+    );
+  }
+}
+
+class _RateFormDemo extends StatefulWidget {
+  const _RateFormDemo();
+
+  @override
+  State<_RateFormDemo> createState() => _RateFormDemoState();
+}
+
+class _RateFormDemoState extends State<_RateFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  var _saved = '未提交';
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 360,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimalRateFormField(
+              defaultValue: 0,
+              validator: (value) => (value ?? 0) > 0 ? null : '请先给出评分',
+              onSaved: (value) => _saved = '${value ?? 0} 星',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () {
+                    final state = _formKey.currentState!;
+                    if (state.validate()) {
+                      state.save();
+                      setState(() {});
+                    } else {
+                      setState(() => _saved = '校验未通过');
+                    }
+                  },
+                  child: const Text('提交'),
+                ),
+                const SizedBox(width: 12),
+                Text(_saved),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -5089,6 +6947,1004 @@ class _SkeletonDoc extends StatelessWidget {
   }
 }
 
+class _FormDoc extends StatelessWidget {
+  const _FormDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Form',
+      tags: ['布局', '校验'],
+      sections: [
+        _DocSection(
+          label: 'vertical 默认布局',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 360,
+            child: AnimalForm(
+              child: Column(
+                children: [
+                  AnimalFormItem(
+                    label: Text('岛民昵称'),
+                    required: true,
+                    help: Text('显示在岛民名片上。'),
+                    child: AnimalInput(hintText: '请输入昵称', allowClear: true),
+                  ),
+                  AnimalFormItem(
+                    label: Text('留言'),
+                    child: AnimalTextarea(
+                      hintText: '写下今天的岛屿计划',
+                      rows: 3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        _DocSection(
+          label: 'horizontal 标签宽度',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 520,
+            child: AnimalForm(
+              layout: AnimalFormLayout.horizontal,
+              labelWidth: 96,
+              child: Column(
+                children: [
+                  AnimalFormItem(
+                    label: Text('出发地点'),
+                    required: true,
+                    child: AnimalInput(initialValue: '机场码头'),
+                  ),
+                  AnimalFormItem(
+                    label: Text('状态'),
+                    errorText: '请确认今天是否开放登岛。',
+                    child: AnimalSwitch(defaultValue: false),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        _DocSection(
+          label: 'inline 紧凑排列',
+          box: _DemoBoxStyle.soft,
+          child: AnimalForm(
+            layout: AnimalFormLayout.inline,
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                AnimalFormItem(
+                  label: Text('关键词'),
+                  margin: EdgeInsets.zero,
+                  child: AnimalSearchInput(hintText: '搜索岛民'),
+                ),
+                AnimalFormItem(
+                  label: Text('数量'),
+                  margin: EdgeInsets.zero,
+                  child: AnimalNumberInput(defaultValue: 2, min: 0, max: 9),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _formCode,
+      api: _formApi,
+    );
+  }
+}
+
+class _InputPlusDoc extends StatelessWidget {
+  const _InputPlusDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Input Plus',
+      tags: ['输入', '表单'],
+      sections: [
+        _DocSection(
+          label: 'Textarea 多行输入',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 380,
+            child: AnimalTextarea(
+              initialValue: '今天想去海边捡贝壳，再整理一下花园。',
+              rows: 4,
+              maxLength: 80,
+              allowClear: true,
+            ),
+          ),
+        ),
+        _DocSection(
+          label: 'Password / Search / Number',
+          box: _DemoBoxStyle.soft,
+          child: _InputPlusDemo(),
+        ),
+      ],
+      code: _inputPlusCode,
+      api: _inputPlusApi,
+    );
+  }
+}
+
+class _InputPlusDemo extends StatefulWidget {
+  const _InputPlusDemo();
+
+  @override
+  State<_InputPlusDemo> createState() => _InputPlusDemoState();
+}
+
+class _InputPlusDemoState extends State<_InputPlusDemo> {
+  var _searched = '未搜索';
+  var _count = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 380,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const AnimalPasswordInput(initialValue: 'turnip-price'),
+          const SizedBox(height: 12),
+          AnimalSearchInput(
+            hintText: '搜索收藏品',
+            onSearch: (value) =>
+                setState(() => _searched = value.isEmpty ? '空关键词' : value),
+          ),
+          const SizedBox(height: 8),
+          Text('搜索结果：$_searched'),
+          const SizedBox(height: 12),
+          AnimalNumberInput(
+            value: _count,
+            min: 0,
+            max: 10,
+            onChanged: (value) => setState(() => _count = value.round()),
+          ),
+          const SizedBox(height: 8),
+          Text('当前数量：$_count'),
+        ],
+      ),
+    );
+  }
+}
+
+class _PopoverDoc extends StatelessWidget {
+  const _PopoverDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Popover',
+      tags: ['浮层', '说明'],
+      sections: [
+        _DocSection(
+          label: 'click 触发',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalPopover(
+                title: Text('岛屿提示'),
+                content: Text('今日高价收购大头菜，记得去商店看看。'),
+                child: AnimalButton(
+                  type: AnimalButtonType.primary,
+                  child: Text('点击查看'),
+                ),
+              ),
+              AnimalPopover(
+                placement: AnimalPopoverPlacement.right,
+                content: Text('右侧气泡会自动避开屏幕边缘。'),
+                child: AnimalButton(child: Text('右侧')),
+              ),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: 'hover 与四个方向',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              _PopoverPlacementButton(
+                text: 'Top',
+                placement: AnimalPopoverPlacement.top,
+              ),
+              _PopoverPlacementButton(
+                text: 'Right',
+                placement: AnimalPopoverPlacement.right,
+              ),
+              _PopoverPlacementButton(
+                text: 'Bottom',
+                placement: AnimalPopoverPlacement.bottom,
+              ),
+              _PopoverPlacementButton(
+                text: 'Left',
+                placement: AnimalPopoverPlacement.left,
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _popoverCode,
+      api: _popoverApi,
+    );
+  }
+}
+
+class _PopoverPlacementButton extends StatelessWidget {
+  const _PopoverPlacementButton({
+    required this.text,
+    required this.placement,
+  });
+
+  final String text;
+  final AnimalPopoverPlacement placement;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimalPopover(
+      trigger: AnimalPopoverTrigger.hover,
+      placement: placement,
+      content: Text('$text 方向提示'),
+      child: AnimalButton(child: Text(text)),
+    );
+  }
+}
+
+class _DropdownDoc extends StatelessWidget {
+  const _DropdownDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Dropdown',
+      tags: const ['菜单', '操作'],
+      sections: [
+        const _DocSection(
+          label: '基础菜单',
+          box: _DemoBoxStyle.soft,
+          child: _DropdownDemo(),
+        ),
+        _DocSection(
+          label: '右侧弹出',
+          box: _DemoBoxStyle.soft,
+          child: AnimalDropdown<String>(
+            placement: AnimalPopoverPlacement.right,
+            items: const [
+              AnimalDropdownItem(
+                value: 'view',
+                icon: Icon(Icons.visibility_rounded),
+                label: Text('查看详情'),
+              ),
+              AnimalDropdownItem(
+                value: 'share',
+                icon: Icon(Icons.ios_share_rounded),
+                label: Text('分享岛屿'),
+              ),
+            ],
+            onChanged: (value) => AnimalMessage.info(
+              context,
+              Text('选择了 $value'),
+            ),
+            child: const AnimalButton(child: Text('更多操作')),
+          ),
+        ),
+      ],
+      code: _dropdownCode,
+      api: _dropdownApi,
+    );
+  }
+}
+
+class _DropdownDemo extends StatefulWidget {
+  const _DropdownDemo();
+
+  @override
+  State<_DropdownDemo> createState() => _DropdownDemoState();
+}
+
+class _DropdownDemoState extends State<_DropdownDemo> {
+  var _selected = '未选择';
+
+  @override
+  Widget build(BuildContext context) {
+    return _DemoRow(
+      children: [
+        AnimalDropdown<String>(
+          items: const [
+            AnimalDropdownItem(
+              value: 'copy',
+              icon: Icon(Icons.copy_rounded),
+              label: Text('复制地址'),
+            ),
+            AnimalDropdownItem(
+              value: 'edit',
+              icon: Icon(Icons.edit_rounded),
+              label: Text('编辑信息'),
+            ),
+            AnimalDropdownItem(
+              value: 'delete',
+              icon: Icon(Icons.delete_rounded),
+              label: Text('删除记录'),
+              disabled: true,
+            ),
+          ],
+          onChanged: (value) => setState(() => _selected = value),
+          child: const AnimalButton(
+            type: AnimalButtonType.primary,
+            child: Text('打开菜单'),
+          ),
+        ),
+        Text('当前操作：$_selected'),
+      ],
+    );
+  }
+}
+
+class _DrawerDoc extends StatelessWidget {
+  const _DrawerDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Drawer',
+      tags: const ['浮层', '面板'],
+      sections: [
+        _DocSection(
+          label: '左右抽屉',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              Builder(
+                builder: (context) => AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () => _showDrawer(context),
+                  child: const Text('右侧抽屉'),
+                ),
+              ),
+              Builder(
+                builder: (context) => AnimalButton(
+                  onPressed: () => _showDrawer(
+                    context,
+                    placement: AnimalDrawerPlacement.left,
+                  ),
+                  child: const Text('左侧抽屉'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _drawerCode,
+      api: _drawerApi,
+    );
+  }
+
+  static void _showDrawer(
+    BuildContext context, {
+    AnimalDrawerPlacement placement = AnimalDrawerPlacement.right,
+  }) {
+    AnimalDrawer.show<void>(
+      context: context,
+      placement: placement,
+      title: const Text('岛屿背包'),
+      footer: AnimalButton(
+        type: AnimalButtonType.primary,
+        block: true,
+        onPressed: () => Navigator.of(context).maybePop(),
+        child: const Text('整理完成'),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AnimalAlert(
+            type: AnimalAlertType.info,
+            child: Text('抽屉适合展示表单、详情和辅助操作。'),
+          ),
+          SizedBox(height: 16),
+          AnimalDescriptions(
+            column: 1,
+            items: [
+              AnimalDescriptionItem(label: Text('容量'), child: Text('24 / 40')),
+              AnimalDescriptionItem(label: Text('稀有物'), child: Text('金矿石 x 2')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConfirmDialogDoc extends StatelessWidget {
+  const _ConfirmDialogDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'ConfirmDialog',
+      tags: const ['反馈', '确认'],
+      sections: [
+        _DocSection(
+          label: '确认流程',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              Builder(
+                builder: (context) => AnimalButton(
+                  type: AnimalButtonType.primary,
+                  onPressed: () => _openConfirm(context),
+                  child: const Text('提交确认'),
+                ),
+              ),
+              Builder(
+                builder: (context) => AnimalButton(
+                  danger: true,
+                  onPressed: () => _openDangerConfirm(context),
+                  child: const Text('危险确认'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _confirmDialogCode,
+      api: _confirmDialogApi,
+    );
+  }
+
+  static Future<void> _openConfirm(BuildContext context) async {
+    final result = await AnimalConfirmDialog.show(
+      context: context,
+      title: const Text('提交订单'),
+      content: const Text('确定要提交这批岛屿物资吗？'),
+    );
+    if (context.mounted) {
+      AnimalMessage.info(context, Text('结果：${result == true ? '确认' : '取消'}'));
+    }
+  }
+
+  static Future<void> _openDangerConfirm(BuildContext context) async {
+    await AnimalConfirmDialog.show(
+      context: context,
+      title: const Text('删除记录'),
+      danger: true,
+      okText: '删除',
+      content: const Text('删除后无法恢复，确定继续吗？'),
+    );
+  }
+}
+
+class _DescriptionsDoc extends StatelessWidget {
+  const _DescriptionsDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Descriptions',
+      tags: ['详情', '展示'],
+      sections: [
+        _DocSection(
+          label: '多列详情',
+          box: _DemoBoxStyle.soft,
+          child: AnimalDescriptions(
+            title: Text('岛屿信息'),
+            items: [
+              AnimalDescriptionItem(label: Text('名称'), child: Text('星露岛')),
+              AnimalDescriptionItem(label: Text('水果'), child: Text('桃子')),
+              AnimalDescriptionItem(label: Text('天气'), child: Text('晴朗')),
+              AnimalDescriptionItem(
+                label: Text('公告'),
+                span: 2,
+                child: Text('今晚八点有烟花大会，请提前到广场集合。'),
+              ),
+              AnimalDescriptionItem(label: Text('访客'), child: Text('骆岚')),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: 'vertical 纵向标签',
+          box: _DemoBoxStyle.soft,
+          child: AnimalDescriptions(
+            column: 2,
+            layout: AnimalDescriptionsLayout.vertical,
+            items: [
+              AnimalDescriptionItem(label: Text('任务'), child: Text('整理花园')),
+              AnimalDescriptionItem(label: Text('负责人'), child: Text('西施惠')),
+              AnimalDescriptionItem(
+                label: Text('备注'),
+                span: 2,
+                child: Text('适合在详情页、抽屉和弹窗里展示只读数据。'),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _descriptionsCode,
+      api: _descriptionsApi,
+    );
+  }
+}
+
+class _StatisticDoc extends StatelessWidget {
+  const _StatisticDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Statistic',
+      tags: ['数据', '仪表盘'],
+      sections: [
+        _DocSection(
+          label: '指标卡片',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalStatistic(
+                title: Text('今日访客'),
+                value: 128,
+                suffix: Text('人'),
+                description: Text('比昨天 +18'),
+              ),
+              AnimalStatistic(
+                title: Text('大头菜价格'),
+                value: 586,
+                prefix: Icon(Icons.spa_rounded),
+                suffix: Text('铃钱'),
+                color: Color(0xFFE5A928),
+              ),
+              AnimalStatistic(
+                title: Text('完成率'),
+                value: 92.5,
+                suffix: Text('%'),
+                color: Color(0xFF4E8F75),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _statisticCode,
+      api: _statisticApi,
+    );
+  }
+}
+
+class _TimelineDoc extends StatefulWidget {
+  const _TimelineDoc();
+
+  @override
+  State<_TimelineDoc> createState() => _TimelineDocState();
+}
+
+class _TimelineDocState extends State<_TimelineDoc> {
+  var _activeStep = '整理背包';
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Timeline',
+      tags: const ['流程', '日志'],
+      sections: [
+        _DocSection(
+          label: '状态时间线',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 520,
+            child: AnimalTimeline(
+              items: [
+                AnimalTimelineItem(
+                  title: const Text('整理背包'),
+                  description: const Text('检查工具和素材是否齐全。'),
+                  time: const Text('09:00'),
+                  status: AnimalTimelineItemStatus.success,
+                  icon: const Icon(Icons.check_rounded),
+                  onTap: () => setState(() => _activeStep = '整理背包'),
+                ),
+                AnimalTimelineItem(
+                  title: const Text('出发采集'),
+                  description: const Text('前往北侧森林采集木材。'),
+                  time: const Text('10:30'),
+                  status: AnimalTimelineItemStatus.primary,
+                  onTap: () => setState(() => _activeStep = '出发采集'),
+                ),
+                const AnimalTimelineItem(
+                  title: Text('等待确认'),
+                  description: Text('服务处正在确认今日活动安排。'),
+                  time: Text('12:00'),
+                  status: AnimalTimelineItemStatus.warning,
+                  disabled: true,
+                ),
+                const AnimalTimelineItem(
+                  title: Text('完成归档'),
+                  time: Text('待定'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        _DocSection(
+          label: '可点击节点',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              AnimalTag(child: Text('当前：$_activeStep')),
+              const Text('带 onTap 的节点支持 hover、小手和 Enter / Space。'),
+            ],
+          ),
+        ),
+      ],
+      code: _timelineCode,
+      api: _timelineApi,
+    );
+  }
+}
+
+class _CalendarDoc extends StatefulWidget {
+  const _CalendarDoc();
+
+  @override
+  State<_CalendarDoc> createState() => _CalendarDocState();
+}
+
+class _CalendarDocState extends State<_CalendarDoc> {
+  var _selected = DateTime(2026, 5, 21);
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Calendar',
+      tags: const ['日期', '业务'],
+      sections: [
+        _DocSection(
+          label: '受控日期选择',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalCalendar(
+                value: _selected,
+                month: DateTime(_selected.year, _selected.month),
+                onChanged: (value) => setState(() => _selected = value),
+              ),
+              Text(
+                  '选中日期：${_selected.year}-${_selected.month}-${_selected.day}'),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '键盘选择日期',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              AnimalCalendar(
+                value: _selected,
+                month: DateTime(_selected.year, _selected.month),
+                firstDate: DateTime(2026, 5, 1),
+                lastDate: DateTime(2026, 6, 30),
+                onChanged: (value) => setState(() => _selected = value),
+              ),
+              const Text('聚焦日期后可用方向键移动，PageUp / PageDown 切换月份。'),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '限制可选范围',
+          box: _DemoBoxStyle.soft,
+          child: AnimalCalendar(
+            defaultValue: DateTime(2026, 5, 16),
+            month: DateTime(2026, 5),
+            firstDate: DateTime(2026, 5, 10),
+            lastDate: DateTime(2026, 5, 24),
+          ),
+        ),
+        _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 460,
+            child: AnimalForm(
+              formKey: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                children: [
+                  AnimalFormItem(
+                    label: const Text('预约日期'),
+                    required: true,
+                    help: const Text('可直接接入 Flutter Form 校验和保存流程。'),
+                    child: AnimalCalendarFormField(
+                      defaultValue: DateTime(2026, 5, 18),
+                      month: DateTime(2026, 5),
+                      firstDate: DateTime(2026, 5, 10),
+                      lastDate: DateTime(2026, 5, 24),
+                      validator: (value) => value == null ? '请选择预约日期' : null,
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: AnimalButton(
+                      type: AnimalButtonType.primary,
+                      onPressed: () => _formKey.currentState?.validate(),
+                      child: const Text('校验日期'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _calendarCode,
+      api: _calendarApi,
+    );
+  }
+}
+
+class _UploadDoc extends StatefulWidget {
+  const _UploadDoc();
+
+  @override
+  State<_UploadDoc> createState() => _UploadDocState();
+}
+
+class _UploadDocState extends State<_UploadDoc> {
+  final _formKey = GlobalKey<FormState>();
+  var _files = const [
+    AnimalUploadFile(
+      name: 'island-plan.pdf',
+      status: AnimalUploadStatus.uploading,
+      progress: 0.58,
+      size: '2.4 MB',
+    ),
+    AnimalUploadFile(
+      name: 'market-photo.png',
+      status: AnimalUploadStatus.done,
+      size: '860 KB',
+      message: '上传完成',
+    ),
+    AnimalUploadFile(
+      name: 'broken-map.zip',
+      status: AnimalUploadStatus.error,
+      message: '文件格式需要重新确认',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Upload',
+      tags: const ['上传', '队列'],
+      sections: [
+        _DocSection(
+          label: '上传入口和文件列表',
+          box: _DemoBoxStyle.soft,
+          child: _DemoColumn(
+            children: [
+              SizedBox(
+                width: 460,
+                child: AnimalUpload(
+                  files: _files,
+                  onTap: () => AnimalMessage.info(context, const Text('选择文件')),
+                  onRemove: (file) {
+                    setState(() {
+                      _files = _files
+                          .where((item) => item.name != file.name)
+                          .toList(growable: false);
+                    });
+                  },
+                ),
+              ),
+              const Text('上传区域获得焦点后支持 Enter / Space 触发。'),
+            ],
+          ),
+        ),
+        _DocSection(
+          label: '键盘触发上传',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 420,
+            child: AnimalUpload(
+              title: '键盘可达上传',
+              hint: '点击后按 Enter / Space 也会触发上传动作',
+              onTap: () => AnimalMessage.info(context, const Text('键盘触发上传')),
+            ),
+          ),
+        ),
+        const _DocSection(
+          label: '禁用上传',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 420,
+            child: AnimalUpload(
+              disabled: true,
+              title: '暂停上传',
+              hint: '当前岛屿网络维护中',
+            ),
+          ),
+        ),
+        _DocSection(
+          label: 'Form 表单封装',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 460,
+            child: AnimalForm(
+              formKey: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                children: [
+                  AnimalFormItem(
+                    label: const Text('资料附件'),
+                    required: true,
+                    child: AnimalUploadFormField(
+                      files: _files,
+                      title: '上传资料',
+                      hint: '至少保留一个资料文件',
+                      onTap: () =>
+                          AnimalMessage.info(context, const Text('选择资料')),
+                      validator: (files) =>
+                          files == null || files.isEmpty ? '请上传资料附件' : null,
+                      onChanged: (files) => setState(() => _files = files),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: AnimalButton(
+                      type: AnimalButtonType.primary,
+                      onPressed: () => _formKey.currentState?.validate(),
+                      child: const Text('校验附件'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _uploadCode,
+      api: _uploadApi,
+    );
+  }
+}
+
+class _TreeDoc extends StatefulWidget {
+  const _TreeDoc();
+
+  @override
+  State<_TreeDoc> createState() => _TreeDocState();
+}
+
+class _TreeDocState extends State<_TreeDoc> {
+  final _formKey = GlobalKey<FormState>();
+  var _selected = 'rose';
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Tree',
+      tags: const ['层级', '选择'],
+      sections: [
+        _DocSection(
+          label: '树形选择',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 360,
+            child: AnimalTree<String>(
+              selectedValue: _selected,
+              defaultExpandedValues: const ['plants', 'animals'],
+              onChanged: (value) => setState(() => _selected = value),
+              nodes: _treeNodes,
+            ),
+          ),
+        ),
+        _DocSection(
+          label: '当前选择',
+          box: _DemoBoxStyle.soft,
+          child: Text('当前节点：$_selected'),
+        ),
+        _DocSection(
+          label: 'Form 表单封装和键盘操作',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 420,
+            child: AnimalForm(
+              formKey: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                children: [
+                  AnimalFormItem(
+                    label: const Text('图鉴节点'),
+                    required: true,
+                    help: const Text('聚焦节点后可用 Enter/Space 选择，左右方向键展开或收起。'),
+                    child: AnimalTreeFormField<String>(
+                      nodes: _treeNodes,
+                      defaultValue: _selected,
+                      defaultExpandedValues: const ['plants', 'animals'],
+                      validator: (value) => value == null ? '请选择一个图鉴节点' : null,
+                      onChanged: (value) => setState(() => _selected = value),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: AnimalButton(
+                      type: AnimalButtonType.primary,
+                      onPressed: () => _formKey.currentState?.validate(),
+                      child: const Text('校验节点'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _treeCode,
+      api: _treeApi,
+    );
+  }
+}
+
+class _ResultDoc extends StatelessWidget {
+  const _ResultDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Result',
+      tags: const ['反馈', '页面状态'],
+      sections: [
+        _DocSection(
+          label: '成功结果',
+          box: _DemoBoxStyle.soft,
+          child: SizedBox(
+            width: 420,
+            child: AnimalResult(
+              status: AnimalResultStatus.success,
+              title: Text('岛屿资料提交成功'),
+              description: Text('新的访客计划已经同步到服务处。'),
+              extra: AnimalTag(
+                color: AnimalTagColor.success,
+                child: Text('已归档'),
+              ),
+              action: AnimalButton(
+                type: AnimalButtonType.primary,
+                onPressed: () {},
+                child: Text('返回列表'),
+              ),
+            ),
+          ),
+        ),
+        const _DocSection(
+          label: '警告、错误和信息',
+          box: _DemoBoxStyle.soft,
+          child: _DemoRow(
+            children: [
+              SizedBox(
+                width: 250,
+                child: AnimalResult(
+                  status: AnimalResultStatus.warning,
+                  title: Text('需要确认'),
+                  description: Text('还有任务未完成。'),
+                ),
+              ),
+              SizedBox(
+                width: 250,
+                child: AnimalResult(
+                  status: AnimalResultStatus.error,
+                  title: Text('提交失败'),
+                  description: Text('请检查网络后重试。'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      code: _resultCode,
+      api: _resultApi,
+    );
+  }
+}
+
 class _TimeDoc extends StatelessWidget {
   const _TimeDoc();
 
@@ -5141,6 +7997,7 @@ class _DocPage {
     required this.title,
     required this.summary,
     required this.body,
+    this.keywords = const [],
   });
 
   final String routeKey;
@@ -5149,6 +8006,189 @@ class _DocPage {
   final String title;
   final String summary;
   final Widget body;
+  final List<String> keywords;
+
+  String get searchText {
+    return [
+      routeKey,
+      group,
+      navTitle,
+      title,
+      summary,
+      ...keywords,
+    ].join(' ');
+  }
+
+  _DocPage copyWith({
+    String? group,
+    List<String>? keywords,
+  }) {
+    return _DocPage(
+      routeKey: routeKey,
+      group: group ?? this.group,
+      navTitle: navTitle,
+      title: title,
+      summary: summary,
+      body: body,
+      keywords: keywords ?? this.keywords,
+    );
+  }
+}
+
+class _DocNavMeta {
+  const _DocNavMeta(this.group, this.order);
+
+  final String group;
+  final int order;
+}
+
+const _docNavGroups = [
+  '主题与基础',
+  '布局与容器',
+  '表单输入',
+  '数据录入',
+  '数据展示',
+  '导航',
+  '反馈',
+  '浮层',
+  'Animal 特色',
+];
+
+const _docNavMeta = <String, _DocNavMeta>{
+  'theme': _DocNavMeta('主题与基础', 0),
+  'button': _DocNavMeta('主题与基础', 1),
+  'icon': _DocNavMeta('主题与基础', 2),
+  'avatar': _DocNavMeta('主题与基础', 3),
+  'tag': _DocNavMeta('主题与基础', 4),
+  'badge': _DocNavMeta('主题与基础', 5),
+  'card': _DocNavMeta('布局与容器', 100),
+  'collapse': _DocNavMeta('布局与容器', 101),
+  'divider-comp': _DocNavMeta('布局与容器', 102),
+  'skeleton': _DocNavMeta('布局与容器', 103),
+  'empty': _DocNavMeta('布局与容器', 104),
+  'input': _DocNavMeta('表单输入', 200),
+  'input-plus': _DocNavMeta('表单输入', 201),
+  'select': _DocNavMeta('表单输入', 202),
+  'checkbox': _DocNavMeta('表单输入', 203),
+  'radio': _DocNavMeta('表单输入', 204),
+  'switch': _DocNavMeta('表单输入', 205),
+  'slider': _DocNavMeta('表单输入', 206),
+  'rate': _DocNavMeta('表单输入', 207),
+  'segmented': _DocNavMeta('表单输入', 208),
+  'form': _DocNavMeta('表单输入', 209),
+  'calendar': _DocNavMeta('数据录入', 300),
+  'upload': _DocNavMeta('数据录入', 301),
+  'tree': _DocNavMeta('数据录入', 302),
+  'tabs': _DocNavMeta('导航', 400),
+  'breadcrumb': _DocNavMeta('导航', 401),
+  'steps': _DocNavMeta('导航', 402),
+  'pagination': _DocNavMeta('导航', 403),
+  'alert': _DocNavMeta('反馈', 500),
+  'message': _DocNavMeta('反馈', 501),
+  'tooltip': _DocNavMeta('反馈', 502),
+  'progress': _DocNavMeta('反馈', 503),
+  'loading': _DocNavMeta('反馈', 504),
+  'result': _DocNavMeta('反馈', 505),
+  'table': _DocNavMeta('数据展示', 600),
+  'descriptions': _DocNavMeta('数据展示', 601),
+  'statistic': _DocNavMeta('数据展示', 602),
+  'timeline': _DocNavMeta('数据展示', 603),
+  'codeblock': _DocNavMeta('数据展示', 604),
+  'modal': _DocNavMeta('浮层', 700),
+  'popover': _DocNavMeta('浮层', 701),
+  'dropdown': _DocNavMeta('浮层', 702),
+  'drawer': _DocNavMeta('浮层', 703),
+  'confirm-dialog': _DocNavMeta('浮层', 704),
+  'time': _DocNavMeta('Animal 特色', 900),
+  'phone': _DocNavMeta('Animal 特色', 901),
+  'cursor': _DocNavMeta('Animal 特色', 902),
+  'typewriter': _DocNavMeta('Animal 特色', 903),
+  'footer': _DocNavMeta('Animal 特色', 904),
+};
+
+List<_DocPage> _sortDocPages(List<_DocPage> pages) {
+  final displayPages = pages
+      .where(
+          (page) => page.routeKey != 'extended' && page.routeKey != 'advanced')
+      .toList();
+  displayPages.sort((a, b) {
+    final left = _docNavMeta[a.routeKey] ?? _DocNavMeta(a.group, 10000);
+    final right = _docNavMeta[b.routeKey] ?? _DocNavMeta(b.group, 10000);
+    final groupCompare =
+        _docGroupIndex(left.group).compareTo(_docGroupIndex(right.group));
+    if (groupCompare != 0) {
+      return groupCompare;
+    }
+    final orderCompare = left.order.compareTo(right.order);
+    if (orderCompare != 0) {
+      return orderCompare;
+    }
+    return a.navTitle.compareTo(b.navTitle);
+  });
+  return [
+    for (final page in displayPages)
+      page.copyWith(
+        group: _docNavMeta[page.routeKey]?.group ?? page.group,
+        keywords: _docSearchKeywords[page.routeKey] ?? page.keywords,
+      ),
+  ];
+}
+
+const _docSearchKeywords = <String, List<String>>{
+  'theme': ['主题', 'token', 'color', 'font', 'palette'],
+  'button': ['按钮', 'loading', 'ghost', 'danger', 'primary'],
+  'icon': ['图标', 'svg', 'asset'],
+  'avatar': ['头像', 'image', 'circle'],
+  'tag': ['标签', 'label', 'close'],
+  'badge': ['角标', 'dot', 'count'],
+  'card': ['卡片', 'container', 'panel'],
+  'collapse': ['折叠', 'accordion', 'faq'],
+  'divider-comp': ['分割线', 'divider', 'line'],
+  'skeleton': ['骨架屏', 'placeholder', 'loading'],
+  'empty': ['空状态', 'empty', 'no data'],
+  'input': ['输入框', 'text field', 'clearable', 'prefix', 'suffix'],
+  'input-plus': ['textarea', 'password', 'search', 'number', '输入增强'],
+  'select': ['选择器', 'dropdown', '下拉', 'option'],
+  'checkbox': ['多选', 'check', 'form field'],
+  'radio': ['单选', 'radio group'],
+  'switch': ['开关', 'toggle'],
+  'slider': ['滑块', 'range', 'value'],
+  'rate': ['评分', 'star'],
+  'segmented': ['分段', 'tabs', 'mode'],
+  'form': ['表单', 'validator', 'layout', 'field'],
+  'calendar': ['日历', 'date', 'picker'],
+  'upload': ['上传', 'file', 'progress'],
+  'tree': ['树形', 'tree view', 'node'],
+  'tabs': ['标签页', 'tab'],
+  'breadcrumb': ['面包屑', 'path', 'navigation'],
+  'steps': ['步骤条', 'stepper'],
+  'pagination': ['分页', 'page'],
+  'alert': ['警告', 'notice', 'warning'],
+  'message': ['轻提示', 'toast', 'feedback'],
+  'tooltip': ['提示', 'hover', 'tip'],
+  'progress': ['进度', 'bar'],
+  'loading': ['加载', 'spinner', 'island'],
+  'result': ['结果页', 'success', 'error'],
+  'table': ['表格', 'data grid', 'row', 'column', 'scroll'],
+  'descriptions': ['描述列表', 'detail', 'metadata'],
+  'statistic': ['统计', 'number', 'metric'],
+  'timeline': ['时间线', 'log', 'activity'],
+  'codeblock': ['代码', 'highlight', 'snippet'],
+  'modal': ['弹窗', 'dialog', 'popup'],
+  'popover': ['气泡', 'overlay', 'floating'],
+  'dropdown': ['下拉菜单', 'menu', 'action'],
+  'drawer': ['抽屉', 'panel', 'sidebar'],
+  'confirm-dialog': ['确认框', 'confirm', 'delete'],
+  'time': ['时间', 'clock', 'hud'],
+  'phone': ['手机', 'nook phone'],
+  'cursor': ['光标', 'pointer', 'mouse'],
+  'typewriter': ['打字机', 'typing', 'text'],
+  'footer': ['页脚', 'decoration'],
+};
+
+int _docGroupIndex(String group) {
+  final index = _docNavGroups.indexOf(group);
+  return index < 0 ? _docNavGroups.length : index;
 }
 
 class _FeatureInfo {
@@ -5173,6 +8213,18 @@ class _ComponentInfo {
   final String key;
   final String name;
   final String description;
+}
+
+class _HomeComponentGroup {
+  const _HomeComponentGroup({
+    required this.title,
+    required this.description,
+    required this.components,
+  });
+
+  final String title;
+  final String description;
+  final List<_ComponentInfo> components;
 }
 
 abstract final class _DemoAssets {
@@ -5223,7 +8275,23 @@ class _TagStyle {
   final Color foreground;
 }
 
+class _ThemeSwatch {
+  const _ThemeSwatch(this.name, this.hex, this.color);
+
+  final String name;
+  final String hex;
+  final Color color;
+}
+
 enum _DemoBoxStyle { none, soft, dashed }
+
+const _themeSwatches = [
+  _ThemeSwatch('Mint', '#19C8B9', Color(0xFF19C8B9)),
+  _ThemeSwatch('Forest', '#4E8F75', Color(0xFF4E8F75)),
+  _ThemeSwatch('Berry', '#D85C7D', Color(0xFFD85C7D)),
+  _ThemeSwatch('Honey', '#E5A928', Color(0xFFE5A928)),
+  _ThemeSwatch('Ocean', '#3D82C4', Color(0xFF3D82C4)),
+];
 
 const _homeFeatures = [
   _FeatureInfo(
@@ -5233,9 +8301,9 @@ const _homeFeatures = [
   ),
   _FeatureInfo(
     icon: _DemoAssets.shopping,
-    title: '35 个组件',
+    title: '49 个组件',
     description:
-        'Button / Input / Switch / Modal / Table / Radio / Alert / Avatar / Steps / Slider / Rate / Skeleton 等',
+        'Button / Input / Switch / Modal / Table / Form / Popover / Calendar / Upload / Tree 等',
   ),
   _FeatureInfo(
     icon: _DemoAssets.camera,
@@ -5250,59 +8318,115 @@ const _homeFeatures = [
 ];
 
 const _homeComponents = [
+  _ComponentInfo(key: 'theme', name: 'Theme', description: '品牌主色、字体与设计令牌'),
   _ComponentInfo(
     key: 'button',
     name: 'Button',
     description: '5 种类型、3 种尺寸、加载/危险/幽灵模式',
   ),
+  _ComponentInfo(key: 'icon', name: 'Icon', description: 'SVG 图标库'),
+  _ComponentInfo(key: 'avatar', name: 'Avatar', description: '头像、文字、图片与图标占位'),
+  _ComponentInfo(key: 'tag', name: 'Tag', description: '彩色标签、图标与可关闭状态'),
+  _ComponentInfo(key: 'badge', name: 'Badge', description: '角标、数字上限与小红点'),
+  _ComponentInfo(key: 'card', name: 'Card', description: '默认/标题两种卡片风格'),
+  _ComponentInfo(
+      key: 'collapse', name: 'Collapse', description: 'FAQ 折叠面板、平滑展开动画'),
+  _ComponentInfo(key: 'divider-comp', name: 'Divider', description: '装饰性水平分割线'),
+  _ComponentInfo(key: 'skeleton', name: 'Skeleton', description: '骨架屏加载占位'),
+  _ComponentInfo(key: 'empty', name: 'Empty', description: '空状态占位'),
   _ComponentInfo(key: 'input', name: 'Input', description: '前后缀、一键清空、校验状态'),
   _ComponentInfo(
-    key: 'switch',
-    name: 'Switch',
-    description: '受控/非受控、自定义文案、加载状态',
-  ),
+      key: 'input-plus', name: 'Input Plus', description: '多行、密码、搜索和数字输入'),
+  _ComponentInfo(key: 'select', name: 'Select', description: '下拉选择器，支持搜索和禁用'),
   _ComponentInfo(
     key: 'checkbox',
     name: 'Checkbox',
     description: '多选框组件，支持水平/垂直排列',
   ),
-  _ComponentInfo(key: 'select', name: 'Select', description: '下拉选择器，支持搜索和禁用'),
+  _ComponentInfo(key: 'radio', name: 'Radio', description: '单选框组件，支持尺寸与排列方向'),
+  _ComponentInfo(
+    key: 'switch',
+    name: 'Switch',
+    description: '受控/非受控、自定义文案、加载状态',
+  ),
+  _ComponentInfo(key: 'slider', name: 'Slider', description: '滑动输入、分段与数值展示'),
+  _ComponentInfo(key: 'rate', name: 'Rate', description: '评分选择控件'),
+  _ComponentInfo(key: 'segmented', name: 'Segmented', description: '分段控制器'),
+  _ComponentInfo(key: 'form', name: 'Form', description: '表单布局、标签宽度与帮助文案'),
+  _ComponentInfo(key: 'calendar', name: 'Calendar', description: '日期选择和月份切换'),
+  _ComponentInfo(key: 'upload', name: 'Upload', description: '上传入口和文件队列'),
+  _ComponentInfo(key: 'tree', name: 'Tree', description: '层级节点选择控件'),
   _ComponentInfo(key: 'tabs', name: 'Tabs', description: '标签页组件，支持受控/非受控模式'),
+  _ComponentInfo(key: 'breadcrumb', name: 'Breadcrumb', description: '面包屑导航路径'),
+  _ComponentInfo(key: 'steps', name: 'Steps', description: '横向/纵向步骤条'),
+  _ComponentInfo(key: 'pagination', name: 'Pagination', description: '分页器组件'),
+  _ComponentInfo(key: 'alert', name: 'Alert', description: '警告提示、图标与可关闭状态'),
+  _ComponentInfo(key: 'message', name: 'Message', description: '顶部轻提示反馈'),
+  _ComponentInfo(key: 'tooltip', name: 'Tooltip', description: '动森风提示气泡'),
+  _ComponentInfo(key: 'progress', name: 'Progress', description: '条纹进度条'),
+  _ComponentInfo(key: 'loading', name: 'Loading', description: '动森风格小岛加载动画'),
+  _ComponentInfo(key: 'result', name: 'Result', description: '结果反馈和操作区'),
+  _ComponentInfo(key: 'table', name: 'Table', description: '斑马纹表格、加载与空状态'),
+  _ComponentInfo(
+      key: 'descriptions', name: 'Descriptions', description: '详情页描述列表'),
+  _ComponentInfo(key: 'statistic', name: 'Statistic', description: '仪表盘统计数值'),
+  _ComponentInfo(key: 'timeline', name: 'Timeline', description: '流程时间线与状态点'),
+  _ComponentInfo(key: 'codeblock', name: 'CodeBlock', description: '代码语法高亮组件'),
   _ComponentInfo(key: 'modal', name: 'Modal', description: 'SVG 有机形状弹窗、ESC 关闭'),
+  _ComponentInfo(key: 'popover', name: 'Popover', description: '上下左右气泡卡片'),
+  _ComponentInfo(key: 'dropdown', name: 'Dropdown', description: '浮层菜单、图标和禁用项'),
+  _ComponentInfo(key: 'drawer', name: 'Drawer', description: '左右抽屉和底部操作区'),
+  _ComponentInfo(
+      key: 'confirm-dialog', name: 'ConfirmDialog', description: '确认流程弹窗封装'),
+  _ComponentInfo(key: 'time', name: 'Time', description: '可爱风格时间显示'),
+  _ComponentInfo(key: 'phone', name: 'Phone', description: 'Phone 模拟器'),
+  _ComponentInfo(key: 'cursor', name: 'Cursor', description: '自定义手指光标，支持多种尺寸'),
   _ComponentInfo(
     key: 'typewriter',
     name: 'Typewriter',
     description: '逐字打字机效果，支持多行与富内容',
   ),
-  _ComponentInfo(key: 'card', name: 'Card', description: '默认/标题两种卡片风格'),
-  _ComponentInfo(
-      key: 'collapse', name: 'Collapse', description: 'FAQ 折叠面板、平滑展开动画'),
-  _ComponentInfo(key: 'cursor', name: 'Cursor', description: '自定义手指光标，支持多种尺寸'),
-  _ComponentInfo(key: 'divider-comp', name: 'Divider', description: '装饰性水平分割线'),
-  _ComponentInfo(key: 'icon', name: 'Icon', description: 'SVG 图标库'),
   _ComponentInfo(key: 'footer', name: 'Footer', description: '页脚组件'),
-  _ComponentInfo(key: 'time', name: 'Time', description: '可爱风格时间显示'),
-  _ComponentInfo(key: 'phone', name: 'Phone', description: 'Phone 模拟器'),
-  _ComponentInfo(key: 'codeblock', name: 'CodeBlock', description: '代码语法高亮组件'),
-  _ComponentInfo(key: 'loading', name: 'Loading', description: '动森风格小岛加载动画'),
-  _ComponentInfo(key: 'table', name: 'Table', description: '斑马纹表格、加载与空状态'),
-  _ComponentInfo(key: 'radio', name: 'Radio', description: '单选框组件，支持尺寸与排列方向'),
-  _ComponentInfo(key: 'tag', name: 'Tag', description: '彩色标签、图标与可关闭状态'),
-  _ComponentInfo(key: 'badge', name: 'Badge', description: '角标、数字上限与小红点'),
-  _ComponentInfo(key: 'tooltip', name: 'Tooltip', description: '动森风提示气泡'),
-  _ComponentInfo(key: 'message', name: 'Message', description: '顶部轻提示反馈'),
-  _ComponentInfo(key: 'progress', name: 'Progress', description: '条纹进度条'),
-  _ComponentInfo(key: 'pagination', name: 'Pagination', description: '分页器组件'),
-  _ComponentInfo(key: 'empty', name: 'Empty', description: '空状态占位'),
-  _ComponentInfo(key: 'alert', name: 'Alert', description: '警告提示、图标与可关闭状态'),
-  _ComponentInfo(key: 'avatar', name: 'Avatar', description: '头像、文字、图片与图标占位'),
-  _ComponentInfo(key: 'breadcrumb', name: 'Breadcrumb', description: '面包屑导航路径'),
-  _ComponentInfo(key: 'steps', name: 'Steps', description: '横向/纵向步骤条'),
-  _ComponentInfo(key: 'slider', name: 'Slider', description: '滑动输入、分段与数值展示'),
-  _ComponentInfo(key: 'rate', name: 'Rate', description: '评分选择控件'),
-  _ComponentInfo(key: 'segmented', name: 'Segmented', description: '分段控制器'),
-  _ComponentInfo(key: 'skeleton', name: 'Skeleton', description: '骨架屏加载占位'),
 ];
+
+const _homeComponentGroupDescriptions = {
+  '主题与基础': '主题令牌、按钮、图标和轻量标识，构成界面的基础表达。',
+  '布局与容器': '组织页面结构、内容分隔和加载占位的常用容器。',
+  '表单输入': '覆盖文本输入、选择、开关、评分和完整表单布局。',
+  '数据录入': '面向日期、文件和层级节点的复杂录入控件。',
+  '数据展示': '用于表格、详情、指标、时间线和代码内容展示。',
+  '导航': '页面切换、路径提示、步骤流程和分页导航。',
+  '反馈': '提示、消息、进度、加载和结果状态反馈。',
+  '浮层': '弹窗、气泡、菜单、抽屉和确认流程。',
+  'Animal 特色': '保留 Animal Island 氛围的装饰、光标和拟物化组件。',
+};
+
+List<_HomeComponentGroup> _homeComponentGroups() {
+  final byKey = {
+    for (final component in _homeComponents) component.key: component
+  };
+  final groups = <_HomeComponentGroup>[];
+
+  for (final group in _docNavGroups) {
+    final components = [
+      for (final meta in _docNavMeta.entries)
+        if (meta.value.group == group && byKey.containsKey(meta.key))
+          byKey[meta.key]!,
+    ];
+    if (components.isEmpty) {
+      continue;
+    }
+    groups.add(
+      _HomeComponentGroup(
+        title: group,
+        description: _homeComponentGroupDescriptions[group] ?? '',
+        components: components,
+      ),
+    );
+  }
+
+  return groups;
+}
 
 const _cardColors = [
   _CardColorInfo(AnimalCardColor.defaultColor, 'Default', '默认奶油色'),
@@ -5426,6 +8550,33 @@ const _tableRows = <Map<String, Object>>[
   },
 ];
 
+const _treeNodes = [
+  AnimalTreeNode<String>(
+    value: 'plants',
+    label: Text('植物图鉴'),
+    icon: Icon(Icons.local_florist_rounded),
+    children: [
+      AnimalTreeNode<String>(value: 'rose', label: Text('玫瑰')),
+      AnimalTreeNode<String>(value: 'cosmos', label: Text('波斯菊')),
+      AnimalTreeNode<String>(value: 'tulip', label: Text('郁金香')),
+    ],
+  ),
+  AnimalTreeNode<String>(
+    value: 'animals',
+    label: Text('岛民档案'),
+    icon: Icon(Icons.badge_rounded),
+    children: [
+      AnimalTreeNode<String>(value: 'tom', label: Text('豆狸')),
+      AnimalTreeNode<String>(value: 'timmy', label: Text('粒狸')),
+      AnimalTreeNode<String>(
+        value: 'locked',
+        label: Text('未解锁区域'),
+        disabled: true,
+      ),
+    ],
+  ),
+];
+
 const _hobbyStyle = {
   '音乐': _TagStyle(background: Color(0x269370DB), foreground: Color(0xFF9370DB)),
   '运动': _TagStyle(background: Color(0x26FF8C00), foreground: Color(0xFFFF8C00)),
@@ -5470,9 +8621,20 @@ const _inputApi = [
   _ApiRow('status', '校验状态', 'AnimalInputStatus?', '-'),
   _ApiRow('shadow', '是否显示阴影', 'bool', 'false'),
   _ApiRow('onChanged', '值变化回调', 'ValueChanged<String>?', '-'),
+  _ApiRow('onSubmitted', '键盘提交回调', 'ValueChanged<String>?', '-'),
+  _ApiRow('onEditingComplete', '编辑完成回调', 'VoidCallback?', '-'),
   _ApiRow('onClear', '清除回调', 'VoidCallback?', '-'),
   _ApiRow('controller', '文本控制器', 'TextEditingController?', '-'),
+  _ApiRow('keyboardType', '键盘类型', 'TextInputType?', '-'),
+  _ApiRow('textInputAction', '键盘动作', 'TextInputAction?', '-'),
+  _ApiRow('textCapitalization', '大小写策略', 'TextCapitalization', 'none'),
+  _ApiRow('autofillHints', '自动填充提示', 'Iterable<String>?', '-'),
+  _ApiRow('maxLines', '最大行数；密码输入固定为 1', 'int?', '1'),
+  _ApiRow('maxLength', '最大字符数', 'int?', '-'),
   _ApiRow('enabled', '是否启用', 'bool', 'true'),
+  _ApiRow('AnimalInputFormField', '表单校验封装', 'FormField<String>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<String>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<String>?', '-'),
 ];
 
 const _switchApi = [
@@ -5484,6 +8646,9 @@ const _switchApi = [
   _ApiRow('checkedChild', '选中时文案', 'Widget?', '-'),
   _ApiRow('uncheckedChild', '未选中时文案', 'Widget?', '-'),
   _ApiRow('onChanged', '变化回调', 'ValueChanged<bool>?', '-'),
+  _ApiRow('AnimalSwitchFormField', '表单校验封装', 'FormField<bool>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<bool>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<bool>?', '-'),
 ];
 
 const _cardApi = [
@@ -5548,6 +8713,10 @@ const _selectApi = [
   _ApiRow('placeholder', '占位文本', 'String', '请选择'),
   _ApiRow('disabled', '禁用状态', 'bool', 'false'),
   _ApiRow('minWidth', '触发器最小宽度', 'double', '140'),
+  _ApiRow('dropdownMaxHeight', '下拉层最大高度，超出后内部滚动', 'double', '260'),
+  _ApiRow('AnimalSelectFormField', '表单校验封装', 'FormField<T>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<T>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<T>?', '-'),
 ];
 
 const _checkboxApi = [
@@ -5559,6 +8728,9 @@ const _checkboxApi = [
   _ApiRow('disabled', '禁用全部选项', 'bool', 'false'),
   _ApiRow('direction', '排列方向', 'AnimalCheckboxDirection', 'horizontal'),
   _ApiRow('onChanged', '选中值变化回调', 'ValueChanged<List<T>>?', '-'),
+  _ApiRow('AnimalCheckboxFormField', '表单校验封装', 'FormField<List<T>>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<List<T>>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<List<T>>?', '-'),
 ];
 
 const _tabsApi = [
@@ -5595,6 +8767,7 @@ const _tableApi = [
   _ApiRow('loading', '加载状态', 'bool', 'false'),
   _ApiRow('emptyText', '空数据显示文本', 'String?', '暂无数据'),
   _ApiRow('maxHeight', '表格最大高度', 'double?', '-'),
+  _ApiRow('horizontalScroll', '列宽超出容器时自动横向滚动并显示底部滚动条', 'built-in', '-'),
   _ApiRow('onRowTap', '行点击回调', 'void Function(T row, int index)?', '-'),
 ];
 
@@ -5642,6 +8815,9 @@ const _radioApi = [
   _ApiRow('disabled', '是否禁用全部', 'bool', 'false'),
   _ApiRow('direction', '排列方向', 'AnimalRadioDirection', 'horizontal'),
   _ApiRow('onChanged', '选中变化回调', 'ValueChanged<T>?', '-'),
+  _ApiRow('AnimalRadioFormField', '表单校验封装', 'FormField<T>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<T>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<T>?', '-'),
 ];
 
 const _tagApi = [
@@ -5736,6 +8912,30 @@ const _stepsApi = [
   _ApiRow('onChanged', '步骤点击回调', 'ValueChanged<int>?', '-'),
 ];
 
+const _themeApi = [
+  _ApiRow('AnimalTheme.data', '主题数据', 'AnimalThemeData?', 'fallback'),
+  _ApiRow('AnimalThemeData.fallback()', '默认 Animal 风格令牌', 'factory', '-'),
+  _ApiRow(
+    'AnimalThemeData.fromPrimary',
+    '根据品牌主色派生 hover / active / background',
+    'factory',
+    '-',
+  ),
+  _ApiRow('primarySolidColor', '激活标签、强调背景等实心主色', 'Color', '派生值'),
+  _ApiRow('primaryStripeColor', 'Loading/Button 条纹色', 'Color', '派生值'),
+  _ApiRow('contentBackgroundColor', '输入框、表格、选择项等内容底色', 'Color', '派生值'),
+  _ApiRow('elevatedBackgroundColor', 'Tooltip、Message、Avatar 等浮层底色', 'Color',
+      '派生值'),
+  _ApiRow('controlBorderColor', 'Slider、Segmented、Steps 等控件边框', 'Color', '派生值'),
+  _ApiRow('bodyTextColor', '正文与表单文本色', 'Color', '派生值'),
+  _ApiRow('tactileShadowColor', '按钮、分页、滑块等底部触感阴影', 'Color', '派生值'),
+  _ApiRow('copyWith.fontPackage', '字体资源包；传 null 可使用应用自身字体', 'String?', '当前值'),
+  _ApiRow(
+      'fontFamilyFallback', '字体 fallback 列表', 'List<String>', '内置中日英 fallback'),
+  _ApiRow('textHeight', '默认文本行高', 'double', '1.5715'),
+  _ApiRow('textStyle(height)', '局部覆盖行高', 'double?', 'textHeight'),
+];
+
 const _sliderApi = [
   _ApiRow('value', '受控数值', 'double?', '-'),
   _ApiRow('defaultValue', '默认数值', 'double', '0'),
@@ -5745,6 +8945,9 @@ const _sliderApi = [
   _ApiRow('disabled', '是否禁用', 'bool', 'false'),
   _ApiRow('showLabel', '是否显示标签', 'bool', 'true'),
   _ApiRow('onChanged', '数值变化回调', 'ValueChanged<double>?', '-'),
+  _ApiRow('AnimalSliderFormField', '表单校验封装', 'FormField<double>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<double>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<double>?', '-'),
 ];
 
 const _rateApi = [
@@ -5753,6 +8956,9 @@ const _rateApi = [
   _ApiRow('count', '评分总数', 'int', '5'),
   _ApiRow('disabled', '是否禁用', 'bool', 'false'),
   _ApiRow('onChanged', '评分变化回调', 'ValueChanged<int>?', '-'),
+  _ApiRow('AnimalRateFormField', '表单校验封装', 'FormField<int>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<int>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<int>?', '-'),
 ];
 
 const _segmentedApi = [
@@ -5770,6 +8976,177 @@ const _skeletonApi = [
   _ApiRow('width', '固定宽度', 'double?', '-'),
   _ApiRow('lineHeight', '行高', 'double', '14'),
   _ApiRow('child', '加载完成内容', 'Widget?', '-'),
+];
+
+const _formApi = [
+  _ApiRow('AnimalForm.child', '表单内容', 'Widget', '-', required: true),
+  _ApiRow('AnimalForm.formKey', 'FormState key', 'GlobalKey<FormState>?', '-'),
+  _ApiRow('AnimalForm.layout', '默认布局', 'AnimalFormLayout', 'vertical'),
+  _ApiRow('AnimalForm.labelWidth', 'horizontal 标签宽度', 'double', '112'),
+  _ApiRow('AnimalForm.spacing', '表单项默认底部间距', 'double', '16'),
+  _ApiRow('AnimalForm.autovalidateMode', '自动校验模式', 'AutovalidateMode?', '-'),
+  _ApiRow('AnimalForm.onChanged', '表单变化回调', 'VoidCallback?', '-'),
+  _ApiRow('AnimalFormItem.child', '表单项控件', 'Widget', '-', required: true),
+  _ApiRow('AnimalFormItem.label', '标签', 'Widget?', '-'),
+  _ApiRow('AnimalFormItem.required', '是否显示必填星号', 'bool', 'false'),
+  _ApiRow('AnimalFormItem.help', '帮助说明', 'Widget?', '-'),
+  _ApiRow('AnimalFormItem.errorText', '错误文案', 'String?', '-'),
+  _ApiRow('AnimalFormItem.margin', '自定义外边距', 'EdgeInsetsGeometry?', '-'),
+];
+
+const _inputPlusApi = [
+  _ApiRow('AnimalTextarea.rows', '显示行数', 'int', '4'),
+  _ApiRow('AnimalTextarea.maxLength', '最大字符数', 'int?', '-'),
+  _ApiRow('AnimalPasswordInput.hintText', '占位文本', 'String', '请输入密码'),
+  _ApiRow('AnimalPasswordInput.allowClear', '允许清除', 'bool', 'false'),
+  _ApiRow('AnimalSearchInput.onSearch', '搜索提交回调', 'ValueChanged<String>?', '-'),
+  _ApiRow('AnimalSearchInput.allowClear', '允许清除', 'bool', 'true'),
+  _ApiRow('AnimalNumberInput.value', '受控数值', 'num?', '-'),
+  _ApiRow('AnimalNumberInput.defaultValue', '默认数值', 'num', '0'),
+  _ApiRow('AnimalNumberInput.min', '最小值', 'num?', '-'),
+  _ApiRow('AnimalNumberInput.max', '最大值', 'num?', '-'),
+  _ApiRow('AnimalNumberInput.step', '步进', 'num', '1'),
+  _ApiRow('AnimalNumberInput.onChanged', '数值变化回调', 'ValueChanged<num>?', '-'),
+];
+
+const _popoverApi = [
+  _ApiRow('child', '触发元素', 'Widget', '-', required: true),
+  _ApiRow('content', '浮层内容', 'Widget', '-', required: true),
+  _ApiRow('title', '浮层标题', 'Widget?', '-'),
+  _ApiRow('placement', '弹出方向', 'AnimalPopoverPlacement', 'bottom'),
+  _ApiRow('trigger', '触发方式', 'AnimalPopoverTrigger', 'click'),
+  _ApiRow('open', '受控打开状态', 'bool?', '-'),
+  _ApiRow('onOpenChanged', '打开状态变化回调', 'ValueChanged<bool>?', '-'),
+  _ApiRow('width', '浮层宽度', 'double', '260'),
+  _ApiRow('gap', '与触发元素间距', 'double', '10'),
+];
+
+const _dropdownApi = [
+  _ApiRow('child', '触发元素', 'Widget', '-', required: true),
+  _ApiRow('items', '菜单项', 'List<AnimalDropdownItem<T>>', '-', required: true),
+  _ApiRow('onChanged', '选中回调', 'ValueChanged<T>', '-', required: true),
+  _ApiRow('placement', '弹出方向', 'AnimalPopoverPlacement', 'bottom'),
+  _ApiRow('width', '菜单宽度', 'double', '220'),
+  _ApiRow('AnimalDropdownItem.value', '菜单值', 'T', '-', required: true),
+  _ApiRow('AnimalDropdownItem.label', '菜单内容', 'Widget', '-', required: true),
+  _ApiRow('AnimalDropdownItem.disabled', '是否禁用', 'bool', 'false'),
+  _ApiRow('AnimalDropdownItem.icon', '前置图标', 'Widget?', '-'),
+];
+
+const _drawerApi = [
+  _ApiRow('context', '弹窗上下文', 'BuildContext', '-', required: true),
+  _ApiRow('child', '抽屉内容', 'Widget', '-', required: true),
+  _ApiRow('title', '标题', 'Widget?', '-'),
+  _ApiRow('footer', '底部操作区', 'Widget?', '-'),
+  _ApiRow('placement', '抽屉方向', 'AnimalDrawerPlacement', 'right'),
+  _ApiRow('width', '抽屉宽度', 'double', '360'),
+  _ApiRow('barrierDismissible', '点击遮罩关闭', 'bool', 'true'),
+];
+
+const _confirmDialogApi = [
+  _ApiRow('context', '弹窗上下文', 'BuildContext', '-', required: true),
+  _ApiRow('content', '确认内容', 'Widget', '-', required: true),
+  _ApiRow('title', '标题', 'Widget?', '-'),
+  _ApiRow('okText', '确认按钮文案', 'String', '确定'),
+  _ApiRow('cancelText', '取消按钮文案', 'String', '取消'),
+  _ApiRow('onOk', '确认前回调', 'VoidCallback?', '-'),
+  _ApiRow('danger', '危险确认样式', 'bool', 'false'),
+  _ApiRow('return', '返回用户选择结果', 'Future<bool?>', '-'),
+];
+
+const _descriptionsApi = [
+  _ApiRow('items', '描述项', 'List<AnimalDescriptionItem>', '-', required: true),
+  _ApiRow('title', '标题', 'Widget?', '-'),
+  _ApiRow('column', '列数', 'int', '3'),
+  _ApiRow('layout', '标签排列', 'AnimalDescriptionsLayout', 'horizontal'),
+  _ApiRow('responsive', '是否根据容器宽度自动收列', 'bool', 'true'),
+  _ApiRow('minColumnWidth', '响应式最小列宽', 'double', '170'),
+  _ApiRow('AnimalDescriptionItem.label', '标签', 'Widget', '-', required: true),
+  _ApiRow('AnimalDescriptionItem.child', '内容', 'Widget', '-', required: true),
+  _ApiRow('AnimalDescriptionItem.span', '跨列数量', 'int', '1'),
+];
+
+const _statisticApi = [
+  _ApiRow('value', '统计数值', 'num', '-', required: true),
+  _ApiRow('title', '标题', 'Widget?', '-'),
+  _ApiRow('prefix', '前缀', 'Widget?', '-'),
+  _ApiRow('suffix', '后缀', 'Widget?', '-'),
+  _ApiRow('description', '辅助说明', 'Widget?', '-'),
+  _ApiRow('color', '数值强调色', 'Color?', 'primaryActiveColor'),
+];
+
+const _timelineApi = [
+  _ApiRow('items', '时间线项', 'List<AnimalTimelineItem>', '-', required: true),
+  _ApiRow('AnimalTimelineItem.title', '标题', 'Widget', '-', required: true),
+  _ApiRow('AnimalTimelineItem.description', '描述', 'Widget?', '-'),
+  _ApiRow('AnimalTimelineItem.time', '时间', 'Widget?', '-'),
+  _ApiRow('AnimalTimelineItem.status', '状态色', 'AnimalTimelineItemStatus',
+      'defaultStatus'),
+  _ApiRow('AnimalTimelineItem.icon', '自定义节点图标', 'Widget?', '-'),
+  _ApiRow('AnimalTimelineItem.onTap', '节点点击回调', 'VoidCallback?', '-'),
+  _ApiRow('AnimalTimelineItem.disabled', '禁用节点交互', 'bool', 'false'),
+];
+
+const _calendarApi = [
+  _ApiRow('value', '受控选中日期', 'DateTime?', '-'),
+  _ApiRow('defaultValue', '默认选中日期', 'DateTime?', 'DateTime.now()'),
+  _ApiRow('month', '当前展示月份', 'DateTime?', '选中日期所在月'),
+  _ApiRow('firstDate', '最早可选日期', 'DateTime?', '-'),
+  _ApiRow('lastDate', '最晚可选日期', 'DateTime?', '-'),
+  _ApiRow('onChanged', '日期选择回调', 'ValueChanged<DateTime>?', '-'),
+  _ApiRow('onMonthChanged', '月份切换回调', 'ValueChanged<DateTime>?', '-'),
+  _ApiRow('keyboard', '方向键移动日期，PageUp/PageDown 切换月份', 'built-in', '-'),
+  _ApiRow('AnimalCalendarFormField', '表单校验封装', 'FormField<DateTime>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<DateTime>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<DateTime>?', '-'),
+];
+
+const _uploadApi = [
+  _ApiRow('files', '文件列表', 'List<AnimalUploadFile>', '[]'),
+  _ApiRow('onTap', '点击上传区域回调', 'VoidCallback?', '-'),
+  _ApiRow('keyboard', '上传区域聚焦后 Enter/Space 触发 onTap', 'built-in', '-'),
+  _ApiRow('onRemove', '删除文件回调', 'ValueChanged<AnimalUploadFile>?', '-'),
+  _ApiRow(
+      'onChanged', '表单文件列表变化回调', 'ValueChanged<List<AnimalUploadFile>>?', '-'),
+  _ApiRow('disabled', '是否禁用', 'bool', 'false'),
+  _ApiRow('removable', 'FormField 内是否允许删除文件', 'bool', 'true'),
+  _ApiRow('title', '上传标题', 'String', '上传文件'),
+  _ApiRow('hint', '上传说明', 'String', '点击选择文件，或将文件拖到这里'),
+  _ApiRow('AnimalUploadFormField', '表单校验封装',
+      'FormField<List<AnimalUploadFile>>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<List<AnimalUploadFile>>?',
+      '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<List<AnimalUploadFile>>?', '-'),
+  _ApiRow('AnimalUploadFile.name', '文件名', 'String', '-', required: true),
+  _ApiRow('AnimalUploadFile.status', '上传状态', 'AnimalUploadStatus', 'ready'),
+  _ApiRow('AnimalUploadFile.progress', '上传进度 0..1', 'double', '0'),
+  _ApiRow('AnimalUploadFile.size', '文件大小文案', 'String?', '-'),
+  _ApiRow('AnimalUploadFile.message', '状态说明', 'String?', '-'),
+];
+
+const _treeApi = [
+  _ApiRow('nodes', '树节点列表', 'List<AnimalTreeNode<T>>', '-', required: true),
+  _ApiRow('selectedValue', '当前选中节点值', 'T?', '-'),
+  _ApiRow('defaultValue', 'FormField 默认选中值', 'T?', '-'),
+  _ApiRow('defaultExpandedValues', '默认展开节点值', 'List<T>', '[]'),
+  _ApiRow('onChanged', '节点点击回调', 'ValueChanged<T>?', '-'),
+  _ApiRow('onExpandedChanged', '展开节点变化回调', 'ValueChanged<List<T>>?', '-'),
+  _ApiRow('AnimalTreeFormField', '表单校验封装', 'FormField<T>', '-'),
+  _ApiRow('validator', '表单校验函数', 'FormFieldValidator<T>?', '-'),
+  _ApiRow('onSaved', '表单保存回调', 'FormFieldSetter<T>?', '-'),
+  _ApiRow('AnimalTreeNode.value', '节点值', 'T', '-', required: true),
+  _ApiRow('AnimalTreeNode.label', '节点内容', 'Widget', '-', required: true),
+  _ApiRow('AnimalTreeNode.children', '子节点', 'List<AnimalTreeNode<T>>', '[]'),
+  _ApiRow('AnimalTreeNode.disabled', '是否禁用节点', 'bool', 'false'),
+  _ApiRow('AnimalTreeNode.icon', '节点图标', 'Widget?', '-'),
+];
+
+const _resultApi = [
+  _ApiRow('title', '标题', 'Widget', '-', required: true),
+  _ApiRow('description', '描述内容', 'Widget?', '-'),
+  _ApiRow('status', '结果状态', 'AnimalResultStatus', 'info'),
+  _ApiRow('extra', '补充内容', 'Widget?', '-'),
+  _ApiRow('action', '操作区', 'Widget?', '-'),
 ];
 
 const _timeApi = [
@@ -5815,6 +9192,38 @@ class App extends StatelessWidget {
         // Block
         AnimalButton(type: AnimalButtonType.primary, block: true, onPressed: () {}, child: const Text('Block')),
       ],
+    );
+  }
+}
+
+class ThemeSwitcher extends StatefulWidget {
+  const ThemeSwitcher({super.key});
+
+  @override
+  State<ThemeSwitcher> createState() => _ThemeSwitcherState();
+}
+
+class _ThemeSwitcherState extends State<ThemeSwitcher> {
+  var primary = const Color(0xFF19C8B9);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalThemeData.fromPrimary(primary);
+    return AnimalTheme(
+      data: theme,
+      child: Column(
+        children: [
+          Wrap(
+            children: [
+              AnimalButton(onPressed: () => setState(() => primary = const Color(0xFF19C8B9)), child: const Text('Mint')),
+              AnimalButton(onPressed: () => setState(() => primary = const Color(0xFFD85C7D)), child: const Text('Berry')),
+              AnimalButton(onPressed: () => setState(() => primary = const Color(0xFF3D82C4)), child: const Text('Ocean')),
+            ],
+          ),
+          AnimalButton(type: AnimalButtonType.primary, onPressed: () {}, child: const Text('Primary')),
+          const AnimalProgress(value: 0.64),
+        ],
+      ),
     );
   }
 }''';
@@ -5875,7 +9284,62 @@ class _AppState extends State<App> {
         const AnimalSwitch(defaultValue: true, checkedChild: Text('开'), uncheckedChild: Text('关')),
         // 小尺寸
         const AnimalSwitch(size: AnimalSwitchSize.small, defaultValue: true),
+        // Form 表单封装
+        Form(
+          child: AnimalSwitchFormField(
+            validator: (next) => next == true ? null : '需要开启',
+          ),
+        ),
       ],
+    );
+  }
+}''';
+
+const _themeCode =
+    r'''import 'package:animal_island_flutter/animal_island_flutter.dart';
+import 'package:flutter/material.dart';
+
+final forestTheme = AnimalThemeData.fromPrimary(
+  const Color(0xFF4E8F75),
+  textColor: const Color(0xFF5B4228),
+).copyWith(
+  radius: 22,
+  radiusLarge: 30,
+);
+
+final neutralTheme = AnimalThemeData.fromPrimary(
+  const Color(0xFF4E8F75),
+  textColor: const Color(0xFF4C3525),
+).copyWith(
+  backgroundColor: const Color(0xFFF4F1E7),
+  secondaryBackgroundColor: const Color(0xFFE9DFCC),
+  borderColor: const Color(0xFFA89170),
+  lightBorderColor: const Color(0xFFE2D5BD),
+);
+
+final appFontTheme = AnimalThemeData.fallback().copyWith(
+  fontFamily: 'Inter',
+  fontPackage: null, // 使用应用自身注册的字体，而不是 package 字体
+  fontFamilyFallback: const ['Noto Sans SC', 'sans-serif'],
+  textHeight: 1.45,
+);
+
+class App extends StatelessWidget {
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimalTheme(
+      data: forestTheme,
+      child: Scaffold(
+        body: Center(
+          child: AnimalButton(
+            type: AnimalButtonType.primary,
+            onPressed: () {},
+            child: const Text('Forest primary'),
+          ),
+        ),
+      ),
     );
   }
 }''';
@@ -6104,8 +9568,18 @@ class _AppState extends State<App> {
         AnimalSelect<String>(options: options, value: value, onChanged: (next) => setState(() => value = next)),
         // 占位文本
         AnimalSelect<String>(options: options, value: null, onChanged: (_) {}, placeholder: '请选择'),
+        // 长列表限制最大高度，移动端更友好
+        AnimalSelect<String>(options: options, value: value, dropdownMaxHeight: 220, onChanged: (next) => setState(() => value = next)),
         // 禁用状态
         AnimalSelect<String>(options: options, value: value, onChanged: (_) {}, disabled: true),
+        // Form 表单封装
+        Form(
+          child: AnimalSelectFormField<String>(
+            options: options,
+            value: null,
+            validator: (next) => next == null ? '请选择' : null,
+          ),
+        ),
       ],
     );
   }
@@ -6126,12 +9600,19 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
         // 非受控
-        AnimalCheckbox<String>(options: options, defaultValue: ['beach']),
+        const AnimalCheckbox<String>(options: options, defaultValue: ['beach']),
         // 垂直排列
-        AnimalCheckbox<String>(options: options, direction: AnimalCheckboxDirection.vertical),
+        const AnimalCheckbox<String>(options: options, direction: AnimalCheckboxDirection.vertical),
+        // Form 表单封装
+        Form(
+          child: AnimalCheckboxFormField<String>(
+            options: options,
+            validator: (next) => next == null || next.isEmpty ? '至少选择一项' : null,
+          ),
+        ),
       ],
     );
   }
@@ -6238,6 +9719,8 @@ class App extends StatelessWidget {
         AnimalTableColumn(title: const Text('岛民'), width: 120, cellBuilder: (_, row, __) => Text(row['name'] as String)),
         AnimalTableColumn(title: const Text('年龄'), width: 80, alignment: Alignment.center, cellBuilder: (_, row, __) => Text('${row['age']}')),
         AnimalTableColumn(title: const Text('岛屿'), cellBuilder: (_, row, __) => Text(row['island'] as String)),
+        AnimalTableColumn(title: const Text('喜欢的水果'), cellBuilder: (_, row, __) => Text(row['fruit'] as String)),
+        AnimalTableColumn(title: const Text('爱好'), cellBuilder: (_, row, __) => Text(row['hobby'] as String)),
       ],
       rows: data,
       striped: true,
@@ -6378,6 +9861,16 @@ const AnimalRadio<String>(
     AnimalRadioOption(value: 'morning', label: Text('上午')),
     AnimalRadioOption(value: 'night', label: Text('夜晚')),
   ],
+)
+
+Form(
+  child: AnimalRadioFormField<String>(
+    options: const [
+      AnimalRadioOption(value: 'morning', label: Text('上午')),
+      AnimalRadioOption(value: 'night', label: Text('夜晚')),
+    ],
+    validator: (next) => next == null ? '请选择时间' : null,
+  ),
 )''';
 
 const _tagCode =
@@ -6554,7 +10047,14 @@ const AnimalSlider(
   divisions: 4,
 )
 
-const AnimalSlider(defaultValue: 60, disabled: true)''';
+const AnimalSlider(defaultValue: 60, disabled: true)
+
+Form(
+  child: AnimalSliderFormField(
+    divisions: 10,
+    validator: (next) => (next ?? 0) >= 50 ? null : '至少 50',
+  ),
+)''';
 
 const _rateCode = r'''AnimalRate(
   value: rate,
@@ -6563,7 +10063,13 @@ const _rateCode = r'''AnimalRate(
 
 const AnimalRate(defaultValue: 3)
 const AnimalRate(defaultValue: 6, count: 8)
-const AnimalRate(defaultValue: 4, disabled: true)''';
+const AnimalRate(defaultValue: 4, disabled: true)
+
+Form(
+  child: AnimalRateFormField(
+    validator: (next) => (next ?? 0) > 0 ? null : '请评分',
+  ),
+)''';
 
 const _segmentedCode = r'''AnimalSegmented<String>(
   value: mode,
@@ -6592,6 +10098,293 @@ const AnimalSkeleton(
   child: AnimalAlert(
     type: AnimalAlertType.success,
     child: Text('加载完成'),
+  ),
+)''';
+
+const _formCode = r'''final formKey = GlobalKey<FormState>();
+
+AnimalForm(
+  formKey: formKey,
+  layout: AnimalFormLayout.horizontal,
+  labelWidth: 96,
+  child: Column(
+    children: const [
+      AnimalFormItem(
+        label: Text('岛民昵称'),
+        required: true,
+        help: Text('显示在岛民名片上。'),
+        child: AnimalInput(hintText: '请输入昵称', allowClear: true),
+      ),
+      AnimalFormItem(
+        label: Text('状态'),
+        errorText: '请确认今天是否开放登岛。',
+        child: AnimalSwitch(defaultValue: false),
+      ),
+    ],
+  ),
+)
+
+const AnimalForm(
+  layout: AnimalFormLayout.inline,
+  child: Wrap(
+    spacing: 12,
+    children: [
+      AnimalFormItem(
+        label: Text('关键词'),
+        margin: EdgeInsets.zero,
+        child: AnimalSearchInput(hintText: '搜索岛民'),
+      ),
+    ],
+  ),
+)''';
+
+const _inputPlusCode = r'''const AnimalTextarea(
+  hintText: '写下今天的岛屿计划',
+  rows: 4,
+  maxLength: 80,
+  allowClear: true,
+)
+
+const AnimalPasswordInput(initialValue: 'turnip-price')
+
+AnimalSearchInput(
+  hintText: '搜索收藏品',
+  onSearch: (value) => debugPrint(value),
+)
+
+AnimalNumberInput(
+  defaultValue: 3,
+  min: 0,
+  max: 10,
+  step: 1,
+  onChanged: (value) => debugPrint('$value'),
+)''';
+
+const _popoverCode = r'''const AnimalPopover(
+  title: Text('岛屿提示'),
+  content: Text('今日高价收购大头菜。'),
+  child: AnimalButton(
+    type: AnimalButtonType.primary,
+    child: Text('点击查看'),
+  ),
+)
+
+const AnimalPopover(
+  trigger: AnimalPopoverTrigger.hover,
+  placement: AnimalPopoverPlacement.right,
+  content: Text('右侧气泡'),
+  child: Text('悬停查看'),
+)
+
+AnimalPopover(
+  open: open,
+  trigger: AnimalPopoverTrigger.manual,
+  onOpenChanged: (value) => setState(() => open = value),
+  content: const Text('受控浮层'),
+  child: const Text('Manual'),
+)''';
+
+const _dropdownCode = r'''AnimalDropdown<String>(
+  items: const [
+    AnimalDropdownItem(
+      value: 'copy',
+      icon: Icon(Icons.copy_rounded),
+      label: Text('复制地址'),
+    ),
+    AnimalDropdownItem(
+      value: 'delete',
+      icon: Icon(Icons.delete_rounded),
+      label: Text('删除记录'),
+      disabled: true,
+    ),
+  ],
+  onChanged: (value) => setState(() => selected = value),
+  child: const AnimalButton(
+    type: AnimalButtonType.primary,
+    child: Text('打开菜单'),
+  ),
+)''';
+
+const _drawerCode = r'''AnimalDrawer.show<void>(
+  context: context,
+  placement: AnimalDrawerPlacement.right,
+  title: const Text('岛屿背包'),
+  footer: AnimalButton(
+    type: AnimalButtonType.primary,
+    block: true,
+    onPressed: () => Navigator.of(context).maybePop(),
+    child: const Text('整理完成'),
+  ),
+  child: const Text('抽屉内容'),
+)
+
+AnimalDrawer.show<void>(
+  context: context,
+  placement: AnimalDrawerPlacement.left,
+  child: const Text('左侧抽屉'),
+)''';
+
+const _confirmDialogCode = r'''final result = await AnimalConfirmDialog.show(
+  context: context,
+  title: const Text('提交订单'),
+  content: const Text('确定要提交这批岛屿物资吗？'),
+);
+
+await AnimalConfirmDialog.show(
+  context: context,
+  title: const Text('删除记录'),
+  danger: true,
+  okText: '删除',
+  content: const Text('删除后无法恢复，确定继续吗？'),
+);''';
+
+const _descriptionsCode = r'''const AnimalDescriptions(
+  title: Text('岛屿信息'),
+  column: 3,
+  items: [
+    AnimalDescriptionItem(label: Text('名称'), child: Text('星露岛')),
+    AnimalDescriptionItem(label: Text('水果'), child: Text('桃子')),
+    AnimalDescriptionItem(label: Text('天气'), child: Text('晴朗')),
+    AnimalDescriptionItem(
+      label: Text('公告'),
+      span: 2,
+      child: Text('今晚八点有烟花大会。'),
+    ),
+  ],
+)
+
+const AnimalDescriptions(
+  column: 2,
+  layout: AnimalDescriptionsLayout.vertical,
+  items: [
+    AnimalDescriptionItem(label: Text('任务'), child: Text('整理花园')),
+    AnimalDescriptionItem(label: Text('负责人'), child: Text('西施惠')),
+  ],
+)
+// responsive 默认为 true，窄容器下会自动减少列数并切换为纵向标签。''';
+
+const _statisticCode = r'''const AnimalStatistic(
+  title: Text('今日访客'),
+  value: 128,
+  suffix: Text('人'),
+  description: Text('比昨天 +18'),
+)
+
+const AnimalStatistic(
+  title: Text('大头菜价格'),
+  value: 586,
+  prefix: Icon(Icons.spa_rounded),
+  suffix: Text('铃钱'),
+  color: Color(0xFFE5A928),
+)''';
+
+const _timelineCode = r'''AnimalTimeline(
+  items: [
+    AnimalTimelineItem(
+      title: const Text('整理背包'),
+      description: const Text('检查工具和素材是否齐全。'),
+      time: const Text('09:00'),
+      status: AnimalTimelineItemStatus.success,
+      icon: const Icon(Icons.check_rounded),
+      onTap: () => setState(() => activeStep = '整理背包'),
+    ),
+    AnimalTimelineItem(
+      title: const Text('出发采集'),
+      description: const Text('前往北侧森林采集木材。'),
+      time: const Text('10:30'),
+      status: AnimalTimelineItemStatus.primary,
+      onTap: () => setState(() => activeStep = '出发采集'),
+    ),
+    const AnimalTimelineItem(
+      title: Text('等待确认'),
+      status: AnimalTimelineItemStatus.warning,
+      disabled: true,
+    ),
+  ],
+)
+// 带 onTap 的节点支持 hover、小手和 Enter / Space。''';
+
+const _calendarCode = r'''AnimalCalendar(
+  value: selectedDate,
+  month: DateTime(selectedDate.year, selectedDate.month),
+  firstDate: DateTime(2026, 5, 1),
+  lastDate: DateTime(2026, 5, 31),
+  onChanged: (value) => setState(() => selectedDate = value),
+  onMonthChanged: (value) => debugPrint('$value'),
+)
+// 聚焦日期后可用方向键移动，PageUp / PageDown 切换月份。
+
+AnimalCalendarFormField(
+  defaultValue: DateTime(2026, 5, 18),
+  firstDate: DateTime(2026, 5, 10),
+  lastDate: DateTime(2026, 5, 24),
+  validator: (value) => value == null ? '请选择预约日期' : null,
+)''';
+
+const _uploadCode = r'''AnimalUpload(
+  files: const [
+    AnimalUploadFile(
+      name: 'island-plan.pdf',
+      status: AnimalUploadStatus.uploading,
+      progress: 0.58,
+      size: '2.4 MB',
+    ),
+    AnimalUploadFile(
+      name: 'market-photo.png',
+      status: AnimalUploadStatus.done,
+      message: '上传完成',
+    ),
+  ],
+  onTap: () {},
+  onRemove: (file) {},
+)
+// 上传区域获得焦点后支持 Enter / Space 触发 onTap。
+
+AnimalUploadFormField(
+  files: files,
+  title: '上传资料',
+  hint: '至少保留一个资料文件',
+  validator: (files) => files == null || files.isEmpty ? '请上传资料附件' : null,
+  onChanged: (files) => setState(() => this.files = files),
+)''';
+
+const _treeCode = r'''AnimalTree<String>(
+  selectedValue: selected,
+  defaultExpandedValues: const ['plants'],
+  onChanged: (value) => setState(() => selected = value),
+  nodes: const [
+    AnimalTreeNode(
+      value: 'plants',
+      label: Text('植物图鉴'),
+      icon: Icon(Icons.local_florist_rounded),
+      children: [
+        AnimalTreeNode(value: 'rose', label: Text('玫瑰')),
+        AnimalTreeNode(value: 'tulip', label: Text('郁金香')),
+      ],
+    ),
+  ],
+)
+
+AnimalTreeFormField<String>(
+  nodes: nodes,
+  defaultValue: selected,
+  defaultExpandedValues: const ['plants'],
+  validator: (value) => value == null ? '请选择一个图鉴节点' : null,
+  onChanged: (value) => setState(() => selected = value),
+)''';
+
+const _resultCode = r'''const AnimalResult(
+  status: AnimalResultStatus.success,
+  title: Text('岛屿资料提交成功'),
+  description: Text('新的访客计划已经同步到服务处。'),
+  extra: AnimalTag(
+    color: AnimalTagColor.success,
+    child: Text('已归档'),
+  ),
+  action: AnimalButton(
+    type: AnimalButtonType.primary,
+    onPressed: null,
+    child: Text('返回列表'),
   ),
 )''';
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -56,9 +57,9 @@ class _AnimalSegmentedState<T> extends State<AnimalSegmented<T>> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0E8D8),
+        color: theme.secondaryBackgroundColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFD8CCB8), width: 2),
+        border: Border.all(color: theme.controlBorderColor, width: 2),
       ),
       child: Wrap(
         spacing: 4,
@@ -106,6 +107,7 @@ class _SegmentButton<T> extends StatefulWidget {
 
 class _SegmentButtonState<T> extends State<_SegmentButton<T>> {
   var _hovered = false;
+  var _focused = false;
 
   bool get _enabled => !widget.disabled;
 
@@ -115,53 +117,77 @@ class _SegmentButtonState<T> extends State<_SegmentButton<T>> {
         ? widget.theme.disabledTextColor
         : widget.active
             ? Colors.white
-            : _hovered
+            : _hovered || _focused
                 ? widget.theme.primaryColor
                 : widget.theme.textColor;
 
-    return MouseRegion(
-      cursor: _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      onEnter: _enabled ? (_) => setState(() => _hovered = true) : null,
-      onExit: _enabled ? (_) => setState(() => _hovered = false) : null,
-      child: GestureDetector(
-        onTap: _enabled ? widget.onTap : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: widget.active
-                ? widget.theme.primaryColor
-                : _hovered
-                    ? widget.theme.primaryBackgroundColor
-                    : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: widget.active
-                ? const [
-                    BoxShadow(
-                      color: Color(0xFFBDAEA0),
-                      offset: Offset(0, 3),
-                      blurRadius: 0,
-                    ),
-                  ]
-                : null,
-          ),
-          child: DefaultTextStyle.merge(
-            style: widget.theme.textStyle(
-              size: 13,
-              weight: FontWeight.w900,
-              color: foreground,
+    return FocusableActionDetector(
+      enabled: _enabled,
+      mouseCursor:
+          _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onShowFocusHighlight: (value) {
+        if (mounted) {
+          setState(() => _focused = value);
+        }
+      },
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            if (_enabled) {
+              widget.onTap();
+            }
+            return null;
+          },
+        ),
+      },
+      child: MouseRegion(
+        cursor: _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        onEnter: _enabled ? (_) => setState(() => _hovered = true) : null,
+        onExit: _enabled ? (_) => setState(() => _hovered = false) : null,
+        child: GestureDetector(
+          onTap: _enabled ? widget.onTap : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: widget.active
+                  ? widget.theme.primaryColor
+                  : _hovered || _focused
+                      ? widget.theme.primaryBackgroundColor
+                      : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: widget.active
+                  ? [
+                      BoxShadow(
+                        color: widget.theme.tactileShadowColor,
+                        offset: const Offset(0, 3),
+                        blurRadius: 0,
+                      ),
+                    ]
+                  : null,
             ),
-            child: IconTheme.merge(
-              data: IconThemeData(color: foreground, size: 16),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.option.icon != null) ...[
-                    widget.option.icon!,
-                    const SizedBox(width: 6),
+            child: DefaultTextStyle.merge(
+              style: widget.theme.textStyle(
+                size: 13,
+                weight: FontWeight.w900,
+                color: foreground,
+              ),
+              child: IconTheme.merge(
+                data: IconThemeData(color: foreground, size: 16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.option.icon != null) ...[
+                      widget.option.icon!,
+                      const SizedBox(width: 6),
+                    ],
+                    widget.option.label,
                   ],
-                  widget.option.label,
-                ],
+                ),
               ),
             ),
           ),

@@ -53,6 +53,22 @@ class _AnimalTooltipState extends State<AnimalTooltip> {
   }
 
   @override
+  void didUpdateWidget(covariant AnimalTooltip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_entry != null &&
+        (oldWidget.message != widget.message ||
+            oldWidget.placement != widget.placement ||
+            oldWidget.preferBelow != widget.preferBelow ||
+            oldWidget.gap != widget.gap)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _entry?.markNeedsBuild();
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) => _scheduleShow(),
@@ -225,9 +241,9 @@ class _TooltipBubble extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 240),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF8D6),
+            color: theme.elevatedBackgroundColor,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFD9C889), width: 2),
+            border: Border.all(color: theme.warmBorderColor, width: 2),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x33000000),
@@ -241,7 +257,7 @@ class _TooltipBubble extends StatelessWidget {
             style: theme.textStyle(
               size: 12,
               weight: FontWeight.w700,
-              color: const Color(0xFF794F27),
+              color: theme.textColor,
             ),
           ),
         ),

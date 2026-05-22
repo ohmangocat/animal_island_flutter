@@ -22,6 +22,8 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
     required this.shadowColor,
     required this.fontFamily,
     required this.fontPackage,
+    required this.fontFamilyFallback,
+    required this.textHeight,
     required this.borderWidth,
     required this.radiusSmall,
     required this.radius,
@@ -51,7 +53,9 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
       disabledBackgroundColor: Color(0xFFF0ECE2),
       shadowColor: Color(0xFF3D3428),
       fontFamily: 'Nunito',
-      fontPackage: 'animal_island_flutter',
+      fontPackage: _defaultFontPackage,
+      fontFamilyFallback: _fallbackFonts,
+      textHeight: 1.5715,
       borderWidth: 2,
       radiusSmall: 16,
       radius: 18,
@@ -59,6 +63,38 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
       heightSmall: 32,
       height: 40,
       heightLarge: 48,
+    );
+  }
+
+  factory AnimalThemeData.fromPrimary(
+    Color primaryColor, {
+    Color? primaryHoverColor,
+    Color? primaryActiveColor,
+    Color? primaryBackgroundColor,
+    Color? textColor,
+    String? fontFamily,
+    String? fontPackage = _defaultFontPackage,
+    List<String>? fontFamilyFallback,
+  }) {
+    final hsl = HSLColor.fromColor(primaryColor);
+    final backgroundLightness = hsl.lightness >= 0.72 ? 0.96 : 0.94;
+    final backgroundSaturation = (hsl.saturation * 0.34).clamp(0.08, 0.36);
+
+    return AnimalThemeData.fallback().copyWith(
+      primaryColor: primaryColor,
+      primaryHoverColor:
+          primaryHoverColor ?? _shiftLightness(primaryColor, 0.08),
+      primaryActiveColor:
+          primaryActiveColor ?? _shiftLightness(primaryColor, -0.10),
+      primaryBackgroundColor: primaryBackgroundColor ??
+          hsl
+              .withSaturation(backgroundSaturation)
+              .withLightness(backgroundLightness)
+              .toColor(),
+      textColor: textColor,
+      fontFamily: fontFamily,
+      fontPackage: fontPackage,
+      fontFamilyFallback: fontFamilyFallback,
     );
   }
 
@@ -81,6 +117,8 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
   final Color shadowColor;
   final String fontFamily;
   final String? fontPackage;
+  final List<String> fontFamilyFallback;
+  final double textHeight;
   final double borderWidth;
   final double radiusSmall;
   final double radius;
@@ -93,24 +131,16 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
     double size = 14,
     FontWeight weight = FontWeight.w600,
     Color? color,
+    double? height,
   }) {
     return TextStyle(
       color: color ?? textColor,
       fontFamily: fontFamily,
-      fontFamilyFallback: const [
-        'Noto Sans SC',
-        'Zen Maru Gothic',
-        'HarmonyOS Sans SC',
-        'MiSans',
-        'PingFang SC',
-        'Hiragino Sans GB',
-        'Microsoft YaHei',
-        'sans-serif',
-      ],
+      fontFamilyFallback: fontFamilyFallback,
       package: fontPackage,
       fontSize: size,
       fontWeight: weight,
-      height: 1.5715,
+      height: height ?? textHeight,
       letterSpacing: 0,
     );
   }
@@ -139,6 +169,94 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
         ),
       ];
 
+  Color get primarySolidColor {
+    return _shiftPrimaryAccent(primaryColor, const Color(0xFF0CC0B5));
+  }
+
+  Color get primaryStripeBackgroundColor {
+    return _shiftPrimaryAccent(primaryColor, const Color(0xFF0EC4B6));
+  }
+
+  Color get primaryStripeColor {
+    return _shiftPrimaryAccent(primaryColor, const Color(0xFF01B0A7));
+  }
+
+  Color get primaryStripeBorderColor {
+    return _shiftPrimaryAccent(primaryColor, const Color(0xFF4DE2DA));
+  }
+
+  Color get contentBackgroundColor {
+    return _shiftWarmNeutral(
+      backgroundColor,
+      _defaultBackgroundColor,
+      const Color(0xFFF7F3DF),
+    );
+  }
+
+  Color get elevatedBackgroundColor {
+    return _shiftWarmNeutral(
+      backgroundColor,
+      _defaultBackgroundColor,
+      const Color(0xFFFFF8D6),
+    );
+  }
+
+  Color get subtleBackgroundColor {
+    return _shiftWarmNeutral(
+      backgroundColor,
+      _defaultBackgroundColor,
+      const Color(0xFFFFFDF7),
+    );
+  }
+
+  Color get controlBorderColor {
+    return _shiftWarmNeutral(
+      backgroundColor,
+      _defaultBackgroundColor,
+      const Color(0xFFD8CCB8),
+    );
+  }
+
+  Color get warmBorderColor {
+    return _shiftWarmNeutral(
+      backgroundColor,
+      _defaultBackgroundColor,
+      const Color(0xFFD9C889),
+    );
+  }
+
+  Color get mutedIconColor {
+    return _shiftWarmNeutral(
+      textColor,
+      _defaultTextColor,
+      const Color(0xFFA0936E),
+    );
+  }
+
+  Color get placeholderColor {
+    return _shiftWarmNeutral(
+      textColor,
+      _defaultTextColor,
+      const Color(0xFFA09080),
+    );
+  }
+
+  Color get bodyTextColor {
+    return _shiftWarmNeutral(
+      textColor,
+      _defaultTextColor,
+      const Color(0xFF725D42),
+    );
+  }
+
+  Color get tactileShadowColor {
+    return _shiftWarmNeutral(
+      backgroundColor,
+      _defaultBackgroundColor,
+      const Color(0xFFBDAEA0),
+    );
+  }
+
   @override
   AnimalThemeData copyWith({
     Color? primaryColor,
@@ -159,7 +277,9 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
     Color? disabledBackgroundColor,
     Color? shadowColor,
     String? fontFamily,
-    String? fontPackage,
+    Object? fontPackage = _copySentinel,
+    List<String>? fontFamilyFallback,
+    double? textHeight,
     double? borderWidth,
     double? radiusSmall,
     double? radius,
@@ -190,7 +310,11 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
           disabledBackgroundColor ?? this.disabledBackgroundColor,
       shadowColor: shadowColor ?? this.shadowColor,
       fontFamily: fontFamily ?? this.fontFamily,
-      fontPackage: fontPackage ?? this.fontPackage,
+      fontPackage: identical(fontPackage, _copySentinel)
+          ? this.fontPackage
+          : fontPackage as String?,
+      fontFamilyFallback: fontFamilyFallback ?? this.fontFamilyFallback,
+      textHeight: textHeight ?? this.textHeight,
       borderWidth: borderWidth ?? this.borderWidth,
       radiusSmall: radiusSmall ?? this.radiusSmall,
       radius: radius ?? this.radius,
@@ -236,6 +360,9 @@ class AnimalThemeData extends ThemeExtension<AnimalThemeData> {
       shadowColor: Color.lerp(shadowColor, other.shadowColor, t)!,
       fontFamily: t < 0.5 ? fontFamily : other.fontFamily,
       fontPackage: t < 0.5 ? fontPackage : other.fontPackage,
+      fontFamilyFallback:
+          t < 0.5 ? fontFamilyFallback : other.fontFamilyFallback,
+      textHeight: _lerpDouble(textHeight, other.textHeight, t),
       borderWidth: _lerpDouble(borderWidth, other.borderWidth, t),
       radiusSmall: _lerpDouble(radiusSmall, other.radiusSmall, t),
       radius: _lerpDouble(radius, other.radius, t),
@@ -295,3 +422,82 @@ class AnimalTheme extends StatelessWidget {
 }
 
 double _lerpDouble(double a, double b, double t) => a + (b - a) * t;
+
+const _copySentinel = Object();
+
+const _defaultFontPackage = 'animal_island_flutter';
+
+const _fallbackFonts = [
+  'Noto Sans SC',
+  'Zen Maru Gothic',
+  'HarmonyOS Sans SC',
+  'MiSans',
+  'PingFang SC',
+  'Hiragino Sans GB',
+  'Microsoft YaHei',
+  'sans-serif',
+];
+
+const _defaultPrimaryColor = Color(0xFF19C8B9);
+const _defaultTextColor = Color(0xFF794F27);
+const _defaultBackgroundColor = Color(0xFFF8F8F0);
+
+Color _shiftLightness(Color color, double amount) {
+  final hsl = HSLColor.fromColor(color);
+  return hsl
+      .withLightness((hsl.lightness + amount).clamp(0.0, 1.0).toDouble())
+      .toColor();
+}
+
+Color _shiftPrimaryAccent(Color primaryColor, Color defaultAccentColor) {
+  if (primaryColor == _defaultPrimaryColor) {
+    return defaultAccentColor;
+  }
+
+  final primary = HSLColor.fromColor(primaryColor);
+  final defaultPrimary = HSLColor.fromColor(_defaultPrimaryColor);
+  final defaultAccent = HSLColor.fromColor(defaultAccentColor);
+
+  return primary
+      .withSaturation(
+        (primary.saturation +
+                defaultAccent.saturation -
+                defaultPrimary.saturation)
+            .clamp(0.0, 1.0)
+            .toDouble(),
+      )
+      .withLightness(
+        (primary.lightness + defaultAccent.lightness - defaultPrimary.lightness)
+            .clamp(0.0, 1.0)
+            .toDouble(),
+      )
+      .toColor();
+}
+
+Color _shiftWarmNeutral(
+  Color baseColor,
+  Color defaultBaseColor,
+  Color defaultNeutralColor,
+) {
+  if (baseColor == defaultBaseColor) {
+    return defaultNeutralColor;
+  }
+
+  final base = HSLColor.fromColor(baseColor);
+  final fallbackBase = HSLColor.fromColor(defaultBaseColor);
+  final fallbackNeutral = HSLColor.fromColor(defaultNeutralColor);
+
+  return base
+      .withHue((base.hue + fallbackNeutral.hue - fallbackBase.hue) % 360)
+      .withSaturation(
+        (base.saturation + fallbackNeutral.saturation - fallbackBase.saturation)
+            .clamp(0.0, 1.0)
+            .toDouble(),
+      )
+      .withLightness(
+        (base.lightness + fallbackNeutral.lightness - fallbackBase.lightness)
+            .clamp(0.0, 1.0)
+            .toDouble(),
+      )
+      .toColor();
+}

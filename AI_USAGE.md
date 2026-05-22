@@ -6,7 +6,7 @@
 
 ```yaml
 dependencies:
-  animal_island_flutter: ^0.1.1
+  animal_island_flutter: ^0.1.2
 ```
 
 ```dart
@@ -22,6 +22,37 @@ MaterialApp(
   ),
 )
 ```
+
+主题定制优先使用 `AnimalThemeData.fromPrimary(...)`，再通过 `copyWith` 覆盖字体、圆角、行高、背景、文字和边框：
+
+```dart
+final theme = AnimalThemeData.fromPrimary(
+  const Color(0xFF4E8F75),
+  textColor: const Color(0xFF5B4228),
+).copyWith(
+  backgroundColor: const Color(0xFFF4F1E7),
+  secondaryBackgroundColor: const Color(0xFFE9DFCC),
+  borderColor: const Color(0xFFA89170),
+  lightBorderColor: const Color(0xFFE2D5BD),
+  radius: 22,
+  fontFamily: 'Inter',
+  fontPackage: null,
+  fontFamilyFallback: const ['Noto Sans SC', 'sans-serif'],
+  textHeight: 1.45,
+);
+
+AnimalTheme(data: theme, child: const App());
+```
+
+如果字体来自业务 App 自己的 `pubspec.yaml`，需要显式传 `fontPackage: null`。
+
+主题换肤时不要逐个组件传颜色。优先使用这些令牌：
+
+- 主色链路：`primaryColor`、`primaryHoverColor`、`primaryActiveColor`、`primaryBackgroundColor`。
+- 条纹和强调：`primarySolidColor`、`primaryStripeBackgroundColor`、`primaryStripeColor`、`primaryStripeBorderColor`。
+- 中立底色：`backgroundColor`、`secondaryBackgroundColor`、`contentBackgroundColor`、`elevatedBackgroundColor`、`subtleBackgroundColor`。
+- 文本和图标：`textColor`、`bodyTextColor`、`secondaryTextColor`、`placeholderColor`、`mutedIconColor`。
+- 边框和阴影：`borderColor`、`lightBorderColor`、`controlBorderColor`、`warmBorderColor`、`tactileShadowColor`。
 
 最低环境来自 `pubspec.yaml`：
 
@@ -47,10 +78,13 @@ export 'src/components/dialog.dart';
 export 'src/components/divider.dart';
 export 'src/components/empty.dart';
 export 'src/components/footer.dart';
+export 'src/components/form.dart';
 export 'src/components/icon.dart';
 export 'src/components/input.dart';
+export 'src/components/input_variants.dart';
 export 'src/components/loading.dart';
 export 'src/components/message.dart';
+export 'src/components/overlay.dart';
 export 'src/components/pagination.dart';
 export 'src/components/phone.dart';
 export 'src/components/progress.dart';
@@ -68,6 +102,7 @@ export 'src/components/tag.dart';
 export 'src/components/time.dart';
 export 'src/components/tooltip.dart';
 export 'src/components/typewriter.dart';
+export 'src/components/data_display.dart';
 ```
 
 ## 2. Component API
@@ -125,12 +160,67 @@ AnimalInput({
   bool enabled = true,
   bool obscureText = false,
   TextInputType? keyboardType,
+  TextInputAction? textInputAction,
+  TextCapitalization textCapitalization = TextCapitalization.none,
+  Iterable<String>? autofillHints,
+  int? maxLines = 1,
+  int? maxLength,
   ValueChanged<String>? onChanged,
+  ValueChanged<String>? onSubmitted,
+  VoidCallback? onEditingComplete,
   VoidCallback? onClear,
+})
+
+AnimalInputFormField({
+  String? initialValue,
+  TextEditingController? controller,
+  String? hintText,
+  AnimalInputSize size = AnimalInputSize.middle,
+  Widget? prefix,
+  Widget? suffix,
+  bool allowClear = false,
+  AnimalInputStatus? status,
+  bool shadow = false,
+  bool enabled = true,
+  bool obscureText = false,
+  TextInputType? keyboardType,
+  TextInputAction? textInputAction,
+  TextCapitalization textCapitalization = TextCapitalization.none,
+  Iterable<String>? autofillHints,
+  int? maxLines = 1,
+  int? maxLength,
+  ValueChanged<String>? onChanged,
+  ValueChanged<String>? onSubmitted,
+  VoidCallback? onEditingComplete,
+  VoidCallback? onClear,
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+  FormFieldSetter<String>? onSaved,
+  FormFieldValidator<String>? validator,
 })
 ```
 
 `controller` 与 `initialValue` 二选一优先使用 `controller`。`allowClear` 会显示清除按钮并触发 `onClear`。
+需要接入 Flutter `Form` 时使用 `AnimalInputFormField`，不要在外层再包一个 `TextFormField`。
+
+```dart
+final formKey = GlobalKey<FormState>();
+
+Form(
+  key: formKey,
+  child: AnimalInputFormField(
+    hintText: '岛民昵称',
+    allowClear: true,
+    textInputAction: TextInputAction.done,
+    validator: (value) {
+      if (value == null || value.trim().isEmpty) {
+        return '请输入昵称';
+      }
+      return null;
+    },
+    onSaved: (value) {},
+  ),
+)
+```
 
 ### 2.3 AnimalSwitch
 
@@ -147,9 +237,24 @@ AnimalSwitch({
   Widget? uncheckedChild,
   ValueChanged<bool>? onChanged,
 })
+
+AnimalSwitchFormField({
+  bool? value,
+  bool defaultValue = false,
+  AnimalSwitchSize size = AnimalSwitchSize.normal,
+  bool disabled = false,
+  bool loading = false,
+  Widget? checkedChild,
+  Widget? uncheckedChild,
+  ValueChanged<bool>? onChanged,
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+  FormFieldSetter<bool>? onSaved,
+  FormFieldValidator<bool>? validator,
+})
 ```
 
 `value` 非空时为受控模式；否则使用 `defaultValue` 初始化内部状态。
+接入 Flutter `Form` 时使用 `AnimalSwitchFormField`，错误文本会沿用 Animal 主题色。
 
 ### 2.4 AnimalDialog
 
@@ -235,10 +340,24 @@ AnimalSelect<T>({
   String placeholder = '请选择',
   bool disabled = false,
   double minWidth = 140,
+  double dropdownMaxHeight = 260,
+})
+
+AnimalSelectFormField<T>({
+  required List<AnimalSelectOption<T>> options,
+  ValueChanged<T>? onChanged,
+  T? value,
+  String placeholder = '请选择',
+  bool disabled = false,
+  double minWidth = 140,
+  double dropdownMaxHeight = 260,
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+  FormFieldSetter<T>? onSaved,
+  FormFieldValidator<T>? validator,
 })
 ```
 
-`AnimalSelect` 是受控组件，必须提供 `value` 和 `onChanged`。下拉层会根据视口空间自动上下翻转。
+`AnimalSelect` 是受控组件，必须提供 `value` 和 `onChanged`。下拉层会根据视口空间自动上下翻转，并通过 `dropdownMaxHeight` 限制高度，超出后内部滚动，避免移动端溢出。支持 hover 光标与键盘打开/选择/关闭。表单场景使用 `AnimalSelectFormField`，`onChanged` 可选。
 
 ### 2.9 AnimalCheckbox
 
@@ -262,6 +381,19 @@ AnimalCheckbox<T>({
   bool disabled = false,
   AnimalCheckboxDirection direction = AnimalCheckboxDirection.horizontal,
   ValueChanged<List<T>>? onChanged,
+})
+
+AnimalCheckboxFormField<T>({
+  required List<AnimalCheckboxOption<T>> options,
+  List<T>? value,
+  List<T> defaultValue = const [],
+  AnimalCheckboxSize size = AnimalCheckboxSize.middle,
+  bool disabled = false,
+  AnimalCheckboxDirection direction = AnimalCheckboxDirection.horizontal,
+  ValueChanged<List<T>>? onChanged,
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+  FormFieldSetter<List<T>>? onSaved,
+  FormFieldValidator<List<T>>? validator,
 })
 ```
 
@@ -366,6 +498,8 @@ AnimalTable<T>({
 })
 ```
 
+`AnimalTable` 在列宽总和超出容器时会自动横向滚动，并显示底部滚动条；窄屏或移动端无需额外包裹横向 `SingleChildScrollView`。
+
 ### 2.14 Extended Basics
 
 ```dart
@@ -388,6 +522,19 @@ AnimalRadio<T>({
   bool disabled = false,
   AnimalRadioDirection direction = AnimalRadioDirection.horizontal,
   ValueChanged<T>? onChanged,
+})
+
+AnimalRadioFormField<T>({
+  required List<AnimalRadioOption<T>> options,
+  T? value,
+  T? defaultValue,
+  AnimalRadioSize size = AnimalRadioSize.middle,
+  bool disabled = false,
+  AnimalRadioDirection direction = AnimalRadioDirection.horizontal,
+  ValueChanged<T>? onChanged,
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+  FormFieldSetter<T>? onSaved,
+  FormFieldValidator<T>? validator,
 })
 ```
 
@@ -514,12 +661,37 @@ AnimalSlider({
   ValueChanged<double>? onChanged,
 })
 
+AnimalSliderFormField({
+  double? value,
+  double defaultValue = 0,
+  double min = 0,
+  double max = 100,
+  int? divisions,
+  bool disabled = false,
+  bool showLabel = true,
+  ValueChanged<double>? onChanged,
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+  FormFieldSetter<double>? onSaved,
+  FormFieldValidator<double>? validator,
+})
+
 AnimalRate({
   int? value,
   int defaultValue = 0,
   int count = 5,
   bool disabled = false,
   ValueChanged<int>? onChanged,
+})
+
+AnimalRateFormField({
+  int? value,
+  int defaultValue = 0,
+  int count = 5,
+  bool disabled = false,
+  ValueChanged<int>? onChanged,
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+  FormFieldSetter<int>? onSaved,
+  FormFieldValidator<int>? validator,
 })
 ```
 
@@ -541,50 +713,405 @@ AnimalSkeleton({
 })
 ```
 
+### 2.16 Phase 3 Business Components
+
+```dart
+enum AnimalFormLayout { vertical, horizontal, inline }
+
+AnimalForm({
+  required Widget child,
+  GlobalKey<FormState>? formKey,
+  AnimalFormLayout layout = AnimalFormLayout.vertical,
+  double labelWidth = 112,
+  double spacing = 16,
+  AutovalidateMode? autovalidateMode,
+  VoidCallback? onChanged,
+})
+
+AnimalFormItem({
+  required Widget child,
+  Widget? label,
+  bool required = false,
+  Widget? help,
+  String? errorText,
+  AnimalFormLayout? layout,
+  double? labelWidth,
+  EdgeInsetsGeometry? margin,
+})
+```
+
+```dart
+AnimalTextarea({
+  TextEditingController? controller,
+  String? initialValue,
+  String? hintText,
+  int rows = 4,
+  int? maxLength,
+  bool allowClear = false,
+  bool enabled = true,
+  bool shadow = false,
+  AnimalInputStatus? status,
+  ValueChanged<String>? onChanged,
+  ValueChanged<String>? onSubmitted,
+  VoidCallback? onClear,
+})
+
+AnimalPasswordInput({
+  TextEditingController? controller,
+  String? initialValue,
+  String hintText = '请输入密码',
+  AnimalInputSize size = AnimalInputSize.middle,
+  bool allowClear = false,
+  bool enabled = true,
+  bool shadow = false,
+  AnimalInputStatus? status,
+  ValueChanged<String>? onChanged,
+  ValueChanged<String>? onSubmitted,
+})
+
+AnimalSearchInput({
+  TextEditingController? controller,
+  String? initialValue,
+  String hintText = '搜索',
+  AnimalInputSize size = AnimalInputSize.middle,
+  bool allowClear = true,
+  bool enabled = true,
+  bool shadow = false,
+  ValueChanged<String>? onChanged,
+  ValueChanged<String>? onSubmitted,
+  ValueChanged<String>? onSearch,
+})
+
+AnimalNumberInput({
+  num? value,
+  num defaultValue = 0,
+  num? min,
+  num? max,
+  num step = 1,
+  AnimalInputSize size = AnimalInputSize.middle,
+  bool enabled = true,
+  bool shadow = false,
+  ValueChanged<num>? onChanged,
+})
+```
+
+```dart
+enum AnimalPopoverPlacement { top, right, bottom, left }
+enum AnimalPopoverTrigger { click, hover, manual }
+
+AnimalPopover({
+  required Widget child,
+  required Widget content,
+  Widget? title,
+  AnimalPopoverPlacement placement = AnimalPopoverPlacement.bottom,
+  AnimalPopoverTrigger trigger = AnimalPopoverTrigger.click,
+  bool? open,
+  ValueChanged<bool>? onOpenChanged,
+  double width = 260,
+  double gap = 10,
+})
+
+AnimalDropdown<T>({
+  required Widget child,
+  required List<AnimalDropdownItem<T>> items,
+  required ValueChanged<T> onChanged,
+  AnimalPopoverPlacement placement = AnimalPopoverPlacement.bottom,
+  double width = 220,
+})
+```
+
+`AnimalDropdown` 选中非禁用项后会自动关闭浮层。`AnimalPopoverTrigger.manual` 需要通过 `open` 和 `onOpenChanged` 受控。
+
+```dart
+enum AnimalDrawerPlacement { left, right }
+
+AnimalDrawer.show<T>({
+  required BuildContext context,
+  required Widget child,
+  Widget? title,
+  Widget? footer,
+  AnimalDrawerPlacement placement = AnimalDrawerPlacement.right,
+  double width = 360,
+  bool barrierDismissible = true,
+})
+
+AnimalConfirmDialog.show({
+  required BuildContext context,
+  required Widget content,
+  Widget? title,
+  String okText = '确定',
+  String cancelText = '取消',
+  VoidCallback? onOk,
+  bool danger = false,
+})
+```
+
+```dart
+enum AnimalDescriptionsLayout { horizontal, vertical }
+
+AnimalDescriptions({
+  required List<AnimalDescriptionItem> items,
+  Widget? title,
+  int column = 3,
+  AnimalDescriptionsLayout layout = AnimalDescriptionsLayout.horizontal,
+  bool responsive = true,
+  double minColumnWidth = 170,
+})
+
+AnimalStatistic({
+  required num value,
+  Widget? title,
+  Widget? prefix,
+  Widget? suffix,
+  Widget? description,
+  Color? color,
+})
+
+enum AnimalTimelineItemStatus {
+  defaultStatus, success, warning, danger, primary,
+}
+
+AnimalTimelineItem({
+  required Widget title,
+  Widget? description,
+  Widget? time,
+  AnimalTimelineItemStatus status = AnimalTimelineItemStatus.defaultStatus,
+  Widget? icon,
+  VoidCallback? onTap,
+  bool disabled = false,
+})
+
+AnimalTimeline({
+  required List<AnimalTimelineItem> items,
+})
+```
+
+`AnimalDescriptions` 默认会根据容器宽度自动减少列数，窄容器下切换为纵向标签，适合抽屉、弹窗和移动端详情页。`AnimalTimelineItem.onTap` 会启用 hover、小手光标和 `Enter` / `Space` 键盘触发；只读节点不要传 `onTap`，禁用节点使用 `disabled: true`。
+
+### 2.17 Phase 4 Complex Business Components
+
+```dart
+AnimalCalendar({
+  DateTime? value,
+  DateTime? defaultValue,
+  DateTime? month,
+  DateTime? firstDate,
+  DateTime? lastDate,
+  ValueChanged<DateTime>? onChanged,
+  ValueChanged<DateTime>? onMonthChanged,
+})
+
+AnimalCalendarFormField({
+  DateTime? value,
+  DateTime? defaultValue,
+  DateTime? month,
+  DateTime? firstDate,
+  DateTime? lastDate,
+  bool disabled = false,
+  FormFieldValidator<DateTime>? validator,
+  FormFieldSetter<DateTime>? onSaved,
+})
+```
+
+`AnimalCalendar` 聚焦日期后支持方向键移动日期，`PageUp` / `PageDown` 切换月份；超出 `firstDate` / `lastDate` 的日期不会被选中。
+
+```dart
+enum AnimalUploadStatus { ready, uploading, done, error }
+
+AnimalUpload({
+  List<AnimalUploadFile> files = const [],
+  VoidCallback? onTap,
+  ValueChanged<AnimalUploadFile>? onRemove,
+  bool disabled = false,
+  String title = '上传文件',
+  String hint = '点击选择文件，或将文件拖到这里',
+})
+
+AnimalUploadFormField({
+  List<AnimalUploadFile> files = const [],
+  VoidCallback? onTap,
+  ValueChanged<AnimalUploadFile>? onRemove,
+  ValueChanged<List<AnimalUploadFile>>? onChanged,
+  bool disabled = false,
+  bool removable = true,
+  FormFieldValidator<List<AnimalUploadFile>>? validator,
+  FormFieldSetter<List<AnimalUploadFile>>? onSaved,
+})
+```
+
+`AnimalUpload` 上传区域获得焦点后支持 `Enter` / `Space` 触发 `onTap`，文件行删除按钮也支持 hover、小手和键盘触发。组件只负责展示和触发，文件选择、拖拽上传、权限处理仍由业务层完成。
+
+```dart
+AnimalTree<T>({
+  required List<AnimalTreeNode<T>> nodes,
+  T? selectedValue,
+  List<T> defaultExpandedValues = const [],
+  ValueChanged<T>? onChanged,
+  ValueChanged<List<T>>? onExpandedChanged,
+})
+
+AnimalTreeFormField<T>({
+  required List<AnimalTreeNode<T>> nodes,
+  T? selectedValue,
+  T? defaultValue,
+  List<T> defaultExpandedValues = const [],
+  bool disabled = false,
+  FormFieldValidator<T>? validator,
+  FormFieldSetter<T>? onSaved,
+})
+```
+
+```dart
+enum AnimalResultStatus { success, warning, error, info }
+
+AnimalResult({
+  required Widget title,
+  Widget? description,
+  AnimalResultStatus status = AnimalResultStatus.info,
+  Widget? extra,
+  Widget? action,
+})
+```
+
 ## 3. Common Recipes
 
 ### Form
 
 ```dart
-AnimalCard(
+final formKey = GlobalKey<FormState>();
+
+Form(
+  key: formKey,
+  child: AnimalCard(
+    child: Column(
+      children: [
+        AnimalInputFormField(
+          hintText: '邮箱',
+          allowClear: true,
+          keyboardType: TextInputType.emailAddress,
+          validator: (value) => value == null || value.isEmpty ? '请输入邮箱' : null,
+        ),
+        const SizedBox(height: 12),
+        AnimalSelectFormField<String>(
+          options: const [
+            AnimalSelectOption(key: 'north', label: '北半球'),
+            AnimalSelectOption(key: 'south', label: '南半球'),
+          ],
+          value: null,
+          validator: (value) => value == null ? '请选择岛屿半球' : null,
+        ),
+        const SizedBox(height: 12),
+        AnimalSwitchFormField(
+          checkedChild: const Text('ON'),
+          uncheckedChild: const Text('OFF'),
+          validator: (value) => value == true ? null : '需要同意通知',
+        ),
+        const SizedBox(height: 12),
+        AnimalCalendarFormField(
+          defaultValue: DateTime(2026, 5, 18),
+          validator: (value) => value == null ? '请选择预约日期' : null,
+        ),
+        const SizedBox(height: 16),
+        AnimalButton(
+          type: AnimalButtonType.primary,
+          block: true,
+          onPressed: () {
+            final state = formKey.currentState!;
+            if (state.validate()) {
+              state.save();
+            }
+          },
+          child: const Text('提交'),
+        ),
+      ],
+    ),
+  ),
+)
+```
+
+### Form Layout
+
+```dart
+AnimalForm(
+  formKey: formKey,
+  layout: AnimalFormLayout.horizontal,
+  labelWidth: 96,
   child: Column(
-    children: [
-      AnimalInput(
-        hintText: '邮箱',
-        allowClear: true,
-        keyboardType: TextInputType.emailAddress,
-        onChanged: (value) {},
+    children: const [
+      AnimalFormItem(
+        label: Text('岛民昵称'),
+        required: true,
+        help: Text('显示在岛民名片上'),
+        child: AnimalInput(hintText: '请输入昵称', allowClear: true),
       ),
-      const SizedBox(height: 12),
-      AnimalSwitch(
-        defaultValue: true,
-        checkedChild: const Text('ON'),
-        uncheckedChild: const Text('OFF'),
-        onChanged: (value) {},
-      ),
-      const SizedBox(height: 16),
-      AnimalButton(
-        type: AnimalButtonType.primary,
-        block: true,
-        onPressed: () {},
-        child: const Text('提交'),
+      AnimalFormItem(
+        label: Text('留言'),
+        child: AnimalTextarea(rows: 4, hintText: '写下今天的计划'),
       ),
     ],
   ),
 )
 ```
 
+### Overlay
+
+```dart
+AnimalDropdown<String>(
+  items: const [
+    AnimalDropdownItem(
+      value: 'copy',
+      icon: Icon(Icons.copy_rounded),
+      label: Text('复制地址'),
+    ),
+    AnimalDropdownItem(
+      value: 'delete',
+      label: Text('删除记录'),
+      disabled: true,
+    ),
+  ],
+  onChanged: (value) {},
+  child: const AnimalButton(child: Text('打开菜单')),
+)
+
+AnimalDrawer.show<void>(
+  context: context,
+  title: const Text('岛屿背包'),
+  child: const Text('抽屉内容'),
+)
+```
+
+### Data Display
+
+```dart
+const AnimalDescriptions(
+  title: Text('岛屿信息'),
+  items: [
+    AnimalDescriptionItem(label: Text('名称'), child: Text('星露岛')),
+    AnimalDescriptionItem(label: Text('水果'), child: Text('桃子')),
+  ],
+)
+
+const AnimalStatistic(title: Text('今日访客'), value: 128, suffix: Text('人'))
+
+const AnimalTimeline(
+  items: [
+    AnimalTimelineItem(
+      title: Text('整理背包'),
+      status: AnimalTimelineItemStatus.success,
+    ),
+  ],
+)
+```
+
 ### Confirm Dialog
 
 ```dart
-AnimalDialog.show<void>(
+final ok = await AnimalConfirmDialog.show(
   context: context,
   title: const Text('删除记录？'),
-  child: const Text('这个操作无法撤销。'),
-  onOk: () {
-    deleteRecord();
-    Navigator.of(context).maybePop();
-  },
+  danger: true,
+  okText: '删除',
+  content: const Text('这个操作无法撤销。'),
 );
 ```
 
@@ -620,6 +1147,12 @@ AnimalTable<Item>(
 12. 仓库内 `example/pubspec.yaml` 可使用 `path: ..`，对外文档安装示例使用 pub.dev 版本。
 13. `AnimalSlider.value` 使用 `min..max` 范围内数值；`AnimalProgress.value` 才使用 `0..1` 比例。
 14. `AnimalSteps.current` 是从 `0` 开始的步骤索引。
+15. 自定义品牌色优先用 `AnimalThemeData.fromPrimary`；不要逐个组件硬编码颜色。
+16. 完整换肤要同时考虑 `backgroundColor`、`secondaryBackgroundColor`、`textColor`、`borderColor` 和 `lightBorderColor`，组件会派生中立底色和控件边框。
+17. 使用应用自身字体时，`copyWith(fontPackage: null)`，否则 Flutter 会按 package 字体查找。
+18. `AnimalPopover.open` 仅用于受控模式；不要像 React 一样传 `visible` 或 `openChange`。
+19. `AnimalNumberInput.value` 是 `num?`，回调也是 `ValueChanged<num>`，需要整数时在业务层 `round()`。
+20. `AnimalDescriptions.column` 至少按 `1` 处理，`span` 会被限制在 `1..column`。
 
 ## 5. Minimal Boilerplate
 

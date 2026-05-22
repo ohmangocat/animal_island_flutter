@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -45,10 +46,10 @@ class _AnimalAlertState extends State<AnimalAlert> {
         color: palette.background,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: palette.border, width: 2),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0xFFBDAEA0),
-            offset: Offset(0, 3),
+            color: theme.tactileShadowColor,
+            offset: const Offset(0, 3),
             blurRadius: 0,
           ),
         ],
@@ -65,7 +66,7 @@ class _AnimalAlertState extends State<AnimalAlert> {
               style: theme.textStyle(
                 size: 14,
                 weight: FontWeight.w600,
-                color: const Color(0xFF725D42),
+                color: theme.bodyTextColor,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,37 +132,95 @@ class _AlertCloseButton extends StatefulWidget {
 }
 
 class _AlertCloseButtonState extends State<_AlertCloseButton> {
+  final _focusNode = FocusNode();
   var _hovered = false;
+  var _focused = false;
+  var _pressed = false;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
+    final highlighted = _hovered || _focused;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          width: 24,
-          height: 24,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: _hovered
-                ? const Color(0xFF725D42).withValues(alpha: 0.10)
-                : Colors.transparent,
-            shape: BoxShape.circle,
+    return Semantics(
+      button: true,
+      enabled: true,
+      label: '关闭提示',
+      child: FocusableActionDetector(
+        focusNode: _focusNode,
+        mouseCursor: SystemMouseCursors.click,
+        onShowFocusHighlight: (value) {
+          if (mounted) {
+            setState(() => _focused = value);
+          }
+        },
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              widget.onTap();
+              return null;
+            },
           ),
-          child: Icon(
-            Icons.close_rounded,
-            size: 16,
-            color: _hovered ? theme.textColor : theme.secondaryTextColor,
+        },
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => _setHovered(true),
+          onExit: (_) {
+            _setHovered(false);
+            _setPressed(false);
+          },
+          child: GestureDetector(
+            onTapDown: (_) => _setPressed(true),
+            onTapUp: (_) => _setPressed(false),
+            onTapCancel: () => _setPressed(false),
+            onTap: () {
+              _focusNode.requestFocus();
+              widget.onTap();
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              transform: Matrix4.translationValues(0, _pressed ? 1 : 0, 0),
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: highlighted
+                    ? theme.bodyTextColor.withValues(alpha: 0.10)
+                    : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                size: 16,
+                color: highlighted ? theme.textColor : theme.secondaryTextColor,
+              ),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _setHovered(bool value) {
+    if (mounted && _hovered != value) {
+      setState(() => _hovered = value);
+    }
+  }
+
+  void _setPressed(bool value) {
+    if (mounted && _pressed != value) {
+      setState(() => _pressed = value);
+    }
   }
 }
 

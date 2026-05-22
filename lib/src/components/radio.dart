@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -95,7 +96,80 @@ class _AnimalRadioState<T> extends State<AnimalRadio<T>> {
   }
 }
 
-class _AnimalRadioItem<T> extends StatelessWidget {
+class AnimalRadioFormField<T> extends FormField<T> {
+  AnimalRadioFormField({
+    super.key,
+    required List<AnimalRadioOption<T>> options,
+    T? value,
+    T? defaultValue,
+    AnimalRadioSize size = AnimalRadioSize.middle,
+    bool disabled = false,
+    AnimalRadioDirection direction = AnimalRadioDirection.horizontal,
+    ValueChanged<T>? onChanged,
+    super.autovalidateMode = AutovalidateMode.disabled,
+    super.onSaved,
+    super.validator,
+    super.restorationId,
+  }) : super(
+          initialValue: value ?? defaultValue,
+          enabled: !disabled,
+          builder: (field) {
+            return _RadioFormFieldShell(
+              errorText: field.errorText,
+              child: AnimalRadio<T>(
+                options: options,
+                value: field.value,
+                size: size,
+                disabled: disabled,
+                direction: direction,
+                onChanged: (next) {
+                  field.didChange(next);
+                  onChanged?.call(next);
+                },
+              ),
+            );
+          },
+        );
+}
+
+class _RadioFormFieldShell extends StatelessWidget {
+  const _RadioFormFieldShell({
+    required this.child,
+    this.errorText,
+  });
+
+  final Widget child;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        child,
+        if (errorText != null) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 14),
+            child: Text(
+              errorText!,
+              style: theme.textStyle(
+                size: 12,
+                weight: FontWeight.w700,
+                color: theme.errorColor,
+                height: 1.2,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AnimalRadioItem<T> extends StatefulWidget {
   const _AnimalRadioItem({
     required this.option,
     required this.size,
@@ -111,62 +185,97 @@ class _AnimalRadioItem<T> extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_AnimalRadioItem<T>> createState() => _AnimalRadioItemState<T>();
+}
+
+class _AnimalRadioItemState<T> extends State<_AnimalRadioItem<T>> {
+  var _focused = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
-    final metrics = _radioMetrics(size);
-    final enabled = !disabled;
+    final metrics = _radioMetrics(widget.size);
+    final enabled = !widget.disabled;
+    final highlighted = enabled && _focused;
 
-    return MouseRegion(
-      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      child: GestureDetector(
-        onTap: enabled ? onTap : null,
-        child: Opacity(
-          opacity: enabled ? 1 : 0.55,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: metrics.outerSize,
-                height: metrics.outerSize,
-                padding: EdgeInsets.all(metrics.padding),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: checked
-                      ? theme.primaryBackgroundColor
-                      : enabled
-                          ? const Color(0xFFF7F3DF)
-                          : theme.disabledBackgroundColor,
-                  border: Border.all(
-                    color: checked ? theme.primaryColor : theme.borderColor,
-                    width: 2,
-                  ),
-                  boxShadow: enabled ? theme.shadowSmall : null,
-                ),
-                child: AnimatedScale(
+    return FocusableActionDetector(
+      enabled: enabled,
+      mouseCursor:
+          enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onShowFocusHighlight: (value) {
+        if (mounted) {
+          setState(() => _focused = value);
+        }
+      },
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            if (enabled) {
+              widget.onTap();
+            }
+            return null;
+          },
+        ),
+      },
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        child: GestureDetector(
+          onTap: enabled ? widget.onTap : null,
+          child: Opacity(
+            opacity: enabled ? 1 : 0.55,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutBack,
-                  scale: checked ? 1 : 0,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: theme.primaryColor,
+                  width: metrics.outerSize,
+                  height: metrics.outerSize,
+                  padding: EdgeInsets.all(metrics.padding),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.checked
+                        ? theme.primaryBackgroundColor
+                        : enabled
+                            ? theme.contentBackgroundColor
+                            : theme.disabledBackgroundColor,
+                    border: Border.all(
+                      color: widget.checked || highlighted
+                          ? theme.primaryColor
+                          : theme.borderColor,
+                      width: 2,
+                    ),
+                    boxShadow: enabled
+                        ? (highlighted ? theme.shadowBase : theme.shadowSmall)
+                        : null,
+                  ),
+                  child: AnimatedScale(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutBack,
+                    scale: widget.checked ? 1 : 0,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: theme.primaryColor,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              DefaultTextStyle.merge(
-                style: theme.textStyle(
-                  size: metrics.fontSize,
-                  weight: FontWeight.w500,
-                  color: enabled
-                      ? const Color(0xFF725D42)
-                      : theme.disabledTextColor,
+                const SizedBox(width: 8),
+                DefaultTextStyle.merge(
+                  style: theme.textStyle(
+                    size: metrics.fontSize,
+                    weight: FontWeight.w500,
+                    color:
+                        enabled ? theme.bodyTextColor : theme.disabledTextColor,
+                  ),
+                  child: widget.option.label,
                 ),
-                child: option.label,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

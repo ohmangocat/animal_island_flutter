@@ -106,7 +106,9 @@ class _AnimalLoadingState extends State<AnimalLoading>
               return CustomPaint(
                 painter: _StripeLoadingPainter(
                   progress: _motionController.value,
-                  borderColor: const Color(0xFF4DE2DA),
+                  backgroundColor: theme.primaryStripeBackgroundColor,
+                  stripeColor: theme.primaryStripeColor,
+                  borderColor: theme.primaryStripeBorderColor,
                 ),
               );
             },
@@ -212,10 +214,14 @@ class _LoadingRevealClipper extends CustomClipper<Path> {
 class _StripeLoadingPainter extends CustomPainter {
   const _StripeLoadingPainter({
     required this.progress,
+    required this.backgroundColor,
+    required this.stripeColor,
     required this.borderColor,
   });
 
   final double progress;
+  final Color backgroundColor;
+  final Color stripeColor;
   final Color borderColor;
 
   @override
@@ -229,10 +235,10 @@ class _StripeLoadingPainter extends CustomPainter {
     canvas.clipPath(clipPath);
     canvas.drawRRect(
       rrect,
-      Paint()..color = const Color(0xFF0EC4B6),
+      Paint()..color = backgroundColor,
     );
 
-    final stripePaint = Paint()..color = const Color(0xFF01B0A7);
+    final stripePaint = Paint()..color = stripeColor;
     final spacing = 14.0;
     final offset = progress * spacing * 2;
     for (var x = -size.height * 2 - offset;
@@ -260,6 +266,8 @@ class _StripeLoadingPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _StripeLoadingPainter oldDelegate) {
     return oldDelegate.progress != progress ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.stripeColor != stripeColor ||
         oldDelegate.borderColor != borderColor;
   }
 }

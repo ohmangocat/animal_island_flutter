@@ -36,7 +36,7 @@ class AnimalAvatar extends StatelessWidget {
     final radius = shape == AnimalAvatarShape.circle ? side / 2 : 16.0;
     final provider =
         image ?? (imageUrl == null ? null : NetworkImage(imageUrl!));
-    final foreground = foregroundColor ?? const Color(0xFF725D42);
+    final foreground = foregroundColor ?? theme.bodyTextColor;
 
     Widget content;
     if (provider != null) {
@@ -64,13 +64,13 @@ class AnimalAvatar extends StatelessWidget {
       width: side,
       height: side,
       decoration: BoxDecoration(
-        color: backgroundColor ?? const Color(0xFFFFF8D6),
+        color: backgroundColor ?? theme.elevatedBackgroundColor,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: const Color(0xFFD9C889), width: 2),
-        boxShadow: const [
+        border: Border.all(color: theme.warmBorderColor, width: 2),
+        boxShadow: [
           BoxShadow(
-            color: Color(0xFFBDAEA0),
-            offset: Offset(0, 3),
+            color: theme.tactileShadowColor,
+            offset: const Offset(0, 3),
             blurRadius: 0,
           ),
         ],

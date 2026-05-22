@@ -10,3 +10,11 @@ example/build/
 example/pubspec.lock
 example/flutter_web*.log
 example/flutter_*.log
+example/web/mobile_preview/
+example/mobile_preview/.dart_tool/
+example/mobile_preview/build/
+example/mobile_preview/pubspec.lock
+example/mobile_preview/ios/Flutter/ephemeral/
+example/mobile_preview/ios/Flutter/flutter_export_environment.sh
+example/mobile_preview/ios/Flutter/Generated.xcconfig
+example/mobile_preview/android/local.properties

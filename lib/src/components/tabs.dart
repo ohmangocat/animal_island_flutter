@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -84,6 +85,8 @@ class _AnimalTabsState extends State<AnimalTabs> {
                     active: item.key == activeKey,
                     leafAnimation: widget.leafAnimation,
                     shadow: widget.shadow,
+                    onPrevious: _activatePrevious,
+                    onNext: _activateNext,
                     onTap: () => _activate(item.key),
                   ),
               ],
@@ -115,6 +118,24 @@ class _AnimalTabsState extends State<AnimalTabs> {
     }
     widget.onChanged?.call(key);
   }
+
+  void _activatePrevious() {
+    final activeKey = _activeKey;
+    final index = widget.items.indexWhere((item) => item.key == activeKey);
+    if (index <= 0) {
+      return;
+    }
+    _activate(widget.items[index - 1].key);
+  }
+
+  void _activateNext() {
+    final activeKey = _activeKey;
+    final index = widget.items.indexWhere((item) => item.key == activeKey);
+    if (index < 0 || index >= widget.items.length - 1) {
+      return;
+    }
+    _activate(widget.items[index + 1].key);
+  }
 }
 
 class _TabButton extends StatelessWidget {
@@ -123,6 +144,8 @@ class _TabButton extends StatelessWidget {
     required this.active,
     required this.leafAnimation,
     required this.shadow,
+    required this.onPrevious,
+    required this.onNext,
     required this.onTap,
   });
 
@@ -130,26 +153,65 @@ class _TabButton extends StatelessWidget {
   final bool active;
   final bool leafAnimation;
   final bool shadow;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
+    return FocusableActionDetector(
+      mouseCursor: SystemMouseCursors.click,
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowLeft): _PreviousTabIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowRight): _NextTabIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            onTap();
+            return null;
+          },
+        ),
+        _PreviousTabIntent: CallbackAction<_PreviousTabIntent>(
+          onInvoke: (intent) {
+            onPrevious();
+            return null;
+          },
+        ),
+        _NextTabIntent: CallbackAction<_NextTabIntent>(
+          onInvoke: (intent) {
+            onNext();
+            return null;
+          },
+        ),
+      },
       child: GestureDetector(
         onTap: onTap,
-        child: _HoverableTabBody(
-          active: active,
-          shadow: shadow,
-          leafAnimation: leafAnimation,
-          item: item,
-          theme: theme,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: _HoverableTabBody(
+            active: active,
+            shadow: shadow,
+            leafAnimation: leafAnimation,
+            item: item,
+            theme: theme,
+          ),
         ),
       ),
     );
   }
+}
+
+class _PreviousTabIntent extends Intent {
+  const _PreviousTabIntent();
+}
+
+class _NextTabIntent extends Intent {
+  const _NextTabIntent();
 }
 
 class _HoverableTabBody extends StatefulWidget {
@@ -186,7 +248,7 @@ class _HoverableTabBodyState extends State<_HoverableTabBody> {
         duration: const Duration(milliseconds: 220),
         decoration: BoxDecoration(
           color: active
-              ? const Color(0xFF0CC0B5)
+              ? theme.primarySolidColor
               : (_hovered
                   ? theme.primaryColor.withValues(alpha: 0.10)
                   : Colors.transparent),

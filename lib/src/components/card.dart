@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -43,7 +44,18 @@ class AnimalCard extends StatefulWidget {
 }
 
 class _AnimalCardState extends State<AnimalCard> {
+  final _focusNode = FocusNode();
   bool _hovered = false;
+  bool _focused = false;
+  bool _pressed = false;
+
+  bool get _interactive => widget.onTap != null;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +63,14 @@ class _AnimalCardState extends State<AnimalCard> {
     final palette = _cardPalette(widget.color);
     final isDashed = widget.type == AnimalCardType.dashed;
     final isTitle = widget.type == AnimalCardType.title;
+    final highlighted = _interactive && (_hovered || _focused);
+    final yOffset = _interactive
+        ? (_pressed
+            ? 1.0
+            : highlighted && !isDashed
+                ? -2.0
+                : 0.0)
+        : 0.0;
 
     final borderRadius = isTitle
         ? const BorderRadius.only(
@@ -64,8 +84,7 @@ class _AnimalCardState extends State<AnimalCard> {
     Widget card = AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
-      transform:
-          Matrix4.translationValues(0, _hovered && !isDashed ? -2 : 0, 0),
+      transform: Matrix4.translationValues(0, yOffset, 0),
       padding: widget.padding ??
           (isTitle
               ? const EdgeInsets.symmetric(horizontal: 32, vertical: 12)
@@ -77,7 +96,7 @@ class _AnimalCardState extends State<AnimalCard> {
       foregroundDecoration: isDashed
           ? ShapeDecoration(
               shape: _DashedRoundedBorder(
-                color: _hovered
+                color: highlighted
                     ? const Color(0xFFD4C4A8)
                     : const Color(0xFFE8DCC8),
                 width: 2,
@@ -95,16 +114,73 @@ class _AnimalCardState extends State<AnimalCard> {
       ),
     );
 
-    if (widget.onTap != null) {
-      card = GestureDetector(onTap: widget.onTap, child: card);
-    }
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: card,
+    return Semantics(
+      button: _interactive,
+      enabled: _interactive,
+      child: FocusableActionDetector(
+        focusNode: _focusNode,
+        enabled: _interactive,
+        mouseCursor:
+            _interactive ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        onShowFocusHighlight: (value) {
+          if (mounted) {
+            setState(() => _focused = value);
+          }
+        },
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              _activate();
+              return null;
+            },
+          ),
+        },
+        child: MouseRegion(
+          cursor: _interactive
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+          onEnter: _interactive ? (_) => _setHovered(true) : null,
+          onExit: _interactive
+              ? (_) {
+                  _setHovered(false);
+                  _setPressed(false);
+                }
+              : null,
+          child: GestureDetector(
+            onTapDown: _interactive ? (_) => _setPressed(true) : null,
+            onTapUp: _interactive ? (_) => _setPressed(false) : null,
+            onTapCancel: _interactive ? () => _setPressed(false) : null,
+            onTap: _interactive
+                ? () {
+                    _focusNode.requestFocus();
+                    _activate();
+                  }
+                : null,
+            child: card,
+          ),
+        ),
+      ),
     );
+  }
+
+  void _activate() {
+    widget.onTap?.call();
+  }
+
+  void _setHovered(bool value) {
+    if (mounted && _hovered != value) {
+      setState(() => _hovered = value);
+    }
+  }
+
+  void _setPressed(bool value) {
+    if (mounted && _pressed != value) {
+      setState(() => _pressed = value);
+    }
   }
 }
 

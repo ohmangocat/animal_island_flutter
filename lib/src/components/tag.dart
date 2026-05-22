@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -66,19 +67,10 @@ class AnimalTag extends StatelessWidget {
                 child,
                 if (closable) ...[
                   const SizedBox(width: 6),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: onClose,
-                      child: Text(
-                        '×',
-                        style: theme.textStyle(
-                          size: metrics.fontSize + 1,
-                          weight: FontWeight.w900,
-                          color: colors.foreground,
-                        ),
-                      ),
-                    ),
+                  _TagCloseButton(
+                    color: colors.foreground,
+                    size: metrics.fontSize + 1,
+                    onTap: onClose,
                   ),
                 ],
               ],
@@ -156,6 +148,131 @@ _TagColors _tagColors(AnimalThemeData theme, AnimalTagColor color) {
         border: Color(0xFFD5C4A6),
       ),
   };
+}
+
+class _TagCloseButton extends StatefulWidget {
+  const _TagCloseButton({
+    required this.color,
+    required this.size,
+    this.onTap,
+  });
+
+  final Color color;
+  final double size;
+  final VoidCallback? onTap;
+
+  @override
+  State<_TagCloseButton> createState() => _TagCloseButtonState();
+}
+
+class _TagCloseButtonState extends State<_TagCloseButton> {
+  final _focusNode = FocusNode();
+  var _hovered = false;
+  var _focused = false;
+  var _pressed = false;
+
+  bool get _enabled => widget.onTap != null;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final highlighted = _enabled && (_hovered || _focused);
+
+    return Semantics(
+      button: _enabled,
+      enabled: _enabled,
+      label: '关闭标签',
+      child: FocusableActionDetector(
+        focusNode: _focusNode,
+        enabled: _enabled,
+        mouseCursor:
+            _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        onShowFocusHighlight: (value) {
+          if (mounted) {
+            setState(() => _focused = value);
+          }
+        },
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              _activate();
+              return null;
+            },
+          ),
+        },
+        child: MouseRegion(
+          cursor:
+              _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+          onEnter: _enabled ? (_) => _setHovered(true) : null,
+          onExit: _enabled
+              ? (_) {
+                  _setHovered(false);
+                  _setPressed(false);
+                }
+              : null,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: _enabled ? (_) => _setPressed(true) : null,
+            onTapUp: _enabled ? (_) => _setPressed(false) : null,
+            onTapCancel: _enabled ? () => _setPressed(false) : null,
+            onTap: _enabled
+                ? () {
+                    _focusNode.requestFocus();
+                    _activate();
+                  }
+                : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              transform: Matrix4.translationValues(0, _pressed ? 1 : 0, 0),
+              width: widget.size + 8,
+              height: widget.size + 8,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: highlighted
+                    ? widget.color.withValues(alpha: 0.12)
+                    : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '×',
+                style: TextStyle(
+                  color: widget.color,
+                  fontSize: widget.size,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _activate() {
+    widget.onTap?.call();
+  }
+
+  void _setHovered(bool value) {
+    if (mounted && _hovered != value) {
+      setState(() => _hovered = value);
+    }
+  }
+
+  void _setPressed(bool value) {
+    if (mounted && _pressed != value) {
+      setState(() => _pressed = value);
+    }
+  }
 }
 
 class _TagMetrics {

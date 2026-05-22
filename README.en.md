@@ -40,7 +40,7 @@ Install the published package from pub.dev:
 
 ```yaml
 dependencies:
-  animal_island_flutter: ^0.1.1
+  animal_island_flutter: ^0.1.2
 ```
 
 Import the library entry point:
@@ -61,7 +61,7 @@ dependencies:
 
 | Item | Version |
 | --- | --- |
-| Package | `animal_island_flutter: ^0.1.1` |
+| Package | `animal_island_flutter: ^0.1.2` |
 | Flutter SDK | `>=3.19.0` |
 | Dart SDK | `>=3.3.0 <4.0.0` |
 | `flutter_svg` | `^2.0.17` |
@@ -129,6 +129,39 @@ class App extends StatelessWidget {
 }
 ```
 
+## Theme Customization
+
+`AnimalThemeData.fromPrimary(...)` derives hover, active, striped loading, and soft background colors from one brand color. Use `copyWith` for typography, radius, text height, background, text, and border tokens:
+
+```dart
+final theme = AnimalThemeData.fromPrimary(
+  const Color(0xFF4E8F75),
+  textColor: const Color(0xFF5B4228),
+).copyWith(
+  radius: 22,
+  fontFamily: 'Inter',
+  fontPackage: null,
+  fontFamilyFallback: const ['Noto Sans SC', 'sans-serif'],
+  textHeight: 1.45,
+);
+
+AnimalTheme(data: theme, child: const App());
+```
+
+For skinning, prefer theme tokens instead of hard-coding colors in each component:
+
+| Token | Purpose |
+| --- | --- |
+| `primaryColor` / `primaryHoverColor` / `primaryActiveColor` | Primary, hover, and active colors |
+| `primarySolidColor` / `primaryStripeColor` | Active tab fill and Button/Loading stripe colors |
+| `backgroundColor` / `secondaryBackgroundColor` | Page background and soft control background |
+| `contentBackgroundColor` / `elevatedBackgroundColor` | Input/table surfaces and floating surfaces |
+| `textColor` / `bodyTextColor` / `secondaryTextColor` | Title, body, and secondary text |
+| `borderColor` / `lightBorderColor` / `controlBorderColor` | Default, light, and control borders |
+| `tactileShadowColor` | Bottom tactile shadow for buttons, pagination, sliders, and similar controls |
+
+Set `fontPackage` to `null` when the font is registered by your app instead of bundled by this package.
+
 ## Documentation
 
 | Document | Purpose |
@@ -136,7 +169,8 @@ class App extends StatelessWidget {
 | [`example`](./example) | Flutter documentation and component demo app, arranged like the React demo and rewritten with Flutter examples. |
 | [`AI_USAGE.md`](./AI_USAGE.md) | Flutter API handbook for AI coding assistants, including components, enums, defaults, common combinations, and invalid patterns. |
 | [`DESIGN_PROMPT.md`](./DESIGN_PROMPT.md) | Design and generation prompt covering palette, fonts, motion, backgrounds, component styles, and prohibitions. |
-| [`skill/SKILL.md`](./skill/SKILL.md) | Pixel-perfect recreation Skill for maintaining this Flutter component library with AI assistants. |
+| [`skills/animal-island-flutter-style/SKILL.md`](./skills/animal-island-flutter-style/SKILL.md) | Pixel-perfect recreation Skill for maintaining this Flutter component library with AI assistants. |
+| [`RELEASE_CHECKLIST.md`](./RELEASE_CHECKLIST.md) | Pre-release quality gate, docs build, platform smoke tests, and pub.dev publishing flow. |
 
 ## Component Mapping
 
@@ -163,10 +197,16 @@ class App extends StatelessWidget {
 | `Table` | `AnimalTable` |
 | Extended basics | `AnimalRadio` / `AnimalTag` / `AnimalBadge` / `AnimalTooltip` / `AnimalMessage` / `AnimalProgress` / `AnimalPagination` / `AnimalEmpty` |
 | Advanced basics | `AnimalAlert` / `AnimalAvatar` / `AnimalBreadcrumb` / `AnimalSteps` / `AnimalSlider` / `AnimalRate` / `AnimalSegmented` / `AnimalSkeleton` |
+| Phase 3 business components | `AnimalForm` / `AnimalTextarea` / `AnimalPasswordInput` / `AnimalSearchInput` / `AnimalNumberInput` / `AnimalPopover` / `AnimalDropdown` / `AnimalDrawer` / `AnimalConfirmDialog` / `AnimalDescriptions` / `AnimalStatistic` / `AnimalTimeline` |
+| Phase 4 complex business components | `AnimalCalendar` / `AnimalUpload` / `AnimalTree` / `AnimalResult` |
 
 ## Component Coverage
 
-The package currently includes 35 Flutter components: `Button`, `Input`, `Switch`, `Modal`, `Card`, `Collapse`, `Cursor`, `Time`, `Phone`, `Footer`, `Divider`, `Typewriter`, `Icon`, `Select`, `Tabs`, `Checkbox`, `CodeBlock`, `Loading`, `Table`, `Radio`, `Tag`, `Badge`, `Tooltip`, `Message`, `Progress`, `Pagination`, `Empty`, `Alert`, `Avatar`, `Breadcrumb`, `Steps`, `Slider`, `Rate`, `Segmented`, and `Skeleton`.
+The package currently includes 48 Flutter component pages: `Button`, `Input`, `Switch`, `Modal`, `Card`, `Collapse`, `Cursor`, `Time`, `Phone`, `Footer`, `Divider`, `Typewriter`, `Icon`, `Select`, `Tabs`, `Checkbox`, `CodeBlock`, `Loading`, `Table`, `Radio`, `Tag`, `Badge`, `Tooltip`, `Message`, `Progress`, `Pagination`, `Empty`, `Alert`, `Avatar`, `Breadcrumb`, `Steps`, `Slider`, `Rate`, `Segmented`, `Skeleton`, `Form`, `Input Plus`, `Popover`, `Dropdown`, `Drawer`, `ConfirmDialog`, `Descriptions`, `Statistic`, `Timeline`, `Calendar`, `Upload`, `Tree`, and `Result`.
+
+For Flutter forms, use `AnimalForm` and `AnimalFormItem` for layout, then combine them with `AnimalInputFormField`, `AnimalSelectFormField`, `AnimalCheckboxFormField`, `AnimalRadioFormField`, `AnimalSwitchFormField`, `AnimalSliderFormField`, `AnimalRateFormField`, `AnimalCalendarFormField`, `AnimalUploadFormField`, and `AnimalTreeFormField`. They support `validator`, `onSaved`, and `autovalidateMode` from Flutter `Form`. Enhanced input scenarios can use `AnimalTextarea`, `AnimalPasswordInput`, `AnimalSearchInput`, and `AnimalNumberInput`.
+
+Overlay and data-detail scenarios include `AnimalPopover`, `AnimalDropdown`, `AnimalDrawer`, `AnimalConfirmDialog`, `AnimalDescriptions`, `AnimalStatistic`, and `AnimalTimeline` for settings panels, dashboards, detail pages, and confirmation flows. Phase 4 adds `AnimalCalendar`, `AnimalUpload`, `AnimalTree`, and `AnimalResult` for date selection, upload queues, hierarchy navigation, and result feedback pages.
 
 The Flutter version keeps the visual and interaction semantics aligned with the React version where possible. A few web-specific APIs are translated into Flutter conventions:
 
@@ -196,6 +236,18 @@ The Flutter version keeps the visual and interaction semantics aligned with the 
 flutter pub get
 flutter analyze
 flutter test
+```
+
+Run the full pre-release quality gate:
+
+```powershell
+.\tool\quality_check.ps1
+```
+
+Build the docs site and embedded mobile iframe preview:
+
+```powershell
+.\tool\build_docs.ps1
 ```
 
 Run the example:

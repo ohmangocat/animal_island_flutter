@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -17,7 +19,7 @@ class AnimalTableColumn<T> {
   final AlignmentGeometry alignment;
 }
 
-class AnimalTable<T> extends StatelessWidget {
+class AnimalTable<T> extends StatefulWidget {
   const AnimalTable({
     super.key,
     required this.columns,
@@ -42,6 +44,19 @@ class AnimalTable<T> extends StatelessWidget {
   final void Function(T row, int index)? onRowTap;
 
   @override
+  State<AnimalTable<T>> createState() => _AnimalTableState<T>();
+}
+
+class _AnimalTableState<T> extends State<AnimalTable<T>> {
+  final ScrollController _horizontalController = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
     final tableWidth = _tableWidth;
@@ -50,42 +65,64 @@ class AnimalTable<T> extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F3DF),
+        color: theme.contentBackgroundColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: tableWidth,
-                maxHeight: maxHeight ?? double.infinity,
-              ),
-              child: _TableContent<T>(
-                columns: columns,
-                rows: rows,
-                tableWidth: tableWidth,
-                empty: empty,
-                emptyText: emptyText,
-                striped: striped,
-                showHeader: showHeader,
-                maxHeight: maxHeight,
-                onRowTap: onRowTap,
-                theme: theme,
+          ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+                PointerDeviceKind.trackpad,
+                PointerDeviceKind.stylus,
+              },
+            ),
+            child: Scrollbar(
+              controller: _horizontalController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              interactive: true,
+              radius: const Radius.circular(999),
+              thickness: 8,
+              scrollbarOrientation: ScrollbarOrientation.bottom,
+              child: SingleChildScrollView(
+                controller: _horizontalController,
+                primary: false,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: tableWidth,
+                    maxHeight: widget.maxHeight ?? double.infinity,
+                  ),
+                  child: _TableContent<T>(
+                    columns: widget.columns,
+                    rows: widget.rows,
+                    tableWidth: tableWidth,
+                    empty: widget.empty,
+                    emptyText: widget.emptyText,
+                    striped: widget.striped,
+                    showHeader: widget.showHeader,
+                    maxHeight: widget.maxHeight,
+                    onRowTap: widget.onRowTap,
+                    theme: theme,
+                  ),
+                ),
               ),
             ),
           ),
-          if (loading)
+          if (widget.loading)
             Positioned.fill(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: ColoredBox(
-                  color: const Color(0xFFF7F3DF).withValues(alpha: 0.82),
-                  child: const Center(
+                  color: theme.contentBackgroundColor.withValues(alpha: 0.82),
+                  child: Center(
                     child: SizedBox.square(
                       dimension: 40,
-                      child: _TableLoadingSpinner(),
+                      child: _TableLoadingSpinner(theme: theme),
                     ),
                   ),
                 ),
@@ -98,7 +135,7 @@ class AnimalTable<T> extends StatelessWidget {
 
   double get _tableWidth {
     var total = 0.0;
-    for (final column in columns) {
+    for (final column in widget.columns) {
       total += column.width ?? 160;
     }
     return total;
@@ -246,7 +283,9 @@ class _EmptyTableBody extends StatelessWidget {
 }
 
 class _TableLoadingSpinner extends StatefulWidget {
-  const _TableLoadingSpinner();
+  const _TableLoadingSpinner({required this.theme});
+
+  final AnimalThemeData theme;
 
   @override
   State<_TableLoadingSpinner> createState() => _TableLoadingSpinnerState();
@@ -278,8 +317,8 @@ class _TableLoadingSpinnerState extends State<_TableLoadingSpinner>
       child: CircularProgressIndicator(
         strokeWidth: 4,
         strokeCap: StrokeCap.round,
-        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF19C8B9)),
-        backgroundColor: const Color(0xFF19C8B9).withValues(alpha: 0.18),
+        valueColor: AlwaysStoppedAnimation<Color>(widget.theme.primaryColor),
+        backgroundColor: widget.theme.primaryColor.withValues(alpha: 0.18),
       ),
     );
   }
@@ -362,7 +401,7 @@ class _Header<T> extends StatelessWidget {
                       style: theme.textStyle(
                         size: 14,
                         weight: FontWeight.w700,
-                        color: const Color(0xFF725D42),
+                        color: theme.bodyTextColor,
                       ),
                       child: column.title,
                     ),
@@ -406,10 +445,12 @@ class _Row<T> extends StatefulWidget {
 
 class _RowState<T> extends State<_Row<T>> {
   bool _hovered = false;
+  bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
+    final highlighted = _hovered || _focused;
 
     return MouseRegion(
       cursor: widget.onTap == null
@@ -417,71 +458,94 @@ class _RowState<T> extends State<_Row<T>> {
           : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          duration: const Duration(milliseconds: 180),
-          scale: _hovered ? 1.01 : 1,
-          child: AnimatedContainer(
+      child: FocusableActionDetector(
+        enabled: widget.onTap != null,
+        mouseCursor: widget.onTap == null
+            ? SystemMouseCursors.basic
+            : SystemMouseCursors.click,
+        onShowFocusHighlight: (value) {
+          if (mounted) {
+            setState(() => _focused = value);
+          }
+        },
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedScale(
             duration: const Duration(milliseconds: 180),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(_hovered ? 30 : 0),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _RowBackgroundPainter(
-                      hovered: _hovered,
-                      striped: widget.striped,
-                      theme: theme,
+            scale: highlighted ? 1.01 : 1,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(highlighted ? 30 : 0),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _RowBackgroundPainter(
+                        hovered: highlighted,
+                        striped: widget.striped,
+                        theme: theme,
+                      ),
                     ),
                   ),
-                ),
-                Row(
-                  children: [
-                    for (final column in widget.columns)
-                      SizedBox(
-                        width: column.width ?? 160,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 14),
-                          child: Align(
-                            alignment: column.alignment,
-                            child: DefaultTextStyle.merge(
-                              style: theme.textStyle(
-                                size: 14,
-                                weight: FontWeight.w500,
-                                color: _hovered
-                                    ? const Color(0xFF3D2E1E)
-                                    : const Color(0xFF725D42),
-                              ),
-                              child: column.cellBuilder(
-                                context,
-                                widget.row,
-                                widget.rowIndex,
+                  Row(
+                    children: [
+                      for (final column in widget.columns)
+                        SizedBox(
+                          width: column.width ?? 160,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 14),
+                            child: Align(
+                              alignment: column.alignment,
+                              child: DefaultTextStyle.merge(
+                                style: theme.textStyle(
+                                  size: 14,
+                                  weight: FontWeight.w500,
+                                  color: highlighted
+                                      ? const Color(0xFF3D2E1E)
+                                      : theme.bodyTextColor,
+                                ),
+                                child: column.cellBuilder(
+                                  context,
+                                  widget.row,
+                                  widget.rowIndex,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-                if (!_hovered)
-                  Positioned(
-                    left: 20,
-                    right: 20,
-                    bottom: 0,
-                    height: 1,
-                    child: CustomPaint(
-                      painter: _DashedLinePainter(
-                        theme.secondaryBackgroundColor,
+                    ],
+                  ),
+                  if (!highlighted)
+                    Positioned(
+                      left: 20,
+                      right: 20,
+                      bottom: 0,
+                      height: 1,
+                      child: CustomPaint(
+                        painter: _DashedLinePainter(
+                          theme.secondaryBackgroundColor,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -534,17 +598,17 @@ class _RowBackgroundPainter extends CustomPainter {
         Paint()
           ..color = striped
               ? theme.backgroundColor.withValues(alpha: 0.6)
-              : const Color(0xFFF7F3DF),
+              : theme.contentBackgroundColor,
       );
       return;
     }
 
     canvas.drawRect(
       rect,
-      Paint()..color = theme.primaryColor.withValues(alpha: 0.60),
+      Paint()..color = theme.primarySolidColor.withValues(alpha: 0.60),
     );
     final stripePaint = Paint()
-      ..color = const Color(0xFF0EC4B6).withValues(alpha: 0.60);
+      ..color = theme.primaryStripeBackgroundColor.withValues(alpha: 0.60);
     const stripe = 10.0;
     for (var x = -size.height; x < size.width + size.height; x += stripe * 2) {
       final path = Path()

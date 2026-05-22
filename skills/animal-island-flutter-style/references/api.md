@@ -51,11 +51,16 @@ Minimum environment:
 - `AnimalEmpty`
 - `AnimalIcon`
 - `AnimalFooter`
+- `AnimalForm`
 - `AnimalDivider`
 - `AnimalTime`
 - `AnimalPhone`
 - `AnimalTypewriter`
 - `AnimalCodeBlock`
+- `AnimalTextarea`
+- `AnimalPasswordInput`
+- `AnimalSearchInput`
+- `AnimalNumberInput`
 - `AnimalLoading`
 - `AnimalTable`
 - `AnimalAlert`
@@ -66,6 +71,17 @@ Minimum environment:
 - `AnimalRate`
 - `AnimalSegmented`
 - `AnimalSkeleton`
+- `AnimalPopover`
+- `AnimalDropdown`
+- `AnimalDrawer`
+- `AnimalConfirmDialog`
+- `AnimalDescriptions`
+- `AnimalStatistic`
+- `AnimalTimeline`
+- `AnimalCalendar`
+- `AnimalUpload`
+- `AnimalTree`
+- `AnimalResult`
 
 ## Key APIs
 
@@ -107,6 +123,19 @@ AnimalInput({
   ValueChanged<String>? onChanged,
   VoidCallback? onClear,
 })
+
+AnimalInputFormField({
+  String? initialValue,
+  TextEditingController? controller,
+  String? hintText,
+  AnimalInputSize size = AnimalInputSize.middle,
+  bool allowClear = false,
+  bool enabled = true,
+  TextInputType? keyboardType,
+  TextInputAction? textInputAction,
+  FormFieldSetter<String>? onSaved,
+  FormFieldValidator<String>? validator,
+})
 ```
 
 ```dart
@@ -121,6 +150,16 @@ AnimalSwitch({
   Widget? checkedChild,
   Widget? uncheckedChild,
   ValueChanged<bool>? onChanged,
+})
+
+AnimalSwitchFormField({
+  bool? value,
+  bool defaultValue = false,
+  AnimalSwitchSize size = AnimalSwitchSize.normal,
+  bool disabled = false,
+  bool loading = false,
+  FormFieldSetter<bool>? onSaved,
+  FormFieldValidator<bool>? validator,
 })
 ```
 
@@ -162,6 +201,19 @@ AnimalSelect<T>({
   String placeholder = '请选择',
   bool disabled = false,
   double minWidth = 140,
+  double dropdownMaxHeight = 260,
+})
+
+AnimalSelectFormField<T>({
+  required List<AnimalSelectOption<T>> options,
+  ValueChanged<T>? onChanged,
+  T? value,
+  String placeholder = '请选择',
+  bool disabled = false,
+  double minWidth = 140,
+  double dropdownMaxHeight = 260,
+  FormFieldSetter<T>? onSaved,
+  FormFieldValidator<T>? validator,
 })
 ```
 
@@ -174,6 +226,17 @@ AnimalCheckbox<T>({
   bool disabled = false,
   AnimalCheckboxDirection direction = AnimalCheckboxDirection.horizontal,
   ValueChanged<List<T>>? onChanged,
+})
+
+AnimalCheckboxFormField<T>({
+  required List<AnimalCheckboxOption<T>> options,
+  List<T>? value,
+  List<T> defaultValue = const [],
+  AnimalCheckboxSize size = AnimalCheckboxSize.middle,
+  bool disabled = false,
+  AnimalCheckboxDirection direction = AnimalCheckboxDirection.horizontal,
+  FormFieldSetter<List<T>>? onSaved,
+  FormFieldValidator<List<T>>? validator,
 })
 ```
 
@@ -226,6 +289,9 @@ AnimalTable<T>({
 })
 ```
 
+`AnimalSelect` limits long dropdowns with `dropdownMaxHeight` and scrolls options internally.
+`AnimalTable` includes built-in horizontal scrolling when column widths exceed the container.
+
 ```dart
 enum AnimalRadioSize { small, middle, large }
 enum AnimalRadioDirection { horizontal, vertical }
@@ -238,6 +304,17 @@ AnimalRadio<T>({
   bool disabled = false,
   AnimalRadioDirection direction = AnimalRadioDirection.horizontal,
   ValueChanged<T>? onChanged,
+})
+
+AnimalRadioFormField<T>({
+  required List<AnimalRadioOption<T>> options,
+  T? value,
+  T? defaultValue,
+  AnimalRadioSize size = AnimalRadioSize.middle,
+  bool disabled = false,
+  AnimalRadioDirection direction = AnimalRadioDirection.horizontal,
+  FormFieldSetter<T>? onSaved,
+  FormFieldValidator<T>? validator,
 })
 ```
 
@@ -276,9 +353,67 @@ AnimalAvatar({Widget? child, ImageProvider? image, String? imageUrl, AnimalIconN
 AnimalBreadcrumb({required List<AnimalBreadcrumbItem> items})
 AnimalSteps({required List<AnimalStepItem> items, int current = 0, ValueChanged<int>? onChanged})
 AnimalSlider(value: 46, min: 0, max: 100, divisions: 10, onChanged: (value) {})
+AnimalSliderFormField(value: 46, divisions: 10, validator: (value) => null)
 AnimalRate(value: 4, onChanged: (score) {})
+AnimalRateFormField(value: 4, validator: (value) => null)
 AnimalSegmented<String>(options: options, value: 'list', onChanged: (value) {})
 AnimalSkeleton(active: true, rows: 3)
+```
+
+```dart
+enum AnimalFormLayout { vertical, horizontal, inline }
+AnimalForm(child: formFields, layout: AnimalFormLayout.horizontal, labelWidth: 96)
+AnimalFormItem(label: const Text('昵称'), required: true, child: const AnimalInput())
+
+AnimalTextarea(rows: 4, maxLength: 80, allowClear: true)
+AnimalPasswordInput(allowClear: true)
+AnimalSearchInput(onSearch: (value) {})
+AnimalNumberInput(defaultValue: 1, min: 0, max: 10, step: 1)
+```
+
+```dart
+enum AnimalPopoverPlacement { top, right, bottom, left }
+enum AnimalPopoverTrigger { click, hover, manual }
+enum AnimalDrawerPlacement { left, right }
+
+AnimalPopover(content: const Text('提示'), child: const Text('打开'))
+AnimalDropdown<String>(items: items, onChanged: (value) {}, child: child)
+AnimalDrawer.show<void>(context: context, title: const Text('标题'), child: child)
+AnimalConfirmDialog.show(context: context, content: const Text('确定继续？'))
+```
+
+```dart
+enum AnimalDescriptionsLayout { horizontal, vertical }
+enum AnimalTimelineItemStatus { defaultStatus, success, warning, danger, primary }
+
+AnimalDescriptions(
+  responsive: true,
+  minColumnWidth: 170,
+  items: const [
+  AnimalDescriptionItem(label: Text('名称'), child: Text('星露岛')),
+  ],
+)
+AnimalStatistic(title: const Text('访客'), value: 128, suffix: const Text('人'))
+AnimalTimeline(items: [
+  AnimalTimelineItem(
+    title: const Text('整理背包'),
+    status: AnimalTimelineItemStatus.success,
+    onTap: () {},
+  ),
+])
+```
+
+```dart
+enum AnimalUploadStatus { ready, uploading, done, error }
+enum AnimalResultStatus { success, warning, error, info }
+
+AnimalCalendar(value: selected, onChanged: (date) {})
+AnimalUpload(files: files, onTap: () {}, onRemove: (file) {})
+AnimalTree<String>(nodes: nodes, selectedValue: 'rose', onChanged: (value) {})
+AnimalResult(status: AnimalResultStatus.success, title: const Text('提交成功'))
+AnimalCalendarFormField(defaultValue: DateTime(2026, 5, 18), validator: (value) => null)
+AnimalUploadFormField(files: files, validator: (files) => null)
+AnimalTreeFormField<String>(nodes: nodes, defaultValue: 'rose', validator: (value) => null)
 ```
 
 ## Hard Rules
@@ -297,3 +432,14 @@ AnimalSkeleton(active: true, rows: 3)
 12. Public docs should show the pub.dev dependency; repository examples may use `path: ..`.
 13. `AnimalSlider.value` uses the `min..max` numeric range, not a `0..1` ratio.
 14. `AnimalSteps.current` is a zero-based index.
+15. Use `Animal*FormField` wrappers inside Flutter `Form`; do not wrap Animal controls with unrelated Material form widgets just to validate.
+16. Use `AnimalForm` and `AnimalFormItem` for label/help/error layout; keep validation controls inside Flutter `Form`.
+17. `AnimalDropdown` closes itself after a non-disabled item is selected.
+18. `AnimalPopover.open` is controlled state for manual or external control; do not invent React-style `visible`.
+19. `AnimalDescriptions.span` is clamped to `1..column`, and responsive layouts reduce columns by container width unless `responsive` is false.
+20. `AnimalCalendar.value` and `AnimalCalendar.month` are `DateTime`; keep date-only comparisons when handling selected days.
+21. `AnimalUpload` is display/control state only; native file picking belongs in the app layer.
+22. Stage 4 form wrappers are `AnimalCalendarFormField`, `AnimalUploadFormField`, and `AnimalTreeFormField`.
+23. `AnimalCalendar` supports focused day keyboard navigation: arrow keys move days, PageUp/PageDown move months.
+24. `AnimalUpload` supports Enter/Space activation when the upload area has focus, and removable file rows expose keyboard-activatable remove buttons.
+25. `AnimalTimelineItem.onTap` enables click/hover/focus/Enter/Space behavior; use `disabled: true` to show an unavailable interactive step.

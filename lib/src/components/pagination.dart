@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -90,69 +91,96 @@ class _PageButton extends StatefulWidget {
 class _PageButtonState extends State<_PageButton> {
   bool _hovered = false;
   bool _pressed = false;
+  bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
     final enabled = !widget.disabled;
     final active = widget.active;
-    final yOffset = enabled ? (_pressed ? 2.0 : (_hovered ? -1.0 : 0.0)) : 0.0;
+    final highlighted = _hovered || _focused;
+    final yOffset =
+        enabled ? (_pressed ? 2.0 : (highlighted ? -1.0 : 0.0)) : 0.0;
 
-    return MouseRegion(
-      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
-      onExit: enabled
-          ? (_) => setState(() {
-                _hovered = false;
-                _pressed = false;
-              })
-          : null,
-      child: GestureDetector(
-        onTapDown: enabled ? (_) => setState(() => _pressed = true) : null,
-        onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
-        onTapUp: enabled
-            ? (_) {
-                setState(() => _pressed = false);
-                widget.onTap();
-              }
+    return FocusableActionDetector(
+      enabled: enabled,
+      mouseCursor:
+          enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onShowFocusHighlight: (value) {
+        if (mounted) {
+          setState(() => _focused = value);
+        }
+      },
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            if (enabled) {
+              widget.onTap();
+            }
+            return null;
+          },
+        ),
+      },
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
+        onExit: enabled
+            ? (_) => setState(() {
+                  _hovered = false;
+                  _pressed = false;
+                })
             : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          transform: Matrix4.translationValues(0, yOffset, 0),
-          width: 34,
-          height: 34,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: active ? theme.primaryColor : const Color(0xFFF7F3DF),
-            borderRadius: BorderRadius.circular(17),
-            border: Border.all(
-              color: active
-                  ? theme.primaryActiveColor
-                  : _hovered
-                      ? theme.primaryColor
-                      : theme.borderColor,
-              width: 2,
+        child: GestureDetector(
+          onTapDown: enabled ? (_) => setState(() => _pressed = true) : null,
+          onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
+          onTapUp: enabled
+              ? (_) {
+                  setState(() => _pressed = false);
+                  widget.onTap();
+                }
+              : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            transform: Matrix4.translationValues(0, yOffset, 0),
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: active ? theme.primaryColor : theme.contentBackgroundColor,
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(
+                color: active
+                    ? theme.primaryActiveColor
+                    : highlighted
+                        ? theme.primaryColor
+                        : theme.borderColor,
+                width: 2,
+              ),
+              boxShadow: enabled
+                  ? [
+                      BoxShadow(
+                        color: theme.tactileShadowColor,
+                        offset: const Offset(0, 3),
+                        blurRadius: 0,
+                      ),
+                    ]
+                  : null,
             ),
-            boxShadow: enabled
-                ? const [
-                    BoxShadow(
-                      color: Color(0xFFBDAEA0),
-                      offset: Offset(0, 3),
-                      blurRadius: 0,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            widget.label,
-            style: theme.textStyle(
-              size: 13,
-              weight: FontWeight.w900,
-              color: !enabled
-                  ? theme.disabledTextColor
-                  : active
-                      ? Colors.white
-                      : theme.textColor,
+            child: Text(
+              widget.label,
+              style: theme.textStyle(
+                size: 13,
+                weight: FontWeight.w900,
+                color: !enabled
+                    ? theme.disabledTextColor
+                    : active
+                        ? Colors.white
+                        : theme.textColor,
+              ),
             ),
           ),
         ),

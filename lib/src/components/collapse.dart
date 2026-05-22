@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../animal_theme.dart';
 
@@ -22,7 +23,14 @@ class AnimalCollapse extends StatefulWidget {
 
 class _AnimalCollapseState extends State<AnimalCollapse>
     with SingleTickerProviderStateMixin {
+  final _focusNode = FocusNode();
   late bool _expanded;
+  var _hovered = false;
+  var _focused = false;
+  var _pressed = false;
+
+  bool get _enabled => !widget.disabled;
+
   @override
   void initState() {
     super.initState();
@@ -30,122 +38,206 @@ class _AnimalCollapseState extends State<AnimalCollapse>
   }
 
   @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = AnimalTheme.of(context);
-
-    return MouseRegion(
-      cursor:
-          widget.disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 180),
-        opacity: widget.disabled ? 0.6 : 1,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: theme.backgroundColor,
-            borderRadius: BorderRadius.circular(theme.radius),
-            border: Border.all(
-              color: theme.borderColor,
-              width: theme.borderWidth,
+    final highlighted = _enabled && (_hovered || _focused);
+    final borderColor = highlighted ? theme.primaryColor : theme.borderColor;
+    final shadow = highlighted
+        ? [
+            BoxShadow(
+              color: theme.tactileShadowColor.withValues(alpha: 0.45),
+              offset: Offset(0, _pressed ? 1 : 3),
+              blurRadius: 0,
             ),
+          ]
+        : null;
+
+    return Semantics(
+      button: _enabled,
+      enabled: _enabled,
+      expanded: _expanded,
+      child: FocusableActionDetector(
+        focusNode: _focusNode,
+        enabled: _enabled,
+        mouseCursor:
+            _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        onShowFocusHighlight: (value) {
+          if (mounted) {
+            setState(() => _focused = value);
+          }
+        },
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              _toggle();
+              return null;
+            },
           ),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              InkWell(
-                onTap: widget.disabled
-                    ? null
-                    : () => setState(() => _expanded = !_expanded),
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Row(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: _expanded
-                              ? theme.primaryActiveColor
-                              : theme.primaryColor,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.primaryColor.withValues(alpha: 0.30),
-                              offset: const Offset(0, 2),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            _expanded ? '-' : '+',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DefaultTextStyle.merge(
-                          style: theme.textStyle(
-                            size: 16,
-                            weight: FontWeight.w700,
-                          ),
-                          child: widget.question,
-                        ),
-                      ),
-                      AnimatedRotation(
-                        turns: _expanded ? 0.125 : 0,
-                        duration: const Duration(milliseconds: 250),
-                        child: CustomPaint(
-                          size: const Size.square(20),
-                          painter: _CollapseLeafPainter(
-                            color: theme.primaryColor.withValues(
-                              alpha: _expanded ? 1 : 0.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+        },
+        child: MouseRegion(
+          cursor:
+              _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+          onEnter: _enabled ? (_) => _setHovered(true) : null,
+          onExit: _enabled
+              ? (_) {
+                  _setHovered(false);
+                  _setPressed(false);
+                }
+              : null,
+          child: GestureDetector(
+            onTapDown: _enabled ? (_) => _setPressed(true) : null,
+            onTapUp: _enabled ? (_) => _setPressed(false) : null,
+            onTapCancel: _enabled ? () => _setPressed(false) : null,
+            onTap: _enabled
+                ? () {
+                    _focusNode.requestFocus();
+                    _toggle();
+                  }
+                : null,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 180),
+              opacity: widget.disabled ? 0.6 : 1,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                transform: Matrix4.translationValues(0, _pressed ? 1 : 0, 0),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: theme.backgroundColor,
+                  borderRadius: BorderRadius.circular(theme.radius),
+                  border: Border.all(
+                    color: borderColor,
+                    width: theme.borderWidth,
                   ),
+                  boxShadow: shadow,
                 ),
-              ),
-              AnimatedCrossFade(
-                firstChild: const SizedBox(width: double.infinity),
-                secondChild: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: DefaultTextStyle.merge(
-                      style: theme.textStyle(
-                        size: 14,
-                        weight: FontWeight.w500,
-                        color: theme.secondaryTextColor,
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      child: Row(
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: _expanded
+                                  ? theme.primaryActiveColor
+                                  : highlighted
+                                      ? theme.primaryHoverColor
+                                      : theme.primaryColor,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.primaryColor
+                                      .withValues(alpha: 0.30),
+                                  offset: Offset(0, _pressed ? 1 : 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                _expanded ? '-' : '+',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DefaultTextStyle.merge(
+                              style: theme.textStyle(
+                                size: 16,
+                                weight: FontWeight.w700,
+                                color: highlighted
+                                    ? theme.textColor
+                                    : theme.bodyTextColor,
+                              ),
+                              child: widget.question,
+                            ),
+                          ),
+                          AnimatedRotation(
+                            turns: _expanded ? 0.125 : 0,
+                            duration: const Duration(milliseconds: 250),
+                            child: CustomPaint(
+                              size: const Size.square(20),
+                              painter: _CollapseLeafPainter(
+                                color: theme.primaryColor.withValues(
+                                  alpha: _expanded || highlighted ? 1 : 0.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: widget.answer,
                     ),
-                  ),
+                    AnimatedCrossFade(
+                      firstChild: const SizedBox(width: double.infinity),
+                      secondChild: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: DefaultTextStyle.merge(
+                            style: theme.textStyle(
+                              size: 14,
+                              weight: FontWeight.w500,
+                              color: theme.secondaryTextColor,
+                            ),
+                            child: widget.answer,
+                          ),
+                        ),
+                      ),
+                      crossFadeState: _expanded
+                          ? CrossFadeState.showSecond
+                          : CrossFadeState.showFirst,
+                      duration: const Duration(milliseconds: 260),
+                      sizeCurve: Curves.easeOut,
+                    ),
+                  ],
                 ),
-                crossFadeState: _expanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                duration: const Duration(milliseconds: 260),
-                sizeCurve: Curves.easeOut,
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _toggle() {
+    if (_enabled) {
+      setState(() => _expanded = !_expanded);
+    }
+  }
+
+  void _setHovered(bool value) {
+    if (mounted && _hovered != value) {
+      setState(() => _hovered = value);
+    }
+  }
+
+  void _setPressed(bool value) {
+    if (mounted && _pressed != value) {
+      setState(() => _pressed = value);
+    }
   }
 }
 

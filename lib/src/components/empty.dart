@@ -52,9 +52,9 @@ class _EmptyLeafIcon extends StatelessWidget {
       width: 72,
       height: 72,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8D6),
+        color: theme.elevatedBackgroundColor,
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFD9C889), width: 3),
+        border: Border.all(color: theme.warmBorderColor, width: 3),
         boxShadow: theme.shadowSmall,
       ),
       child: CustomPaint(

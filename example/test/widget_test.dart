@@ -4,6 +4,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  Finder docsSearchInput() {
+    return find.descendant(
+      of: find.byKey(const ValueKey('docs-search-box')),
+      matching: find.byType(EditableText),
+    );
+  }
+
+  Future<void> openDocs(WidgetTester tester) async {
+    await tester.pumpWidget(const AnimalIslandDocsApp());
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('开始使用 ->'));
+    await tester.tap(find.text('开始使用 ->'));
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 1500));
+    await tester.pump();
+  }
+
+  void setViewSize(WidgetTester tester, Size size) {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = size;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+  }
+
   testWidgets('renders Flutter docs home page', (tester) async {
     await tester.pumpWidget(const AnimalIslandDocsApp());
     await tester.pump();
@@ -15,8 +42,8 @@ void main() {
   testWidgets(
       'home navigation shows loading transition and fixed sidebar header',
       (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1200, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    setViewSize(tester, const Size(1200, 900));
+    await tester.pump();
 
     await tester.pumpWidget(const AnimalIslandDocsApp());
     await tester.pump();
@@ -56,53 +83,105 @@ void main() {
 
   testWidgets('sidebar lists extended and advanced component pages',
       (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1200, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(const AnimalIslandDocsApp());
+    setViewSize(tester, const Size(1200, 900));
     await tester.pump();
 
-    await tester.tap(find.text('开始使用 ->'));
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pump(const Duration(milliseconds: 1500));
-    await tester.pump();
+    await openDocs(tester);
 
+    expect(find.text('主题与基础'), findsOneWidget);
+    expect(find.text('布局与容器'), findsOneWidget);
     expect(find.text('Radio 单选框'), findsOneWidget);
-
-    await tester.scrollUntilVisible(
-      find.text('Tag 标签'),
-      160,
-      scrollable: find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) => widget.runtimeType.toString() == '_Sidebar',
-        ),
-        matching: find.byType(Scrollable),
-      ),
-    );
     expect(find.text('Tag 标签'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('Alert 警告'),
-      400,
-      scrollable: find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) => widget.runtimeType.toString() == '_Sidebar',
-        ),
-        matching: find.byType(Scrollable),
-      ),
-    );
-    expect(find.text('Alert 警告'), findsOneWidget);
+    await tester.enterText(docsSearchInput(), 'theme');
+    await tester.pump();
+    expect(find.text('Theme 主题'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('Skeleton 骨架屏'),
-      600,
-      scrollable: find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) => widget.runtimeType.toString() == '_Sidebar',
-        ),
-        matching: find.byType(Scrollable),
-      ),
+    await tester.tap(find.text('Theme 主题'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Theme 主题定制'), findsWidgets);
+    expect(find.text('主色切换（点击色块预览）'), findsOneWidget);
+    expect(find.text('品牌主色派生卡片'), findsOneWidget);
+
+    await tester.enterText(docsSearchInput(), 'skeleton');
+    await tester.pump();
+    expect(find.text('Skeleton 骨架屏'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), 'form');
+    await tester.pump();
+    expect(find.text('Form 表单布局'), findsOneWidget);
+
+    await tester.tap(find.text('Form 表单布局'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Form 表单布局'), findsWidgets);
+    expect(find.text('horizontal 标签宽度'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), 'timeline');
+    await tester.pump();
+    expect(find.text('Timeline 时间线'), findsWidgets);
+  });
+
+  testWidgets('desktop docs sidebar supports global search', (tester) async {
+    setViewSize(tester, const Size(1200, 900));
+    await tester.pump();
+
+    await openDocs(tester);
+
+    expect(find.text('搜索组件 / API / 关键词'), findsOneWidget);
+
+    await tester.enterText(docsSearchInput(), 'table');
+    await tester.pump();
+
+    final sidebar = find.byWidgetPredicate(
+      (widget) => widget.runtimeType.toString() == '_Sidebar',
     );
-    expect(find.text('Skeleton 骨架屏'), findsOneWidget);
+    expect(
+      find.descendant(of: sidebar, matching: find.text('Table 表格')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: sidebar, matching: find.text('Select 选择器')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('mobile docs use compact top navigation and search',
+      (tester) async {
+    setViewSize(tester, const Size(390, 820));
+    await tester.pump();
+
+    await openDocs(tester);
+
+    expect(find.text('Animal Docs'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget.runtimeType.toString() == '_Sidebar',
+      ),
+      findsNothing,
+    );
+    expect(find.text('搜索组件 / API / 关键词'), findsOneWidget);
+
+    await tester.enterText(docsSearchInput(), '上传');
+    await tester.pump();
+
+    expect(find.text('Upload 上传'), findsWidgets);
+  });
+
+  testWidgets('desktop docs open phone simulator preview flow', (tester) async {
+    setViewSize(tester, const Size(1200, 900));
+    await tester.pump();
+
+    await openDocs(tester);
+
+    await tester.tap(find.text('手机预览'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('手机模拟器预览'), findsOneWidget);
+    expect(find.text('手机预览应用'), findsOneWidget);
+    expect(
+        find.textContaining('iframe 挂载独立 mobile_preview 应用'), findsOneWidget);
+    expect(find.text('返回文档'), findsOneWidget);
   });
 }

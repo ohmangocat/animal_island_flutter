@@ -1,8 +1,18 @@
 name: animal_island_flutter
 description: A cozy Animal Island inspired Flutter component library.
-version: 0.1.1
+version: 0.1.2
 homepage: https://github.com/ohmangocat/animal_island_flutter
 repository: https://github.com/ohmangocat/animal_island_flutter
+issue_tracker: https://github.com/ohmangocat/animal_island_flutter/issues
+topics:
+  - flutter
+  - widgets
+  - ui
+  - components
+  - design-system
+screenshots:
+  - description: "Animal Island Flutter documentation home page."
+    path: doc/img/readme-home.png
 
 environment:
   sdk: ">=3.3.0 <4.0.0"

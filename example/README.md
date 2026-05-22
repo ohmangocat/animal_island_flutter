@@ -15,7 +15,7 @@
 
 - GitHub: https://github.com/ohmangocat/animal_island_flutter
 - Pub.dev: https://pub.dev/packages/animal_island_flutter
-- 当前发布版本：`0.1.1`
+- 当前发布版本：`0.1.2`
 
 ## 运行
 
@@ -35,7 +35,7 @@ flutter run -d chrome
 
 | 项目 | 版本 |
 | --- | --- |
-| `animal_island_flutter` | 发布版 `^0.1.1` |
+| `animal_island_flutter` | 发布版 `^0.1.2` |
 | GitHub | `https://github.com/ohmangocat/animal_island_flutter` |
 | Flutter SDK | `>=3.19.0` |
 | Dart SDK | `>=3.3.0 <4.0.0` |
@@ -45,7 +45,7 @@ flutter run -d chrome
 
 ```yaml
 dependencies:
-  animal_island_flutter: ^0.1.1
+  animal_island_flutter: ^0.1.2
 ```
 
 ## 页面内容
@@ -54,7 +54,7 @@ dependencies:
 | --- | --- |
 | Home | 复刻 React demo 首页，含移动背景和 loading 过渡 |
 | Components | 组件列表导航，集合啦 animal 标题固定展示 |
-| Detail | 组件详情、使用示例、代码块和 API 说明 |
+| Detail | 48 个组件页面，包含基础、扩展、进阶、阶段三、阶段四和复杂组件的使用示例、代码块和 API 说明 |
 
 ## 兼容平台
 

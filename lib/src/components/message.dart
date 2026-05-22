@@ -19,7 +19,11 @@ class AnimalMessage {
       builder: (context) => _AnimalMessageOverlay(
         type: type,
         duration: duration,
-        onDone: () => entry.remove(),
+        onDone: () {
+          if (entry.mounted) {
+            entry.remove();
+          }
+        },
         child: child,
       ),
     );
@@ -79,6 +83,7 @@ class _AnimalMessageOverlay extends StatefulWidget {
 class _AnimalMessageOverlayState extends State<_AnimalMessageOverlay>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  bool _closing = false;
 
   @override
   void initState() {
@@ -89,13 +94,7 @@ class _AnimalMessageOverlayState extends State<_AnimalMessageOverlay>
       reverseDuration: const Duration(milliseconds: 180),
     )..forward();
     Future<void>.delayed(widget.duration, () async {
-      if (!mounted) {
-        return;
-      }
-      await _controller.reverse();
-      if (mounted) {
-        widget.onDone();
-      }
+      await _dismiss();
     });
   }
 
@@ -103,6 +102,17 @@ class _AnimalMessageOverlayState extends State<_AnimalMessageOverlay>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _dismiss() async {
+    if (_closing || !mounted) {
+      return;
+    }
+    _closing = true;
+    await _controller.reverse();
+    if (mounted) {
+      widget.onDone();
+    }
   }
 
   @override
@@ -146,13 +156,13 @@ class _AnimalMessageCard extends StatelessWidget {
       color: Colors.transparent,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF8D6),
+          color: theme.elevatedBackgroundColor,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: color, width: 2),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0xFFBDAEA0),
-              offset: Offset(0, 4),
+              color: theme.tactileShadowColor,
+              offset: const Offset(0, 4),
               blurRadius: 0,
             ),
           ],
@@ -163,7 +173,7 @@ class _AnimalMessageCard extends StatelessWidget {
             style: theme.textStyle(
               size: 14,
               weight: FontWeight.w700,
-              color: const Color(0xFF794F27),
+              color: theme.textColor,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

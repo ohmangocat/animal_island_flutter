@@ -69,16 +69,16 @@ class AnimalDialog extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: width),
         child: CustomPaint(
-          painter: _AnimalDialogShadowPainter(),
+          painter: _AnimalDialogShadowPainter(theme.shadowColor),
           foregroundPainter: _AnimalDialogBorderPainter(
-            color: const Color(0xFFC4B89E),
+            color: theme.disabledTextColor,
             width: 2.5,
           ),
           child: ClipPath(
             clipper: const _AnimalDialogClipper(),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF7F3DF),
+                color: theme.contentBackgroundColor,
                 boxShadow: theme.shadowLarge,
               ),
               padding: const EdgeInsets.fromLTRB(48, 48, 48, 32),
@@ -93,7 +93,7 @@ class AnimalDialog extends StatelessWidget {
                         style: theme.textStyle(
                           size: 28,
                           weight: FontWeight.w700,
-                          color: const Color(0xFF725D42),
+                          color: theme.bodyTextColor,
                         ),
                         child: title!,
                       ),
@@ -166,18 +166,24 @@ class _AnimalDialogClipper extends CustomClipper<Path> {
 }
 
 class _AnimalDialogShadowPainter extends CustomPainter {
+  const _AnimalDialogShadowPainter(this.color);
+
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawShadow(
       _modalPath(Offset.zero & size),
-      const Color(0x403D3428),
+      color.withValues(alpha: 0.25),
       12,
       false,
     );
   }
 
   @override
-  bool shouldRepaint(covariant _AnimalDialogShadowPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _AnimalDialogShadowPainter oldDelegate) {
+    return oldDelegate.color != color;
+  }
 }
 
 class _AnimalDialogBorderPainter extends CustomPainter {
