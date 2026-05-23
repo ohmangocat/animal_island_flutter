@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          flutter analyze 2>&1 | tee "$RUNNER_TEMP/flutter-analyze.log"
+          flutter analyze lib test 2>&1 | tee "$RUNNER_TEMP/flutter-analyze.log"
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
             {

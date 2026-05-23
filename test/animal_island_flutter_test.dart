@@ -4195,6 +4195,7 @@ void main() {
       ),
     );
     expect(workflow, contains('Root publish dry run'));
+    expect(workflow, contains('flutter analyze lib test'));
     expect(workflow, contains('flutter pub publish --dry-run'));
     expect(workflow, contains('FLUTTER_VERSION: 3.41.0'));
     expect(workflow, contains('PUB_HOSTED_URL: https://pub.dev'));
