@@ -7,6 +7,8 @@ param(
 
   [string]$Date = (Get-Date -Format "yyyy-MM-dd"),
 
+  [string]$PubHostedUrl = "https://pub.dev",
+
   [string[]]$Changes = @(),
 
   [switch]$BuildDocs,
@@ -58,6 +60,29 @@ function Invoke-Step {
     }
   } finally {
     Pop-Location
+  }
+}
+
+function Invoke-PubHostedStep {
+  param([scriptblock]$Command)
+
+  $previousPubHostedUrl = [Environment]::GetEnvironmentVariable("PUB_HOSTED_URL", "Process")
+  try {
+    if ($PubHostedUrl) {
+      $env:PUB_HOSTED_URL = $PubHostedUrl
+      Write-Host "PUB_HOSTED_URL=$PubHostedUrl"
+    } else {
+      Remove-Item Env:PUB_HOSTED_URL -ErrorAction SilentlyContinue
+      Write-Host "PUB_HOSTED_URL cleared for this step"
+    }
+
+    & $Command
+  } finally {
+    if ($null -eq $previousPubHostedUrl) {
+      Remove-Item Env:PUB_HOSTED_URL -ErrorAction SilentlyContinue
+    } else {
+      $env:PUB_HOSTED_URL = $previousPubHostedUrl
+    }
   }
 }
 
@@ -186,11 +211,15 @@ if ($BuildDocs) {
 }
 
 if (-not $SkipDryRun) {
-  Invoke-Step "Pub publish dry run" $root { & $Flutter pub publish --dry-run }
+  Invoke-Step "Pub publish dry run" $root {
+    Invoke-PubHostedStep { & $Flutter pub publish --dry-run }
+  }
 }
 
 if ($Publish) {
-  Invoke-Step "Pub publish" $root { & $Flutter pub publish --force }
+  Invoke-Step "Pub publish" $root {
+    Invoke-PubHostedStep { & $Flutter pub publish --force }
+  }
 } else {
   Write-Host ""
   Write-Host "Dry-run flow completed. Re-run with -Publish to publish to pub.dev." -ForegroundColor Yellow
