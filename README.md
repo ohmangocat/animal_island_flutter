@@ -4,7 +4,7 @@
     <img src="doc/img/readme-home.png" alt="animal-island-flutter" style="border-radius: 12px; width: 40%; display: block; margin: 0 auto;" />
 </div>
 <div align="center">
-    一款复刻 animal-island-ui 风格的 Flutter 组件库
+    一个温暖、轻快、带有岛屿生活感的 Flutter 组件库
 </div>
 <br/>
 <div align="center">
@@ -20,44 +20,24 @@
 
 ## 介绍
 
-`animal_island_flutter` 是基于 [`animal-island-ui`](https://github.com/guokaigdg/animal-island-ui) 复刻的 Flutter 组件库。它保留 React 版的暖米色背景、青绿色主色、棕色文字、pill 圆角、3D 按键阴影、动森风格图标和游戏式控件手感，同时使用 Flutter/Dart 更自然的 Widget API。
+`animal_island_flutter` 是一个 Flutter UI 组件库，提供桌面 Web 文档、移动端预览、基础控件、表单控件、反馈组件、数据展示组件、复杂业务组件和移动端业务组件。
 
-本项目用于学习 Flutter 组件库设计、跨端 UI 复刻和文档站搭建。视觉灵感来自生活模拟游戏的温暖岛屿氛围，但组件、代码和资源均以本项目内实现为准。
+组件视觉以暖米色背景、青绿色主色、棕色文字、圆润控件、底部触感阴影、轻量动效和岛屿风格图形资源为核心。它适合做有一点可爱感、但仍然保持清晰可用的 Flutter 应用界面。
 
-## 预览
-
-示例文档项目位于 [`example`](./example)，当前文档页按 React demo 的内容结构改写为 Flutter 使用环境。
-
-```powershell
-cd example
-flutter pub get
-flutter run -d web-server --web-hostname 127.0.0.1 --web-port 5178
-```
+当前包已经发布到 pub.dev，并维护了本地文档站、手机模拟器预览、测试用例、发布脚本、AI 使用手册和设计提示文档。
 
 ## 安装
-
-从 pub.dev 安装当前发布版：
 
 ```yaml
 dependencies:
   animal_island_flutter: ^0.1.3
 ```
 
-入口导入：
-
 ```dart
 import 'package:animal_island_flutter/animal_island_flutter.dart';
 ```
 
-如果需要和本仓库源码联调，可以临时改成本地 path 依赖：
-
-```yaml
-dependencies:
-  animal_island_flutter:
-    path: ../animal_island_flutter
-```
-
-## 版本与依赖
+## 环境
 
 | 项目 | 版本 |
 | --- | --- |
@@ -67,18 +47,18 @@ dependencies:
 | `flutter_svg` | `^2.0.17` |
 | `flutter_lints` | `^5.0.0` |
 
-## 兼容平台
+## 平台支持
 
 | 平台 | 状态 |
 | --- | --- |
 | Android | 已适配，可运行示例项目 |
-| Windows | 已适配 Windows Flutter 工程 |
-| Web | 已适配，可运行文档站预览 |
-| iOS | 需在 macOS + Xcode 环境自行测试 |
+| Windows | 已适配，可运行示例项目 |
+| Web | 已适配，文档站和移动预览均可运行 |
+| iOS | 代码侧保留支持，需要在 macOS + Xcode 环境自行测试 |
 
-## 快速上手
+## 快速使用
 
-推荐在应用根部包一层 `AnimalTheme`：
+推荐在应用根部使用 `AnimalTheme`，统一接入颜色、字体、圆角、背景、边框和触感阴影。
 
 ```dart
 void main() {
@@ -119,7 +99,7 @@ class App extends StatelessWidget {
               type: AnimalButtonType.primary,
               block: true,
               onPressed: () {},
-              child: const Text('开始冒险'),
+              child: const Text('开始'),
             ),
           ],
         ),
@@ -131,7 +111,7 @@ class App extends StatelessWidget {
 
 ## 主题定制
 
-`AnimalThemeData.fromPrimary(...)` 可以根据一个品牌主色自动派生 hover、active、条纹 loading 和浅背景色。再用 `copyWith` 覆盖字体、圆角、行高、背景、文字、边框等令牌：
+`AnimalThemeData.fromPrimary(...)` 可以根据一个品牌主色自动派生 hover、active、条纹 loading、浅背景等颜色。你也可以通过 `copyWith` 覆盖字体、圆角、行高、背景、文字、边框和阴影令牌。
 
 ```dart
 final theme = AnimalThemeData.fromPrimary(
@@ -148,90 +128,89 @@ final theme = AnimalThemeData.fromPrimary(
 AnimalTheme(data: theme, child: const App());
 ```
 
-换肤时优先覆盖主题令牌，不要逐个组件硬编码颜色。常用令牌包括：
+常用主题令牌：
 
 | 令牌 | 用途 |
 | --- | --- |
 | `primaryColor` / `primaryHoverColor` / `primaryActiveColor` | 主色、hover、active |
 | `primarySolidColor` / `primaryStripeColor` | Tabs 激活色、Button/Loading 条纹色 |
 | `backgroundColor` / `secondaryBackgroundColor` | 页面底色、控件浅底 |
-| `contentBackgroundColor` / `elevatedBackgroundColor` | 输入框/表格底色、浮层底色 |
+| `contentBackgroundColor` / `elevatedBackgroundColor` | 输入框、表格、浮层底色 |
 | `textColor` / `bodyTextColor` / `secondaryTextColor` | 标题、正文、次要文本 |
 | `borderColor` / `lightBorderColor` / `controlBorderColor` | 常规边框、浅边框、控件边框 |
 | `tactileShadowColor` | 按钮、分页、滑块等底部触感阴影 |
 
-当字体来自你的应用工程而不是 package 内置字体时，将 `fontPackage` 设为 `null`。
+当字体由你的应用工程注册时，将 `fontPackage` 设置为 `null`。
 
-## 文档
+## 组件能力
 
-| 文档 | 用途 |
+当前组件库包含 74 个组件页面，覆盖基础控件、反馈、数据展示、表单、复杂业务和移动端业务场景。
+
+| 分类 | 组件 |
 | --- | --- |
-| [`example`](./example) | Flutter 文档站与组件演示项目，内容按 React demo 编排并改写为 Flutter 示例。 |
-| [`AI_USAGE.md`](./AI_USAGE.md) | 面向 AI 代码助手的 Flutter API 手册，列出组件、枚举、默认值、常见组合和禁用写法。 |
-| [`DESIGN_PROMPT.md`](./DESIGN_PROMPT.md) | 设计/生成提示词，整理色板、字体、动效、背景、组件样式和禁止清单。 |
-| [`skills/animal-island-flutter-style/SKILL.md`](./skills/animal-island-flutter-style/SKILL.md) | 像素级复刻 Skill，给 AI 助手维护 Flutter 组件库时使用。 |
-| [`RELEASE_CHECKLIST.md`](./RELEASE_CHECKLIST.md) | 发布前质量门禁、文档构建、平台冒烟测试和 pub.dev 发布流程。 |
+| 基础控件 | `AnimalButton` / `AnimalInput` / `AnimalSwitch` / `AnimalCard` / `AnimalCollapse` / `AnimalTabs` / `AnimalCheckbox` / `AnimalSelect` |
+| 展示与装饰 | `AnimalIcon` / `AnimalDivider` / `AnimalFooter` / `AnimalPhone` / `AnimalTime` / `AnimalTypewriter` / `AnimalCodeBlock` |
+| 反馈组件 | `AnimalDialog` / `AnimalLoading` / `AnimalAlert` / `AnimalTooltip` / `AnimalMessage` / `AnimalProgress` / `AnimalEmpty` / `AnimalResult` |
+| 选择与输入 | `AnimalRadio` / `AnimalRate` / `AnimalSlider` / `AnimalSegmented` / `AnimalTextarea` / `AnimalPasswordInput` / `AnimalSearchInput` / `AnimalNumberInput` |
+| 导航与状态 | `AnimalPagination` / `AnimalBreadcrumb` / `AnimalSteps` / `AnimalBadge` / `AnimalTag` / `AnimalSkeleton` |
+| 表单能力 | `AnimalForm` / `AnimalFormItem` / `AnimalInputFormField` / `AnimalSelectFormField` / `AnimalCheckboxFormField` / `AnimalRadioFormField` / `AnimalSwitchFormField` / `AnimalSliderFormField` / `AnimalRateFormField` / `AnimalCalendarFormField` / `AnimalUploadFormField` / `AnimalTreeFormField` |
+| 浮层与详情 | `AnimalPopover` / `AnimalDropdown` / `AnimalDrawer` / `AnimalConfirmDialog` / `AnimalDescriptions` / `AnimalStatistic` / `AnimalTimeline` |
+| 复杂业务 | `AnimalTable` / `AnimalCalendar` / `AnimalUpload` / `AnimalTree` |
+| 移动基础 | `AnimalMobileNavBar` / `AnimalBottomBar` / `AnimalBottomSheet` / `AnimalActionSheet` / `AnimalListTile` / `AnimalCellGroup` / `AnimalMobileSearchBar` / `AnimalPicker` / `AnimalMobileDatePicker` / `AnimalMobileStepper` / `AnimalSwipeAction` / `AnimalPullRefresh` / `AnimalMobileSection` |
+| 移动业务 | `AnimalMobileProductCard` / `AnimalMobileOrderCard` / `AnimalMobileProfileHeader` / `AnimalMobileStatsGrid` / `AnimalMobileCouponCard` / `AnimalMobileNoticeBar` / `AnimalMobileAddressCard` / `AnimalMobilePriceSummary` / `AnimalMobileCheckoutBar` / `AnimalMobileCartItem` / `AnimalMobileOrderTimeline` / `AnimalMobilePaymentMethodCard` / `AnimalMobileEmptyAction` |
 
-## 组件映射
+## 文档与示例
 
-| React `animal-island-ui` | Flutter |
+仓库内置两个示例项目：
+
+| 路径 | 说明 |
 | --- | --- |
-| `Button` | `AnimalButton` |
-| `Input` | `AnimalInput` |
-| `Switch` | `AnimalSwitch` |
-| `Modal` | `AnimalDialog.show(...)` / `AnimalDialog` |
-| `Card` | `AnimalCard` |
-| `Collapse` | `AnimalCollapse` |
-| `Cursor` | `AnimalCursor` |
-| `Time` | `AnimalTime` |
-| `Phone` | `AnimalPhone` |
-| `Footer` | `AnimalFooter` |
-| `Divider` | `AnimalDivider` |
-| `Typewriter` | `AnimalTypewriter` |
-| `Icon` / `ICON_LIST` | `AnimalIcon` / `animalIconList` |
-| `Select` | `AnimalSelect` |
-| `Tabs` | `AnimalTabs` |
-| `Checkbox` | `AnimalCheckbox` |
-| `CodeBlock` | `AnimalCodeBlock` |
-| `Loading` | `AnimalLoading` |
-| `Table` | `AnimalTable` |
-| Extended basics | `AnimalRadio` / `AnimalTag` / `AnimalBadge` / `AnimalTooltip` / `AnimalMessage` / `AnimalProgress` / `AnimalPagination` / `AnimalEmpty` |
-| Advanced basics | `AnimalAlert` / `AnimalAvatar` / `AnimalBreadcrumb` / `AnimalSteps` / `AnimalSlider` / `AnimalRate` / `AnimalSegmented` / `AnimalSkeleton` |
-| Phase 3 business components | `AnimalForm` / `AnimalTextarea` / `AnimalPasswordInput` / `AnimalSearchInput` / `AnimalNumberInput` / `AnimalPopover` / `AnimalDropdown` / `AnimalDrawer` / `AnimalConfirmDialog` / `AnimalDescriptions` / `AnimalStatistic` / `AnimalTimeline` |
-| Phase 4 complex business components | `AnimalCalendar` / `AnimalUpload` / `AnimalTree` / `AnimalResult` |
-| Mobile components | `AnimalMobileNavBar` / `AnimalBottomBar` / `AnimalBottomSheet` / `AnimalActionSheet` / `AnimalListTile` / `AnimalCellGroup` / `AnimalMobileSearchBar` / `AnimalPicker` / `AnimalMobileDatePicker` / `AnimalMobileStepper` / `AnimalSwipeAction` / `AnimalPullRefresh` / `AnimalMobileSection` / `AnimalMobileProductCard` / `AnimalMobileOrderCard` / `AnimalMobileProfileHeader` / `AnimalMobileStatsGrid` / `AnimalMobileCouponCard` / `AnimalMobileNoticeBar` / `AnimalMobileAddressCard` / `AnimalMobilePriceSummary` / `AnimalMobileCheckoutBar` / `AnimalMobileCartItem` / `AnimalMobileOrderTimeline` / `AnimalMobilePaymentMethodCard` / `AnimalMobileEmptyAction` |
+| [`example`](./example) | 组件文档站，包含首页、组件列表、组件详情、全局搜索、主题示例和手机模拟器入口。 |
+| [`example/mobile_preview`](./example/mobile_preview) | 独立移动端预览项目，可单独打包到 Android、Windows 或 Web，用于体验移动组件在手机页面中的效果。 |
 
-## 组件覆盖
+运行桌面文档站：
 
-当前包含 74 个 Flutter 组件页面：`Button`、`Input`、`Switch`、`Modal`、`Card`、`Collapse`、`Cursor`、`Time`、`Phone`、`Footer`、`Divider`、`Typewriter`、`Icon`、`Select`、`Tabs`、`Checkbox`、`CodeBlock`、`Loading`、`Table`、`Radio`、`Tag`、`Badge`、`Tooltip`、`Message`、`Progress`、`Pagination`、`Empty`、`Alert`、`Avatar`、`Breadcrumb`、`Steps`、`Slider`、`Rate`、`Segmented`、`Skeleton`、`Form`、`Input Plus`、`Popover`、`Dropdown`、`Drawer`、`ConfirmDialog`、`Descriptions`、`Statistic`、`Timeline`、`Calendar`、`Upload`、`Tree`、`Result`、`MobileNavBar`、`BottomBar`、`BottomSheet`、`ActionSheet`、`ListTile`、`CellGroup`、`SearchBar`、`Picker`、`DatePicker`、`Stepper`、`SwipeAction`、`PullRefresh`、`Section`、`ProductCard`、`OrderCard`、`ProfileHeader`、`StatsGrid`、`CouponCard`、`NoticeBar`、`AddressCard`、`PriceSummary`、`CheckoutBar`、`CartItem`、`OrderTimeline`、`PaymentMethod` 和 `EmptyAction`。
+```powershell
+cd example
+flutter pub get
+flutter run -d web-server --web-hostname 127.0.0.1 --web-port 5178
+```
 
-表单类场景可直接使用 `AnimalForm` 和 `AnimalFormItem` 做布局，再搭配 `AnimalInputFormField`、`AnimalSelectFormField`、`AnimalCheckboxFormField`、`AnimalRadioFormField`、`AnimalSwitchFormField`、`AnimalSliderFormField`、`AnimalRateFormField`、`AnimalCalendarFormField`、`AnimalUploadFormField` 和 `AnimalTreeFormField`，支持 Flutter `Form` 的 `validator`、`onSaved` 和 `autovalidateMode`。业务输入增强可使用 `AnimalTextarea`、`AnimalPasswordInput`、`AnimalSearchInput` 和 `AnimalNumberInput`。
+运行移动端预览项目：
 
-浮层和详情类场景包含 `AnimalPopover`、`AnimalDropdown`、`AnimalDrawer`、`AnimalConfirmDialog`、`AnimalDescriptions`、`AnimalStatistic` 和 `AnimalTimeline`，可用于后台详情页、设置面板、数据概览和确认流程。阶段四复杂业务组件补充了 `AnimalCalendar`、`AnimalUpload`、`AnimalTree` 和 `AnimalResult`，覆盖日期选择、上传队列、层级导航和结果反馈页。
+```powershell
+cd example\mobile_preview
+flutter pub get
+flutter run -d web-server --web-hostname 127.0.0.1 --web-port 5179
+```
 
-移动端组件补充了手机页面壳、底部导航、触摸列表、底部操作面板、搜索栏、底部选择器、日期选择、步进器、左滑操作、下拉刷新和移动分区；业务化组件包含商品卡片、订单卡片、个人头图、统计宫格、优惠券卡片、公告栏、地址卡片、价格明细、底部结算栏、购物车项、订单时间线、支付方式卡片和业务空状态。桌面文档内置 iframe 手机模拟器，`example/mobile_preview` 也可以作为独立 Flutter 项目打包到 Android / Windows / Web 预览。
+## 仓库结构
 
-Flutter 版本会优先保持视觉和交互语义一致；少量 Web/React 专属 API 会转换成 Flutter 习惯写法：
-
-- `default` 在 Dart 中是关键字，因此枚举值写成 `defaultType` / `defaultColor`
-- `Modal.open` 改为 `AnimalDialog.show(...)` 或自行构建 `AnimalDialog`
-- `Select.value/onChange` 改为 `AnimalSelect.value/onChanged`
-- `Checkbox.defaultValue/value` 改为 `AnimalCheckbox.defaultValue/value`
-- `Table.dataSource` 改为 `AnimalTable.rows`
-- `Table.render` 改为 `AnimalTableColumn.cellBuilder`
-- `Loading.active` 改为 `AnimalLoading(active: true/false)`
-
-## Dart 命名差异
-
-| React 写法 | Flutter 写法 |
+| 路径 | 说明 |
 | --- | --- |
-| `type="default"` | `AnimalButtonType.defaultType` |
-| `Card type="default"` | `AnimalCardType.defaultType` |
-| `Card color="default"` | `AnimalCardColor.defaultColor` |
-| `Switch size="default"` | `AnimalSwitchSize.normal` |
-| `onChange` | `onChanged` |
-| `checkedChildren` | `checkedChild` |
-| `unCheckedChildren` | `uncheckedChild` |
+| [`lib/animal_island_flutter.dart`](./lib/animal_island_flutter.dart) | package 统一导出入口。 |
+| [`lib/src/animal_theme.dart`](./lib/src/animal_theme.dart) | 主题令牌、默认主题和品牌色派生逻辑。 |
+| [`lib/src/components`](./lib/src/components) | 组件源码目录。 |
+| [`lib/src/components/mobile.dart`](./lib/src/components/mobile.dart) | 移动端基础组件和移动业务组件。 |
+| [`assets/animal_island`](./assets/animal_island) | 字体、图标、光标、分割线、页脚、loading 等资源。 |
+| [`test`](./test) | package 级 widget 测试。 |
+| [`tool`](./tool) | 质量检查、文档构建和发布脚本。 |
+| [`AI_USAGE.md`](./AI_USAGE.md) | 面向 AI 代码助手的 API 使用手册。 |
+| [`DESIGN_PROMPT.md`](./DESIGN_PROMPT.md) | 视觉风格、色板、字体、动效和组件设计提示。 |
+| [`skill/SKILL.md`](./skill/SKILL.md) | 当前项目的 Codex Skill 文档。 |
+
+## 字体与资源
+
+包内注册了 `Nunito`、`Noto Sans SC`、`Zen Maru Gothic` 三组字体，并提供常用图形资源：
+
+- `assets/animal_island/fonts`：Flutter 可直接注册的 `.woff2` 字体资源。
+- `assets/animal_island/img/cursor`：自定义光标和 Select hover 光标。
+- `assets/animal_island/img/dividers`：分割线与波浪线。
+- `assets/animal_island/img/footer`：页脚海浪和树图形。
+- `assets/animal_island/img/icons`：岛屿风格图标。
+- `assets/animal_island/img/loading`：loading 岛屿图形。
+
+这些资源已经在 `pubspec.yaml` 中注册，安装 package 后可随组件一起使用。
 
 ## 本地开发
 
@@ -241,44 +220,60 @@ flutter analyze
 flutter test
 ```
 
-完整发布前检查：
-
-```powershell
-.\tool\quality_check.ps1
-```
-
-只构建文档站和手机端 iframe 预览：
-
-```powershell
-.\tool\build_docs.ps1
-```
-
-运行示例：
+示例项目检查：
 
 ```powershell
 cd example
-flutter pub get
-flutter run -d web-server --web-hostname 127.0.0.1 --web-port 5178
+flutter analyze
+flutter test
+
+cd mobile_preview
+flutter analyze
+flutter test
 ```
 
-生成平台工程：
+构建文档站和移动预览静态产物：
 
 ```powershell
-cd example
-flutter create --platforms=android,ios,windows .
+powershell -ExecutionPolicy Bypass -File tool\build_docs.ps1 -Flutter C:\Dev\tools\flutter_3.41.0\bin\flutter.bat
 ```
 
-## 视觉资产
+完整质量检查：
 
-项目已接入 React 源码中的 SVG/PNG/WebP 资源，位于 [`assets/animal_island/img`](./assets/animal_island/img)。字体来自 React 项目声明的 `@fontsource/nunito`、`@fontsource/noto-sans-sc`、`@fontsource/zen-maru-gothic` npm 包，已抽取为 Flutter 可注册的 `.woff2`，位于 [`assets/animal_island/fonts`](./assets/animal_island/fonts)。`Icon`、`Divider`、`Footer`、`Phone`、`Select`、`Cursor` 等组件会优先使用源码视觉资产；`Modal` 使用 Flutter 原生 `CustomClipper` 复刻 objectBoundingBox blob 轮廓。
+```powershell
+powershell -ExecutionPolicy Bypass -File tool\quality_check.ps1
+```
 
-## 注意事项
+## 发布
 
-- 本项目主要用于学习、研究和 UI 组件库复刻展示。
-- 若用于商业项目，请自行评估视觉风格、商标、素材和合规风险。
-- 本项目不是任天堂官方产品，与任天堂株式会社无任何关联、授权或合作关系。
-- Android、Windows、Web 已完成示例项目适配；iOS 需在 macOS + Xcode 环境自行测试。
+仓库提供了发布脚本 [`tool/release.ps1`](./tool/release.ps1)，用于更新版本号、同步 README 版本、检查 changelog、执行 dry-run，并在确认后发布到 pub.dev。
 
-## License
+```powershell
+powershell -ExecutionPolicy Bypass -File tool\release.ps1 -Version 0.1.4
+```
+
+正式发布：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool\release.ps1 -Version 0.1.4 -Publish
+```
+
+如果终端需要临时代理，可以使用 `-ProxyUrl`。脚本只会在 dry-run 和 publish 步骤临时设置代理变量，结束后自动恢复：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool\release.ps1 -Version 0.1.4 -Publish -ProxyUrl http://127.0.0.1:15236
+```
+
+## 命名约定
+
+组件 API 遵循 Flutter/Dart 习惯：
+
+- 回调使用 `onChanged`、`onPressed`、`onSelected` 等命名。
+- 枚举值避免 Dart 关键字，例如 `AnimalButtonType.defaultType`、`AnimalCardColor.defaultColor`。
+- 复杂控件优先提供 Flutter `Widget` 插槽，而不是字符串模板。
+- 表单组件提供 `FormField` 包装，支持 `validator`、`onSaved`、`autovalidateMode`。
+- 桌面交互覆盖 hover、focus、keyboard activation；移动组件关注安全区、底部面板和触摸反馈。
+
+## 许可
 
 MIT
