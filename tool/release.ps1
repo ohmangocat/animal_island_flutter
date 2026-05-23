@@ -9,6 +9,8 @@ param(
 
   [string]$PubHostedUrl = "https://pub.dev",
 
+  [string]$ProxyUrl = "",
+
   [string[]]$Changes = @(),
 
   [switch]$BuildDocs,
@@ -67,6 +69,12 @@ function Invoke-PubHostedStep {
   param([scriptblock]$Command)
 
   $previousPubHostedUrl = [Environment]::GetEnvironmentVariable("PUB_HOSTED_URL", "Process")
+  $proxyVariableNames = @("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy")
+  $previousProxyVariables = @{}
+  foreach ($name in $proxyVariableNames) {
+    $previousProxyVariables[$name] = [Environment]::GetEnvironmentVariable($name, "Process")
+  }
+
   try {
     if ($PubHostedUrl) {
       $env:PUB_HOSTED_URL = $PubHostedUrl
@@ -76,12 +84,32 @@ function Invoke-PubHostedStep {
       Write-Host "PUB_HOSTED_URL cleared for this step"
     }
 
+    if ($ProxyUrl) {
+      foreach ($name in $proxyVariableNames) {
+        Set-Item -Path "Env:$name" -Value $ProxyUrl
+      }
+      Write-Host "Temporary proxy enabled: $ProxyUrl"
+    }
+
     & $Command
   } finally {
     if ($null -eq $previousPubHostedUrl) {
       Remove-Item Env:PUB_HOSTED_URL -ErrorAction SilentlyContinue
     } else {
       $env:PUB_HOSTED_URL = $previousPubHostedUrl
+    }
+
+    foreach ($name in $proxyVariableNames) {
+      $previousValue = $previousProxyVariables[$name]
+      if ($null -eq $previousValue) {
+        Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+      } else {
+        Set-Item -Path "Env:$name" -Value $previousValue
+      }
+    }
+
+    if ($ProxyUrl) {
+      Write-Host "Temporary proxy restored."
     }
   }
 }
