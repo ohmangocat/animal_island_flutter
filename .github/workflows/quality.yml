@@ -12,6 +12,7 @@ jobs:
   flutter-quality:
     runs-on: ubuntu-latest
     env:
+      FLUTTER_VERSION: 3.41.0
       PUB_HOSTED_URL: https://pub.dev
       FLUTTER_STORAGE_BASE_URL: https://storage.googleapis.com
 
@@ -31,7 +32,7 @@ jobs:
       - name: Install Flutter
         shell: bash
         run: |
-          git clone --depth 1 --branch stable https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
 
       - name: Flutter version
