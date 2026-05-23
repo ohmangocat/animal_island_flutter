@@ -45,7 +45,41 @@ jobs:
 
       - name: Root analyze
         shell: bash
-        run: flutter analyze
+        run: |
+          set +e
+          flutter analyze 2>&1 | tee "$RUNNER_TEMP/flutter-analyze.log"
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            {
+              echo "## flutter analyze failed"
+              echo
+              echo '```text'
+              tail -n 200 "$RUNNER_TEMP/flutter-analyze.log"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            python3 - "$RUNNER_TEMP/flutter-analyze.log" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          for line in Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace").splitlines():
+              match = re.search(r" • (?P<message>.*?) • (?P<file>[^:]+):(?P<line>\d+):(?P<column>\d+) • ", line)
+              if not match:
+                  continue
+              message = match.group("message").replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+              print(
+                  "::error file={file},line={line},col={column}::{message}".format(
+                      file=match.group("file"),
+                      line=match.group("line"),
+                      column=match.group("column"),
+                      message=message,
+                  )
+              )
+          PY
+
+            exit "$status"
+          fi
 
       - name: Root test
         shell: bash
