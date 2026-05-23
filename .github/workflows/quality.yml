@@ -10,23 +10,33 @@ on:
 
 jobs:
   flutter-quality:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Checkout repository
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/tarball/${GITHUB_SHA}" \
+            -o "$RUNNER_TEMP/source.tar.gz"
+          tar -xzf "$RUNNER_TEMP/source.tar.gz" -C "$GITHUB_WORKSPACE" --strip-components=1
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          cache: true
+      - name: Install Flutter
+        shell: bash
+        run: |
+          git clone --depth 1 --branch stable https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
 
       - name: Flutter version
+        shell: bash
         run: flutter --version
 
       - name: Root checks
-        shell: pwsh
+        shell: bash
         run: |
           flutter pub get
           flutter analyze
@@ -34,7 +44,7 @@ jobs:
           flutter pub publish --dry-run
 
       - name: Example checks
-        shell: pwsh
+        shell: bash
         working-directory: example
         run: |
           flutter pub get
@@ -42,7 +52,7 @@ jobs:
           flutter test
 
       - name: Mobile preview checks
-        shell: pwsh
+        shell: bash
         working-directory: example/mobile_preview
         run: |
           flutter pub get

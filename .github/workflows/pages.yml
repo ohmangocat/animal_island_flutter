@@ -7,29 +7,37 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy-docs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Checkout repository
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/tarball/${GITHUB_SHA}" \
+            -o "$RUNNER_TEMP/source.tar.gz"
+          tar -xzf "$RUNNER_TEMP/source.tar.gz" -C "$GITHUB_WORKSPACE" --strip-components=1
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          cache: true
+      - name: Install Flutter
+        shell: bash
+        run: |
+          git clone --depth 1 --branch stable https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
 
       - name: Flutter version
+        shell: bash
         run: flutter --version
 
       - name: Build docs and mobile preview
@@ -40,22 +48,23 @@ jobs:
             -DocsBaseHref /animal_island_flutter/ `
             -MobilePreviewBaseHref /animal_island_flutter/mobile_preview/
 
-      - name: Configure Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Publish gh-pages branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DEPLOY_DIR="$RUNNER_TEMP/animal-island-pages"
+          rm -rf "$DEPLOY_DIR"
+          mkdir -p "$DEPLOY_DIR"
+          cp -R example/build/web/. "$DEPLOY_DIR/"
+          touch "$DEPLOY_DIR/.nojekyll"
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
-        with:
-          path: example/build/web
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+          cd "$DEPLOY_DIR"
+          git init
+          git checkout -B gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Deploy docs ${GITHUB_SHA}"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin gh-pages
