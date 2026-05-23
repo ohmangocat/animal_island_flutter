@@ -4184,8 +4184,18 @@ void main() {
     expect(qualityScript, contains('pub publish --dry-run'));
     expect(qualityScript, isNot(contains('example_mobile_preview')));
     expect(qualityScript, contains('mobile_preview'));
-    expect(docsScript, contains('--base-href /mobile_preview/'));
+    expect(
+      docsScript,
+      contains('[string]\$MobilePreviewBaseHref = "/mobile_preview/"'),
+    );
+    expect(
+      docsScript,
+      contains(
+        '& \$Flutter build web --base-href \$MobilePreviewBaseHref --pwa-strategy=none',
+      ),
+    );
     expect(workflow, contains('flutter pub publish --dry-run'));
+    expect(workflow, isNot(contains('uses:')));
     expect(checklist, contains('Platform Smoke Test'));
   });
 }
