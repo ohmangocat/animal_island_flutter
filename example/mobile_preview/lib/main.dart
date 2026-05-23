@@ -30,6 +30,7 @@ class MobilePreviewHome extends StatefulWidget {
 }
 
 class _MobilePreviewHomeState extends State<MobilePreviewHome> {
+  _PreviewHomeSection _section = _PreviewHomeSection.categories;
   String? _group;
   String? _routeKey;
 
@@ -47,8 +48,9 @@ class _MobilePreviewHomeState extends State<MobilePreviewHome> {
   @override
   Widget build(BuildContext context) {
     final activePage = _activePage;
-    final title = activePage?.navTitle ?? _group ?? '组件分类';
-    final canBack = _group != null || activePage != null;
+    final title = activePage?.navTitle ?? _currentTitle;
+    final canBack = activePage != null ||
+        (_section == _PreviewHomeSection.categories && _group != null);
 
     return Scaffold(
       body: SafeArea(
@@ -66,16 +68,18 @@ class _MobilePreviewHomeState extends State<MobilePreviewHome> {
                   const _PreviewTiledBackground(),
                   if (activePage != null)
                     _PreviewDetailPage(page: activePage)
+                  else if (_section != _PreviewHomeSection.categories)
+                    _PreviewListPage(
+                      group: _currentTitle,
+                      description: _currentDescription,
+                      pages: _pagesForSection(_section),
+                      onSelectPage: _openPage,
+                    )
                   else if (_group != null)
                     _PreviewListPage(
                       group: _group!,
                       pages: _pagesForGroup(_group!),
-                      onSelectPage: (page) {
-                        setState(() {
-                          _group = page.group;
-                          _routeKey = page.routeKey;
-                        });
-                      },
+                      onSelectPage: _openPage,
                     )
                   else
                     _PreviewCategoryPage(
@@ -92,18 +96,87 @@ class _MobilePreviewHomeState extends State<MobilePreviewHome> {
           ],
         ),
       ),
+      bottomNavigationBar: AnimalBottomBar(
+        currentIndex: _section.index,
+        onChanged: _openSection,
+        items: const [
+          AnimalBottomBarItem(
+            icon: Icon(Icons.widgets_outlined),
+            activeIcon: Icon(Icons.widgets_rounded),
+            label: Text('分类'),
+          ),
+          AnimalBottomBarItem(
+            icon: Icon(Icons.phone_android_outlined),
+            activeIcon: Icon(Icons.phone_android_rounded),
+            label: Text('移动'),
+          ),
+          AnimalBottomBarItem(
+            icon: Icon(Icons.shopping_bag_outlined),
+            activeIcon: Icon(Icons.shopping_bag_rounded),
+            label: Text('业务'),
+          ),
+          AnimalBottomBarItem(
+            icon: Icon(Icons.eco_outlined),
+            activeIcon: Icon(Icons.eco_rounded),
+            label: Text('特色'),
+          ),
+        ],
+      ),
     );
+  }
+
+  String get _currentTitle {
+    if (_section == _PreviewHomeSection.categories) {
+      return _group ?? '组件分类';
+    }
+    return _section.title;
+  }
+
+  String get _currentDescription {
+    return switch (_section) {
+      _PreviewHomeSection.mobile => '移动页面基础能力，覆盖导航、列表、搜索、选择器和触摸反馈。',
+      _PreviewHomeSection.business => '更贴近真实业务的手机端组件，适合商城、订单、个人中心和结算流程。',
+      _PreviewHomeSection.feature => _groupDescriptions['Animal 特色'] ?? '',
+      _PreviewHomeSection.categories => _groupDescriptions[_group] ?? '',
+    };
+  }
+
+  void _openSection(int index) {
+    final section = _PreviewHomeSection.values[index];
+    setState(() {
+      _section = section;
+      _group = null;
+      _routeKey = null;
+    });
+  }
+
+  void _openPage(_PreviewPage page) {
+    setState(() {
+      _group = page.group;
+      _routeKey = page.routeKey;
+    });
   }
 
   void _back() {
     setState(() {
       if (_routeKey != null) {
         _routeKey = null;
-      } else if (_group != null) {
+      } else if (_section == _PreviewHomeSection.categories && _group != null) {
         _group = null;
       }
     });
   }
+}
+
+enum _PreviewHomeSection {
+  categories('分类'),
+  mobile('移动组件'),
+  business('移动业务'),
+  feature('Animal 特色');
+
+  const _PreviewHomeSection(this.title);
+
+  final String title;
 }
 
 class _PreviewAppBar extends StatelessWidget {
@@ -119,74 +192,14 @@ class _PreviewAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AnimalTheme.of(context);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: const BoxDecoration(
-        color: Color(0xFFFFF8D6),
-        border: Border(bottom: BorderSide(color: Color(0xFFE8D8B8), width: 2)),
-      ),
-      child: Row(
-        children: [
-          _RoundIconButton(
-            icon:
-                canBack ? Icons.arrow_back_rounded : Icons.phone_iphone_rounded,
-            onTap: canBack ? onBack : null,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textStyle(
-                size: 17,
-                weight: FontWeight.w900,
-                color: const Color(0xFF725D42),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({required this.icon, this.onTap});
-
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onTap != null;
-    return MouseRegion(
-      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: enabled ? Colors.white : const Color(0xFFF5EBC8),
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE0CCA0), width: 2),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x1A3D3428),
-                offset: Offset(0, 2),
-                blurRadius: 0,
-              ),
-            ],
-          ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: enabled ? const Color(0xFF725D42) : const Color(0xFFB9A783),
-          ),
-        ),
-      ),
+    return AnimalMobileNavBar(
+      title: Text(title),
+      showBackButton: canBack,
+      onBack: canBack ? onBack : null,
+      safeAreaTop: false,
+      leading: canBack
+          ? null
+          : const Icon(Icons.phone_iphone_rounded, color: Color(0xFF725D42)),
     );
   }
 }
@@ -268,109 +281,23 @@ class _PreviewCategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AnimalTheme.of(context);
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFFE8E2D6), width: 2),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x1F3D3428),
-                offset: Offset(0, 4),
-                blurRadius: 0,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.16),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: color, width: 2),
-                ),
-                child: Icon(icon, color: color, size: 25),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textStyle(size: 17, weight: FontWeight.w900),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '$count 个组件',
-                      style: theme.textStyle(
-                        size: 12,
-                        weight: FontWeight.w800,
-                        color: const Color(0xFF9A8465),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFFB08A42),
-                size: 24,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PreviewListPage extends StatelessWidget {
-  const _PreviewListPage({
-    required this.group,
-    required this.pages,
-    required this.onSelectPage,
-  });
-
-  final String group;
-  final List<_PreviewPage> pages;
-  final ValueChanged<_PreviewPage> onSelectPage;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = AnimalTheme.of(context);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+    return AnimalCellGroup(
       children: [
-        Text(
-          group,
-          style: theme.textStyle(size: 25, weight: FontWeight.w900),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          _groupDescriptions[group] ?? '',
-          style: theme.textStyle(
-            size: 13,
-            weight: FontWeight.w700,
-            color: const Color(0xFF8A7652),
+        AnimalListTile(
+          leading: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 2),
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
+          title: Text(title),
+          subtitle: Text('$count 个组件'),
+          onTap: onTap,
         ),
-        const SizedBox(height: 16),
-        for (final page in pages) ...[
-          _PreviewComponentTile(
-            page: page,
-            onTap: () => onSelectPage(page),
-          ),
-          const SizedBox(height: 10),
-        ],
       ],
     );
   }
@@ -387,69 +314,74 @@ class _PreviewComponentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AnimalTheme.of(context);
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFDF7),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE8E2D6), width: 2),
+    return AnimalCellGroup(
+      children: [
+        AnimalListTile(
+          leading: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: _groupColor(page.group).withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+              border: Border.all(color: _groupColor(page.group), width: 2),
+            ),
+            child: Icon(
+              _routeIcon(page.routeKey),
+              color: _groupColor(page.group),
+              size: 18,
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: _groupColor(page.group).withValues(alpha: 0.16),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: _groupColor(page.group), width: 2),
-                ),
-                child: Icon(
-                  _routeIcon(page.routeKey),
-                  color: _groupColor(page.group),
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      page.navTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textStyle(size: 15, weight: FontWeight.w900),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      page.summary,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textStyle(
-                        size: 12,
-                        weight: FontWeight.w600,
-                        color: const Color(0xFF9A8465),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFFB08A42),
-                size: 23,
-              ),
-            ],
+          title: Text(page.navTitle),
+          subtitle: Text(page.summary),
+          minHeight: 66,
+          onTap: onTap,
+        ),
+      ],
+    );
+  }
+}
+
+class _PreviewListPage extends StatelessWidget {
+  const _PreviewListPage({
+    required this.group,
+    required this.pages,
+    required this.onSelectPage,
+    this.description,
+  });
+
+  final String group;
+  final List<_PreviewPage> pages;
+  final ValueChanged<_PreviewPage> onSelectPage;
+  final String? description;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AnimalTheme.of(context);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+      children: [
+        Text(
+          group,
+          style: theme.textStyle(size: 25, weight: FontWeight.w900),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          description ?? _groupDescriptions[group] ?? '',
+          style: theme.textStyle(
+            size: 13,
+            weight: FontWeight.w700,
+            color: const Color(0xFF8A7652),
           ),
         ),
-      ),
+        const SizedBox(height: 16),
+        for (final page in pages) ...[
+          _PreviewComponentTile(
+            page: page,
+            onTap: () => onSelectPage(page),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ],
     );
   }
 }
@@ -602,6 +534,32 @@ class _ComponentPreviewDemo extends StatelessWidget {
       'dropdown' => _previewDropdown(context),
       'drawer' => _previewDrawer(context),
       'confirm-dialog' => _previewConfirmDialog(context),
+      'mobile-navbar' => _previewMobileNavBar(),
+      'mobile-bottom-bar' => _previewBottomBar(),
+      'mobile-bottom-sheet' => _previewBottomSheet(context),
+      'mobile-action-sheet' => _previewActionSheet(context),
+      'mobile-list-tile' => _previewListTile(context),
+      'mobile-cell-group' => _previewCellGroup(context),
+      'mobile-search-bar' => _previewMobileSearchBar(context),
+      'mobile-picker' => _previewMobilePicker(context),
+      'mobile-date-picker' => _previewMobileDatePicker(context),
+      'mobile-stepper' => _previewMobileStepper(),
+      'mobile-swipe-action' => _previewSwipeAction(context),
+      'mobile-pull-refresh' => const _PullRefreshPreviewDemo(),
+      'mobile-section' => _previewMobileSection(),
+      'mobile-product-card' => _previewProductCard(),
+      'mobile-order-card' => _previewOrderCard(),
+      'mobile-profile-header' => _previewProfileHeader(),
+      'mobile-stats-grid' => _previewStatsGrid(),
+      'mobile-coupon-card' => _previewCouponCard(),
+      'mobile-notice-bar' => _previewNoticeBar(),
+      'mobile-address-card' => _previewAddressCard(),
+      'mobile-price-summary' => _previewPriceSummary(),
+      'mobile-checkout-bar' => _previewCheckoutBar(),
+      'mobile-cart-item' => _previewCartItem(),
+      'mobile-order-timeline' => _previewOrderTimeline(),
+      'mobile-payment-method' => _previewPaymentMethod(),
+      'mobile-empty-action' => _previewEmptyAction(),
       'time' => _previewTime(),
       'phone' => _previewPhone(),
       'cursor' => _previewCursor(),
@@ -1219,6 +1177,589 @@ class _ComponentPreviewDemo extends StatelessWidget {
     );
   }
 
+  Widget _previewMobileNavBar() {
+    return const _MobileDemoSurface(
+      child: AnimalMobileNavBar(
+        title: Text('岛屿背包'),
+        showBackButton: true,
+        safeAreaTop: false,
+        trailing: Icon(Icons.more_horiz_rounded, color: Color(0xFF725D42)),
+      ),
+    );
+  }
+
+  Widget _previewBottomBar() {
+    return _MobileDemoSurface(
+      child: AnimalBottomBar(
+        currentIndex: 1,
+        safeAreaBottom: false,
+        onChanged: (_) {},
+        items: const [
+          AnimalBottomBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: Text('首页'),
+          ),
+          AnimalBottomBarItem(
+            icon: Icon(Icons.widgets_rounded),
+            activeIcon: Icon(Icons.widgets_rounded),
+            label: Text('组件'),
+            badge: AnimalBadge(dot: true),
+          ),
+          AnimalBottomBarItem(
+            icon: Icon(Icons.person_rounded),
+            label: Text('我的'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _previewBottomSheet(BuildContext context) {
+    return AnimalButton(
+      type: AnimalButtonType.primary,
+      onPressed: () {
+        AnimalBottomSheet.show<void>(
+          context: context,
+          title: const Text('岛屿计划'),
+          child: const AnimalCellGroup(
+            children: [
+              AnimalListTile(
+                leading: Icon(Icons.local_florist_rounded),
+                title: Text('整理花园'),
+                subtitle: Text('今天 16:00'),
+              ),
+              AnimalListTile(
+                leading: Icon(Icons.shopping_bag_rounded),
+                title: Text('采购家具'),
+                subtitle: Text('狸然超市'),
+              ),
+            ],
+          ),
+        );
+      },
+      child: const Text('打开 BottomSheet'),
+    );
+  }
+
+  Widget _previewActionSheet(BuildContext context) {
+    return AnimalButton(
+      type: AnimalButtonType.primary,
+      onPressed: () {
+        AnimalActionSheet.show<String>(
+          context: context,
+          title: const Text('更多操作'),
+          message: const Text('选择一个适合触摸场景的操作。'),
+          actions: const [
+            AnimalActionSheetAction(
+              value: 'share',
+              icon: Icon(Icons.ios_share_rounded),
+              label: Text('分享岛屿'),
+            ),
+            AnimalActionSheetAction(
+              value: 'archive',
+              icon: Icon(Icons.inventory_2_rounded),
+              label: Text('归档记录'),
+            ),
+            AnimalActionSheetAction(
+              value: 'delete',
+              icon: Icon(Icons.delete_rounded),
+              label: Text('删除记录'),
+              destructive: true,
+            ),
+          ],
+        );
+      },
+      child: const Text('打开 ActionSheet'),
+    );
+  }
+
+  Widget _previewListTile(BuildContext context) {
+    return AnimalCellGroup(
+      children: [
+        AnimalListTile(
+          leading: const Icon(Icons.notifications_rounded),
+          title: const Text('岛屿通知'),
+          subtitle: const Text('访客抵达时提醒我'),
+          trailing: const AnimalSwitch(size: AnimalSwitchSize.small),
+          onTap: () => AnimalMessage.info(context, const Text('点击了通知设置')),
+        ),
+        const AnimalListTile(
+          leading: Icon(Icons.lock_rounded),
+          title: Text('未开放功能'),
+          subtitle: Text('禁用态不会触发操作'),
+          disabled: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _previewCellGroup(BuildContext context) {
+    return AnimalCellGroup(
+      children: [
+        AnimalListTile(
+          leading: const Icon(Icons.person_rounded),
+          title: const Text('个人资料'),
+          onTap: () => AnimalMessage.info(context, const Text('打开资料')),
+        ),
+        AnimalListTile(
+          leading: const Icon(Icons.palette_rounded),
+          title: const Text('主题偏好'),
+          subtitle: const Text('主色、字体和圆角'),
+          onTap: () => AnimalMessage.info(context, const Text('打开主题偏好')),
+        ),
+        const AnimalListTile(
+          leading: Icon(Icons.logout_rounded),
+          title: Text('退出登录'),
+          destructive: true,
+          showChevron: false,
+        ),
+      ],
+    );
+  }
+
+  Widget _previewMobileSearchBar(BuildContext context) {
+    return AnimalMobileSearchBar(
+      initialValue: '樱桃',
+      hintText: '搜索岛屿商品',
+      showCancel: true,
+      onSearch: (value) => AnimalMessage.info(context, Text('搜索 $value')),
+    );
+  }
+
+  Widget _previewMobilePicker(BuildContext context) {
+    return AnimalButton(
+      type: AnimalButtonType.primary,
+      onPressed: () {
+        AnimalPicker.show<String>(
+          context: context,
+          title: const Text('选择配送岛屿'),
+          value: 'north',
+          options: const [
+            AnimalPickerOption(
+              value: 'north',
+              leading: Icon(Icons.park_rounded),
+              label: Text('北岸森林岛'),
+              subtitle: Text('预计 30 分钟送达'),
+            ),
+            AnimalPickerOption(
+              value: 'south',
+              leading: Icon(Icons.water_rounded),
+              label: Text('南湾海风岛'),
+              subtitle: Text('预计 45 分钟送达'),
+            ),
+            AnimalPickerOption(
+              value: 'locked',
+              leading: Icon(Icons.lock_rounded),
+              label: Text('星愿岛'),
+              subtitle: Text('暂未开放'),
+              disabled: true,
+            ),
+          ],
+        );
+      },
+      child: const Text('打开 Picker'),
+    );
+  }
+
+  Widget _previewMobileDatePicker(BuildContext context) {
+    return AnimalButton(
+      type: AnimalButtonType.primary,
+      onPressed: () {
+        AnimalMobileDatePicker.show(
+          context: context,
+          value: DateTime(2026, 5, 22),
+          firstDate: DateTime(2026, 5),
+          lastDate: DateTime(2026, 6, 30),
+        );
+      },
+      child: const Text('打开 DatePicker'),
+    );
+  }
+
+  Widget _previewMobileStepper() {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('樱桃果篮'),
+        AnimalMobileStepper(
+          defaultValue: 2,
+          min: 0,
+          max: 9,
+          onChanged: _noopNumChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _previewSwipeAction(BuildContext context) {
+    return AnimalSwipeAction(
+      actions: [
+        AnimalSwipeActionItem(
+          icon: const Icon(Icons.archive_rounded),
+          label: const Text('归档'),
+          onTap: () => AnimalMessage.info(context, const Text('已归档')),
+        ),
+        AnimalSwipeActionItem(
+          icon: const Icon(Icons.delete_rounded),
+          label: const Text('删除'),
+          destructive: true,
+          onTap: () => AnimalMessage.error(context, const Text('已删除')),
+        ),
+      ],
+      child: const AnimalListTile(
+        leading: Icon(Icons.receipt_long_rounded),
+        title: Text('订单 #A001'),
+        subtitle: Text('向左拖动查看操作'),
+      ),
+    );
+  }
+
+  Widget _previewMobileSection() {
+    return const _DemoColumn(
+      children: [
+        AnimalMobileSection(
+          title: Text('今日推荐'),
+          extra: Text('查看全部'),
+          child: AnimalMobileProductCard(
+            title: Text('樱桃果篮'),
+            subtitle: Text('岛屿直送，今日 18:00 前送达'),
+            price: Text('120 铃钱'),
+          ),
+        ),
+        AnimalMobileSection(
+          title: Text('我的服务'),
+          child: AnimalCellGroup(
+            children: [
+              AnimalListTile(
+                leading: Icon(Icons.card_giftcard_rounded),
+                title: Text('优惠券'),
+              ),
+              AnimalListTile(
+                leading: Icon(Icons.inventory_2_rounded),
+                title: Text('订单'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewProductCard() {
+    return const _DemoColumn(
+      children: [
+        AnimalMobileProductCard(
+          title: Text('樱桃果篮'),
+          subtitle: Text('岛屿直送，今日 18:00 前送达'),
+          price: Text('120 铃钱'),
+          tag: AnimalTag(
+            color: AnimalTagColor.danger,
+            size: AnimalTagSize.small,
+            child: Text('热卖'),
+          ),
+          action: AnimalButton(
+            type: AnimalButtonType.primary,
+            size: AnimalButtonSize.small,
+            child: Text('加购'),
+          ),
+        ),
+        AnimalMobileProductCard(
+          title: Text('手作花园椅'),
+          subtitle: Text('适合放在庭院或露营区'),
+          price: Text('320 铃钱'),
+          tag: AnimalTag(
+            color: AnimalTagColor.success,
+            size: AnimalTagSize.small,
+            child: Text('新品'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewOrderCard() {
+    return const AnimalMobileOrderCard(
+      orderNo: Text('订单 #A001'),
+      status: Text('配送中'),
+      items: [
+        AnimalMobileOrderItem(
+          title: Text('樱桃果篮'),
+          subtitle: Text('南湾海风岛'),
+          quantity: 2,
+          price: Text('120'),
+        ),
+        AnimalMobileOrderItem(
+          title: Text('手作花园椅'),
+          subtitle: Text('庭院家具'),
+          quantity: 1,
+          price: Text('320'),
+        ),
+      ],
+      total: Text('合计 560 铃钱'),
+      footer: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          AnimalButton(
+            size: AnimalButtonSize.small,
+            child: Text('查看物流'),
+          ),
+          SizedBox(width: 8),
+          AnimalButton(
+            type: AnimalButtonType.primary,
+            size: AnimalButtonSize.small,
+            child: Text('确认收货'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _previewProfileHeader() {
+    return const AnimalMobileProfileHeader(
+      name: Text('狸克'),
+      subtitle: Text('岛屿居民服务处 · Lv.8'),
+      stats: [
+        AnimalMobileStatItem(
+          label: Text('订单'),
+          value: Text('12'),
+          icon: Icon(Icons.inventory_2_rounded),
+        ),
+        AnimalMobileStatItem(
+          label: Text('积分'),
+          value: Text('840'),
+          icon: Icon(Icons.stars_rounded),
+        ),
+        AnimalMobileStatItem(
+          label: Text('优惠券'),
+          value: Text('6'),
+          icon: Icon(Icons.card_giftcard_rounded),
+        ),
+      ],
+      actions: [
+        AnimalButton(
+          type: AnimalButtonType.primary,
+          size: AnimalButtonSize.small,
+          child: Text('编辑资料'),
+        ),
+        AnimalButton(
+          size: AnimalButtonSize.small,
+          child: Text('会员中心'),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewStatsGrid() {
+    return const AnimalMobileStatsGrid(
+      items: [
+        AnimalMobileStatItem(
+          label: Text('待付款'),
+          value: Text('2'),
+          description: Text('订单'),
+          icon: Icon(Icons.payments_rounded),
+        ),
+        AnimalMobileStatItem(
+          label: Text('配送中'),
+          value: Text('5'),
+          description: Text('包裹'),
+          icon: Icon(Icons.local_shipping_rounded),
+        ),
+        AnimalMobileStatItem(
+          label: Text('收藏'),
+          value: Text('18'),
+          description: Text('商品'),
+          icon: Icon(Icons.favorite_rounded),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewCouponCard() {
+    return const _DemoColumn(
+      children: [
+        AnimalMobileCouponCard(
+          amount: Text('-20'),
+          title: Text('新人购物券'),
+          description: Text('满 100 铃钱可用，今日有效'),
+        ),
+        AnimalMobileCouponCard(
+          amount: Text('8折'),
+          title: Text('家具节折扣券'),
+          description: Text('仅限庭院家具分类'),
+          status: AnimalMobileCouponStatus.claimed,
+        ),
+        AnimalMobileCouponCard(
+          amount: Text('-10'),
+          title: Text('过期补贴券'),
+          description: Text('已超过使用时间'),
+          status: AnimalMobileCouponStatus.expired,
+        ),
+      ],
+    );
+  }
+
+  Widget _previewNoticeBar() {
+    return const _DemoColumn(
+      children: [
+        AnimalMobileNoticeBar(
+          action: Text('查看'),
+          showChevron: true,
+          child: Text('今日 18:00 前下单，岛屿直送免服务费。'),
+        ),
+        AnimalMobileNoticeBar(
+          type: AnimalMobileNoticeType.warning,
+          child: Text('部分海岛受天气影响，配送时间可能延迟。'),
+        ),
+        AnimalMobileNoticeBar(
+          type: AnimalMobileNoticeType.success,
+          child: Text('优惠券已自动抵扣，结算时可查看明细。'),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewAddressCard() {
+    return const _DemoColumn(
+      children: [
+        AnimalMobileAddressCard(
+          selected: true,
+          name: Text('狸克'),
+          phone: Text('138 0000 0522'),
+          tag: AnimalTag(
+            color: AnimalTagColor.primary,
+            size: AnimalTagSize.small,
+            child: Text('默认'),
+          ),
+          address: Text('星露岛 居民服务处旁 1 号营地'),
+        ),
+        AnimalMobileAddressCard(
+          name: Text('西施惠'),
+          phone: Text('139 0000 0618'),
+          address: Text('南湾海风岛 花园路 8 号'),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewPriceSummary() {
+    return const AnimalMobilePriceSummary(
+      items: [
+        AnimalMobilePriceItem(label: Text('商品金额'), value: Text('560 铃钱')),
+        AnimalMobilePriceItem(label: Text('配送服务'), value: Text('20 铃钱')),
+        AnimalMobilePriceItem(
+          label: Text('优惠券'),
+          value: Text('-20 铃钱'),
+          emphasized: true,
+        ),
+      ],
+      total: Text('560 铃钱'),
+      footer: Text('价格明细适合订单确认页、服务预约页和会员结算页。'),
+    );
+  }
+
+  Widget _previewCheckoutBar() {
+    return AnimalMobileCheckoutBar(
+      safeAreaBottom: false,
+      total: const Text('560 铃钱'),
+      extra: const Text('已优惠 20 铃钱'),
+      action: AnimalButton(
+        type: AnimalButtonType.primary,
+        onPressed: () {},
+        child: const Text('去结算'),
+      ),
+    );
+  }
+
+  Widget _previewCartItem() {
+    return const _DemoColumn(
+      children: [
+        AnimalMobileCartItem(
+          selected: true,
+          title: Text('樱桃果篮'),
+          subtitle: Text('规格：大份 / 今日 18:00 前送达'),
+          price: Text('120 铃钱'),
+          quantity: 2,
+          tag: AnimalTag(
+            color: AnimalTagColor.danger,
+            size: AnimalTagSize.small,
+            child: Text('热卖'),
+          ),
+        ),
+        AnimalMobileCartItem(
+          disabled: true,
+          title: Text('手作花园椅'),
+          subtitle: Text('规格：原木色'),
+          price: Text('320 铃钱'),
+          quantity: 1,
+          disabledText: Text('该商品暂时缺货'),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewOrderTimeline() {
+    return const AnimalMobileOrderTimeline(
+      items: [
+        AnimalMobileTimelineItem(
+          title: Text('订单已提交'),
+          description: Text('居民服务处已收到你的订单。'),
+          time: Text('09:30'),
+          status: AnimalMobileTimelineStatus.success,
+          icon: Icon(Icons.check_rounded),
+        ),
+        AnimalMobileTimelineItem(
+          title: Text('正在配送'),
+          description: Text('豆狸正在把包裹送往星露岛。'),
+          time: Text('10:12'),
+          status: AnimalMobileTimelineStatus.processing,
+          icon: Icon(Icons.local_shipping_rounded),
+        ),
+        AnimalMobileTimelineItem(
+          title: Text('等待签收'),
+          description: Text('请在码头附近保持联络。'),
+          status: AnimalMobileTimelineStatus.warning,
+        ),
+      ],
+    );
+  }
+
+  Widget _previewPaymentMethod() {
+    return const _DemoColumn(
+      children: [
+        AnimalMobilePaymentMethodCard(
+          selected: true,
+          icon: Icon(Icons.account_balance_wallet_rounded),
+          title: Text('铃钱钱包'),
+          subtitle: Text('余额 8,400 铃钱，可直接抵扣'),
+        ),
+        AnimalMobilePaymentMethodCard(
+          icon: Icon(Icons.credit_card_rounded),
+          title: Text('岛屿信用卡'),
+          subtitle: Text('尾号 0522'),
+        ),
+        AnimalMobilePaymentMethodCard(
+          disabled: true,
+          icon: Icon(Icons.lock_rounded),
+          title: Text('博物馆积分'),
+          subtitle: Text('当前订单暂不可用'),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewEmptyAction() {
+    return AnimalMobileEmptyAction(
+      icon: const Icon(Icons.shopping_cart_rounded),
+      title: const Text('购物车还是空的'),
+      description: const Text('去挑选一些岛屿好物，结算栏会自动汇总金额。'),
+      action: AnimalButton(
+        type: AnimalButtonType.primary,
+        onPressed: () {},
+        child: const Text('去逛逛'),
+      ),
+    );
+  }
+
   Widget _previewTime() {
     return Center(
       child: Transform.scale(
@@ -1264,6 +1805,69 @@ class _ComponentPreviewDemo extends StatelessWidget {
   }
 }
 
+class _PullRefreshPreviewDemo extends StatefulWidget {
+  const _PullRefreshPreviewDemo();
+
+  @override
+  State<_PullRefreshPreviewDemo> createState() =>
+      _PullRefreshPreviewDemoState();
+}
+
+class _PullRefreshPreviewDemoState extends State<_PullRefreshPreviewDemo> {
+  int _refreshCount = 0;
+
+  Future<void> _handleRefresh() async {
+    await Future<void>.delayed(const Duration(milliseconds: 420));
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _refreshCount += 1;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 230,
+      child: AnimalPullRefresh(
+        onRefresh: _handleRefresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            AnimalMobileNoticeBar(
+              type: AnimalMobileNoticeType.success,
+              child: Text(
+                _refreshCount == 0
+                    ? '向下拖动列表刷新今日任务'
+                    : '已刷新 $_refreshCount 次，今日任务已同步',
+              ),
+            ),
+            const SizedBox(height: 10),
+            const AnimalCellGroup(
+              children: [
+                AnimalListTile(
+                  leading: Icon(Icons.local_florist_rounded),
+                  title: Text('整理花园'),
+                  subtitle: Text('下拉刷新今日任务'),
+                ),
+                AnimalListTile(
+                  leading: Icon(Icons.shopping_bag_rounded),
+                  title: Text('采购家具'),
+                ),
+                AnimalListTile(
+                  leading: Icon(Icons.cookie_rounded),
+                  title: Text('准备下午茶'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _DemoColumn extends StatelessWidget {
   const _DemoColumn({required this.children});
 
@@ -1285,6 +1889,25 @@ class _DemoColumn extends StatelessWidget {
     );
   }
 }
+
+class _MobileDemoSurface extends StatelessWidget {
+  const _MobileDemoSurface({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: ColoredBox(
+        color: const Color(0xFFF8F4E8),
+        child: child,
+      ),
+    );
+  }
+}
+
+void _noopNumChanged(num value) {}
 
 class _IslandTable extends StatelessWidget {
   const _IslandTable({required this.striped, required this.loading});
@@ -1388,6 +2011,37 @@ List<_PreviewPage> _pagesForGroup(String group) {
   ];
 }
 
+List<_PreviewPage> _pagesForSection(_PreviewHomeSection section) {
+  return switch (section) {
+    _PreviewHomeSection.mobile => [
+        for (final page in _pagesForGroup('移动端'))
+          if (!_mobileBusinessRouteKeys.contains(page.routeKey)) page,
+      ],
+    _PreviewHomeSection.business => [
+        for (final page in _pagesForGroup('移动端'))
+          if (_mobileBusinessRouteKeys.contains(page.routeKey)) page,
+      ],
+    _PreviewHomeSection.feature => _pagesForGroup('Animal 特色'),
+    _PreviewHomeSection.categories => _pages,
+  };
+}
+
+const _mobileBusinessRouteKeys = {
+  'mobile-product-card',
+  'mobile-order-card',
+  'mobile-profile-header',
+  'mobile-stats-grid',
+  'mobile-coupon-card',
+  'mobile-notice-bar',
+  'mobile-address-card',
+  'mobile-price-summary',
+  'mobile-checkout-bar',
+  'mobile-cart-item',
+  'mobile-order-timeline',
+  'mobile-payment-method',
+  'mobile-empty-action',
+};
+
 IconData _groupIcon(String group) {
   return switch (group) {
     '主题与基础' => Icons.palette_rounded,
@@ -1398,6 +2052,7 @@ IconData _groupIcon(String group) {
     '导航' => Icons.near_me_rounded,
     '反馈' => Icons.notifications_active_rounded,
     '浮层' => Icons.layers_rounded,
+    '移动端' => Icons.phone_android_rounded,
     'Animal 特色' => Icons.eco_rounded,
     _ => Icons.widgets_rounded,
   };
@@ -1413,6 +2068,7 @@ Color _groupColor(String group) {
     '导航' => const Color(0xFF9370DB),
     '反馈' => const Color(0xFFFF8C00),
     '浮层' => const Color(0xFFB08A42),
+    '移动端' => const Color(0xFF19A7CE),
     'Animal 特色' => const Color(0xFF6FBA2C),
     _ => const Color(0xFF19C8B9),
   };
@@ -1464,6 +2120,32 @@ IconData _routeIcon(String routeKey) {
     'dropdown' => Icons.menu_open_rounded,
     'drawer' => Icons.view_sidebar_rounded,
     'confirm-dialog' => Icons.help_rounded,
+    'mobile-navbar' => Icons.web_asset_rounded,
+    'mobile-bottom-bar' => Icons.call_to_action_rounded,
+    'mobile-bottom-sheet' => Icons.vertical_align_top_rounded,
+    'mobile-action-sheet' => Icons.touch_app_rounded,
+    'mobile-list-tile' => Icons.list_alt_rounded,
+    'mobile-cell-group' => Icons.view_list_rounded,
+    'mobile-search-bar' => Icons.search_rounded,
+    'mobile-picker' => Icons.fact_check_rounded,
+    'mobile-date-picker' => Icons.edit_calendar_rounded,
+    'mobile-stepper' => Icons.add_circle_rounded,
+    'mobile-swipe-action' => Icons.swipe_left_rounded,
+    'mobile-pull-refresh' => Icons.refresh_rounded,
+    'mobile-section' => Icons.view_agenda_rounded,
+    'mobile-product-card' => Icons.shopping_bag_rounded,
+    'mobile-order-card' => Icons.receipt_long_rounded,
+    'mobile-profile-header' => Icons.account_circle_rounded,
+    'mobile-stats-grid' => Icons.grid_view_rounded,
+    'mobile-coupon-card' => Icons.card_giftcard_rounded,
+    'mobile-notice-bar' => Icons.campaign_rounded,
+    'mobile-address-card' => Icons.place_rounded,
+    'mobile-price-summary' => Icons.receipt_rounded,
+    'mobile-checkout-bar' => Icons.shopping_cart_checkout_rounded,
+    'mobile-cart-item' => Icons.shopping_cart_rounded,
+    'mobile-order-timeline' => Icons.local_shipping_rounded,
+    'mobile-payment-method' => Icons.payments_rounded,
+    'mobile-empty-action' => Icons.inbox_rounded,
     'time' => Icons.schedule_rounded,
     'phone' => Icons.phone_iphone_rounded,
     'cursor' => Icons.ads_click_rounded,
@@ -1482,6 +2164,7 @@ const _docNavGroups = [
   '导航',
   '反馈',
   '浮层',
+  '移动端',
   'Animal 特色',
 ];
 
@@ -1494,6 +2177,7 @@ const _groupDescriptions = {
   '导航': '页面切换、路径提示、步骤流程和分页导航。',
   '反馈': '提示、消息、进度、加载和结果状态反馈。',
   '浮层': '弹窗、气泡、菜单、抽屉和确认流程。',
+  '移动端': '面向手机页面、触摸列表和底部操作的移动端组件。',
   'Animal 特色': '保留 Animal Island 氛围的装饰、光标和拟物化组件。',
 };
 
@@ -1809,6 +2493,188 @@ const _pages = [
     navTitle: 'ConfirmDialog 确认框',
     title: 'ConfirmDialog 确认框',
     summary: '确认框组件 — 基于 AnimalDialog 封装常见确认流程，支持危险操作样式和返回结果',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-navbar',
+    group: '移动端',
+    navTitle: 'MobileNavBar 导航栏',
+    title: 'MobileNavBar 移动导航栏',
+    summary: '移动导航栏 — 支持安全区、返回按钮、左右操作区和固定高度。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-bottom-bar',
+    group: '移动端',
+    navTitle: 'BottomBar 底部栏',
+    title: 'BottomBar 底部导航栏',
+    summary: '底部导航栏 — 支持选中态、徽标、底部安全区和触摸反馈。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-bottom-sheet',
+    group: '移动端',
+    navTitle: 'BottomSheet 底部弹层',
+    title: 'BottomSheet 底部弹层',
+    summary: '底部弹层 — 从屏幕底部展开，适合移动端详情、筛选和轻量表单。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-action-sheet',
+    group: '移动端',
+    navTitle: 'ActionSheet 操作面板',
+    title: 'ActionSheet 操作面板',
+    summary: '操作面板 — 面向触摸操作列表，支持图标、危险项、禁用项和返回选择值。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-list-tile',
+    group: '移动端',
+    navTitle: 'ListTile 列表项',
+    title: 'ListTile 移动列表项',
+    summary: '列表项 — 支持前后缀、二级文案、箭头、禁用态、危险态和键盘触发。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-cell-group',
+    group: '移动端',
+    navTitle: 'CellGroup 单元格组',
+    title: 'CellGroup 单元格组',
+    summary: '单元格组 — 将多个移动列表项组织为带边框和分割线的触摸列表。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-search-bar',
+    group: '移动端',
+    navTitle: 'SearchBar 搜索栏',
+    title: 'SearchBar 移动搜索栏',
+    summary: '移动搜索栏 — 支持取消按钮、清空、搜索提交和焦点态。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-picker',
+    group: '移动端',
+    navTitle: 'Picker 选择器',
+    title: 'Picker 移动选择器',
+    summary: '移动选择器 — 基于底部弹层展示选项，支持选中、禁用和返回选择值。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-date-picker',
+    group: '移动端',
+    navTitle: 'DatePicker 日期选择',
+    title: 'DatePicker 移动日期选择',
+    summary: '移动日期选择 — 复用 AnimalCalendar 并提供底部确认操作。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-stepper',
+    group: '移动端',
+    navTitle: 'Stepper 步进器',
+    title: 'Stepper 移动步进器',
+    summary: '移动步进器 — 适合购物车数量、份数和库存等触摸增减场景。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-swipe-action',
+    group: '移动端',
+    navTitle: 'SwipeAction 左滑操作',
+    title: 'SwipeAction 左滑操作',
+    summary: '左滑操作 — 为列表项提供收藏、归档、删除等触摸快捷操作。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-pull-refresh',
+    group: '移动端',
+    navTitle: 'PullRefresh 下拉刷新',
+    title: 'PullRefresh 下拉刷新',
+    summary: '下拉刷新 — 包装滚动内容，默认展示小岛、海风和状态文案的 Animal 刷新反馈。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-section',
+    group: '移动端',
+    navTitle: 'Section 分区',
+    title: 'Section 移动分区',
+    summary: '移动分区 — 为手机页面提供标题、右侧操作和内容分组间距。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-product-card',
+    group: '移动端',
+    navTitle: 'ProductCard 商品卡片',
+    title: 'ProductCard 商品卡片',
+    summary: '商品卡片 — 面向移动商城、列表推荐和加购业务场景。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-order-card',
+    group: '移动端',
+    navTitle: 'OrderCard 订单卡片',
+    title: 'OrderCard 订单卡片',
+    summary: '订单卡片 — 展示订单号、状态、商品明细、合计和底部操作区。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-profile-header',
+    group: '移动端',
+    navTitle: 'ProfileHeader 个人头图',
+    title: 'ProfileHeader 个人头图',
+    summary: '个人头图 — 用于会员中心、我的页面和用户资产概览。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-stats-grid',
+    group: '移动端',
+    navTitle: 'StatsGrid 统计宫格',
+    title: 'StatsGrid 统计宫格',
+    summary: '统计宫格 — 在手机端展示订单、积分、券包等轻量指标。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-coupon-card',
+    group: '移动端',
+    navTitle: 'CouponCard 优惠券',
+    title: 'CouponCard 优惠券',
+    summary: '优惠券卡片 — 支持可领取、已领取和已过期三种业务状态。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-notice-bar',
+    group: '移动端',
+    navTitle: 'NoticeBar 公告栏',
+    title: 'NoticeBar 移动公告栏',
+    summary: '移动公告栏 — 用于活动提醒、订单提示和轻量业务通知，支持四种状态和点击动作。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-address-card',
+    group: '移动端',
+    navTitle: 'AddressCard 地址卡片',
+    title: 'AddressCard 地址卡片',
+    summary: '地址卡片 — 展示收货人、手机号、详细地址、默认标签和选中态。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-price-summary',
+    group: '移动端',
+    navTitle: 'PriceSummary 价格明细',
+    title: 'PriceSummary 价格明细',
+    summary: '价格明细 — 用于订单确认、费用拆分、优惠抵扣和合计展示。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-checkout-bar',
+    group: '移动端',
+    navTitle: 'CheckoutBar 结算栏',
+    title: 'CheckoutBar 底部结算栏',
+    summary: '底部结算栏 — 固定底部金额与主操作，支持安全区和补充说明。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-cart-item',
+    group: '移动端',
+    navTitle: 'CartItem 购物车项',
+    title: 'CartItem 购物车项',
+    summary: '购物车项 — 支持选中态、商品图、规格、价格、数量步进器和失效状态。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-order-timeline',
+    group: '移动端',
+    navTitle: 'OrderTimeline 订单时间线',
+    title: 'OrderTimeline 订单时间线',
+    summary: '订单时间线 — 为物流、履约和服务进度提供手机端状态时间线。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-payment-method',
+    group: '移动端',
+    navTitle: 'PaymentMethod 支付方式',
+    title: 'PaymentMethod 支付方式',
+    summary: '支付方式卡片 — 支持图标、说明、选中态、禁用态和点击选择。',
+  ),
+  _PreviewPage(
+    routeKey: 'mobile-empty-action',
+    group: '移动端',
+    navTitle: 'EmptyAction 业务空状态',
+    title: 'EmptyAction 业务空状态',
+    summary: '移动业务空状态 — 带插画位、标题、说明和主行动按钮，适合购物车、订单和收藏页。',
   ),
   _PreviewPage(
     routeKey: 'time',

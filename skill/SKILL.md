@@ -13,7 +13,7 @@ Use this skill when working in `animal_island_flutter` or creating Flutter UI th
 - Design prompts and visual tokens: read `DESIGN_PROMPT.md`.
 - Demo/content structure: compare with `animal-island-ui-main/demo`, but rewrite examples for Flutter/Dart.
 - Public exports: `lib/animal_island_flutter.dart`.
-- Component implementations: `lib/src/components/*.dart`.
+- Component implementations: `lib/src/components/*.dart`, especially `mobile.dart` for phone-first and mobile business widgets.
 - Example docs app: `example/lib/main.dart`.
 
 ## Core Style
@@ -47,12 +47,15 @@ Use this skill when working in `animal_island_flutter` or creating Flutter UI th
 - `AnimalLoading`: island style is full-screen capable, black background, bottom-right island animation, circular reveal on close.
 - `AnimalPhone`, `AnimalFooter`, `AnimalDivider`, `AnimalIcon`: prefer bundled assets over approximated vector redraws.
 - `AnimalTable`: preserve warm row backgrounds, striped option and loading overlay.
+- Mobile foundation widgets include `AnimalMobileNavBar`, `AnimalBottomBar`, `AnimalBottomSheet`, `AnimalActionSheet`, `AnimalListTile`, `AnimalCellGroup`, `AnimalMobileSearchBar`, `AnimalPicker`, `AnimalMobileDatePicker`, `AnimalMobileStepper`, `AnimalSwipeAction`, `AnimalPullRefresh`, and `AnimalMobileSection`; keep safe areas, bottom-sheet sizing, touch feedback, hover cursors, focus, and keyboard activation.
+- Mobile business widgets include `AnimalMobileProductCard`, `AnimalMobileOrderCard`, `AnimalMobileProfileHeader`, `AnimalMobileStatsGrid`, `AnimalMobileCouponCard`, `AnimalMobileNoticeBar`, `AnimalMobileAddressCard`, `AnimalMobilePriceSummary`, `AnimalMobileCheckoutBar`, `AnimalMobileCartItem`, `AnimalMobileOrderTimeline`, `AnimalMobilePaymentMethodCard`, and `AnimalMobileEmptyAction`; keep warm bordered cards, bottom tactile shadows, clear amount/status hierarchy, selected states, safe-area aware checkout bars, and do not replace them with generic Material cards.
 
 ## Docs App Rules
 
 - Home page should mirror React demo composition, but all install/run/code content must be Flutter/Dart.
 - Component docs should follow `animal-island-ui-main/demo` ordering and copy structure where possible.
 - Sidebar width is `220`; header is fixed; menu list scrolls independently.
+- Use compact docs layout below `900px`; keep the 761px tablet-width regression covered to avoid overflow at the desktop/mobile breakpoint.
 - Sidebar background uses `menu_bg.svg`.
 - Detail background uses repeated `content_bg_pc.jpg`.
 - Bottom guide decoration uses `guide-bg-line.webp` behind the scroll content.
@@ -66,20 +69,28 @@ Before finalizing visual changes:
 2. Run `flutter analyze` in the package root.
 3. Run `flutter test` in the package root.
 4. Run `flutter analyze` and `flutter test` in `example` if demo/docs changed.
-5. Start or restart the example preview:
+5. If `example/mobile_preview` changed, also run analyze and test there.
+6. Build static docs when public docs or mobile preview changed:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool\build_docs.ps1 -Flutter C:\Dev\tools\flutter_3.41.0\bin\flutter.bat
+```
+
+7. Start or restart the example preview:
 
 ```powershell
 cd C:\Dev\repos\animal\animal_island_flutter\example
 C:\Dev\tools\flutter_3.41.0\bin\flutter.bat run -d web-server --web-hostname 127.0.0.1 --web-port 5178
 ```
 
-6. Inspect `http://127.0.0.1:5178/` visually when a browser is available.
+8. Inspect `http://127.0.0.1:5178/` visually when a browser is available.
 
 ## New Component Checklist
 
 - Public widget exported from `lib/animal_island_flutter.dart`.
 - Constructor defaults documented in `AI_USAGE.md`.
 - Demo page added to `example/lib/main.dart`.
+- Standalone mobile preview route added to `example/mobile_preview/lib/main.dart` for mobile components.
 - API table and example code use Flutter snippets.
 - Hover, pressed, disabled and loading states covered where relevant.
 - Tests added for behavior with meaningful risk.

@@ -61,6 +61,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
   var _loadingActive = true;
   var _tableStriped = true;
   var _tableLoading = false;
+  var _mobileBottomIndex = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +93,7 @@ class _DocsHomePageState extends State<DocsHomePage> {
       body = SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final useMobileDocs = width < 760 || constraints.maxWidth < 760;
+            final useMobileDocs = width < 900 || constraints.maxWidth < 900;
 
             if (useMobileDocs) {
               return _MobileDocsLayout(
@@ -593,6 +594,243 @@ class _DocsHomePageState extends State<DocsHomePage> {
         body: _ConfirmDialogDoc(),
       ),
       const _DocPage(
+        routeKey: 'mobile-navbar',
+        group: '移动端',
+        navTitle: 'MobileNavBar 导航栏',
+        title: 'MobileNavBar 移动导航栏',
+        summary: '移动导航栏 — 支持安全区、返回按钮、左右操作区和固定高度',
+        body: _MobileNavBarDoc(),
+        keywords: ['mobile', 'navbar', 'appbar', '手机导航', '移动端'],
+      ),
+      _DocPage(
+        routeKey: 'mobile-bottom-bar',
+        group: '移动端',
+        navTitle: 'BottomBar 底部栏',
+        title: 'BottomBar 底部导航栏',
+        summary: '底部导航栏 — 支持选中态、徽标、底部安全区和触摸反馈',
+        body: _MobileBottomBarDoc(
+          currentIndex: _mobileBottomIndex,
+          onChanged: (value) => setState(() => _mobileBottomIndex = value),
+        ),
+        keywords: ['mobile', 'bottom', 'tabbar', '底部导航', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-bottom-sheet',
+        group: '移动端',
+        navTitle: 'BottomSheet 底部弹层',
+        title: 'BottomSheet 底部弹层',
+        summary: '底部弹层 — 从屏幕底部展开，适合移动端详情、筛选和轻量表单',
+        body: _MobileBottomSheetDoc(),
+        keywords: ['mobile', 'sheet', 'bottomsheet', '底部弹层', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-action-sheet',
+        group: '移动端',
+        navTitle: 'ActionSheet 操作面板',
+        title: 'ActionSheet 操作面板',
+        summary: '操作面板 — 面向触摸操作列表，支持图标、危险项、禁用项和返回选择值',
+        body: _MobileActionSheetDoc(),
+        keywords: ['mobile', 'actionsheet', '操作面板', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-list-tile',
+        group: '移动端',
+        navTitle: 'ListTile 列表项',
+        title: 'ListTile 移动列表项',
+        summary: '列表项 — 支持前后缀、二级文案、箭头、禁用态、危险态和键盘触发',
+        body: _MobileListTileDoc(),
+        keywords: ['mobile', 'listtile', 'cell', '列表项', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-cell-group',
+        group: '移动端',
+        navTitle: 'CellGroup 单元格组',
+        title: 'CellGroup 单元格组',
+        summary: '单元格组 — 将多个移动列表项组织为带边框和分割线的触摸列表',
+        body: _MobileCellGroupDoc(),
+        keywords: ['mobile', 'cellgroup', 'cell', '单元格', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-search-bar',
+        group: '移动端',
+        navTitle: 'SearchBar 搜索栏',
+        title: 'SearchBar 移动搜索栏',
+        summary: '移动搜索栏 — 支持取消按钮、清空、搜索提交和焦点态',
+        body: _MobileSearchBarDoc(),
+        keywords: ['mobile', 'search', '搜索栏', '搜索', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-picker',
+        group: '移动端',
+        navTitle: 'Picker 选择器',
+        title: 'Picker 移动选择器',
+        summary: '移动选择器 — 基于底部弹层展示选项，支持选中、禁用和返回选择值',
+        body: _MobilePickerDoc(),
+        keywords: ['mobile', 'picker', '选择器', '底部选择', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-date-picker',
+        group: '移动端',
+        navTitle: 'DatePicker 日期选择',
+        title: 'DatePicker 移动日期选择',
+        summary: '移动日期选择 — 复用 AnimalCalendar 并提供底部确认操作',
+        body: _MobileDatePickerDoc(),
+        keywords: ['mobile', 'date', 'calendar', '日期选择', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-stepper',
+        group: '移动端',
+        navTitle: 'Stepper 步进器',
+        title: 'Stepper 移动步进器',
+        summary: '移动步进器 — 适合购物车数量、份数和库存等触摸增减场景',
+        body: _MobileStepperDoc(),
+        keywords: ['mobile', 'stepper', 'number', '数量', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-swipe-action',
+        group: '移动端',
+        navTitle: 'SwipeAction 左滑操作',
+        title: 'SwipeAction 左滑操作',
+        summary: '左滑操作 — 为列表项提供收藏、归档、删除等触摸快捷操作',
+        body: _MobileSwipeActionDoc(),
+        keywords: ['mobile', 'swipe', '左滑', '删除', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-pull-refresh',
+        group: '移动端',
+        navTitle: 'PullRefresh 下拉刷新',
+        title: 'PullRefresh 下拉刷新',
+        summary: '下拉刷新 — 包装滚动内容，使用 Animal 主题色展示刷新反馈',
+        body: _MobilePullRefreshDoc(),
+        keywords: ['mobile', 'refresh', '下拉刷新', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-section',
+        group: '移动端',
+        navTitle: 'Section 分区',
+        title: 'Section 移动分区',
+        summary: '移动分区 — 为手机页面提供标题、右侧操作和内容分组间距',
+        body: _MobileSectionDoc(),
+        keywords: ['mobile', 'section', '分区', '标题', '移动端'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-product-card',
+        group: '移动端',
+        navTitle: 'ProductCard 商品卡片',
+        title: 'ProductCard 商品卡片',
+        summary: '商品卡片 — 面向移动商城、列表推荐和加购业务场景',
+        body: _MobileProductCardDoc(),
+        keywords: ['mobile', 'product', '商品', '商城', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-order-card',
+        group: '移动端',
+        navTitle: 'OrderCard 订单卡片',
+        title: 'OrderCard 订单卡片',
+        summary: '订单卡片 — 展示订单号、状态、商品明细、合计和底部操作区',
+        body: _MobileOrderCardDoc(),
+        keywords: ['mobile', 'order', '订单', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-profile-header',
+        group: '移动端',
+        navTitle: 'ProfileHeader 个人头图',
+        title: 'ProfileHeader 个人头图',
+        summary: '个人头图 — 用于会员中心、我的页面和用户资产概览',
+        body: _MobileProfileHeaderDoc(),
+        keywords: ['mobile', 'profile', 'user', '个人中心', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-stats-grid',
+        group: '移动端',
+        navTitle: 'StatsGrid 统计宫格',
+        title: 'StatsGrid 统计宫格',
+        summary: '统计宫格 — 在手机端展示订单、积分、券包等轻量指标',
+        body: _MobileStatsGridDoc(),
+        keywords: ['mobile', 'stats', '统计', '宫格', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-coupon-card',
+        group: '移动端',
+        navTitle: 'CouponCard 优惠券',
+        title: 'CouponCard 优惠券',
+        summary: '优惠券卡片 — 支持可领取、已领取和已过期三种业务状态',
+        body: _MobileCouponCardDoc(),
+        keywords: ['mobile', 'coupon', '优惠券', '营销', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-notice-bar',
+        group: '移动端',
+        navTitle: 'NoticeBar 公告栏',
+        title: 'NoticeBar 移动公告栏',
+        summary: '移动公告栏 — 用于活动提醒、订单提示和轻量业务通知，支持四种状态和点击动作',
+        body: _MobileNoticeBarDoc(),
+        keywords: ['mobile', 'notice', '公告', '通知', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-address-card',
+        group: '移动端',
+        navTitle: 'AddressCard 地址卡片',
+        title: 'AddressCard 地址卡片',
+        summary: '地址卡片 — 展示收货人、手机号、详细地址、默认标签和选中态',
+        body: _MobileAddressCardDoc(),
+        keywords: ['mobile', 'address', '地址', '收货', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-price-summary',
+        group: '移动端',
+        navTitle: 'PriceSummary 价格明细',
+        title: 'PriceSummary 价格明细',
+        summary: '价格明细 — 用于订单确认、费用拆分、优惠抵扣和合计展示',
+        body: _MobilePriceSummaryDoc(),
+        keywords: ['mobile', 'price', 'summary', '价格', '订单', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-checkout-bar',
+        group: '移动端',
+        navTitle: 'CheckoutBar 结算栏',
+        title: 'CheckoutBar 底部结算栏',
+        summary: '底部结算栏 — 固定底部金额与主操作，支持安全区和补充说明',
+        body: _MobileCheckoutBarDoc(),
+        keywords: ['mobile', 'checkout', 'cart', '结算', '底部栏', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-cart-item',
+        group: '移动端',
+        navTitle: 'CartItem 购物车项',
+        title: 'CartItem 购物车项',
+        summary: '购物车项 — 支持选中态、商品图、规格、价格、数量步进器和失效状态',
+        body: _MobileCartItemDoc(),
+        keywords: ['mobile', 'cart', '购物车', '商品项', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-order-timeline',
+        group: '移动端',
+        navTitle: 'OrderTimeline 订单时间线',
+        title: 'OrderTimeline 订单时间线',
+        summary: '订单时间线 — 为物流、履约和服务进度提供手机端状态时间线',
+        body: _MobileOrderTimelineDoc(),
+        keywords: ['mobile', 'timeline', '物流', '订单', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-payment-method',
+        group: '移动端',
+        navTitle: 'PaymentMethod 支付方式',
+        title: 'PaymentMethod 支付方式',
+        summary: '支付方式卡片 — 支持图标、说明、选中态、禁用态和点击选择',
+        body: _MobilePaymentMethodDoc(),
+        keywords: ['mobile', 'payment', '支付', '收银台', '业务组件'],
+      ),
+      const _DocPage(
+        routeKey: 'mobile-empty-action',
+        group: '移动端',
+        navTitle: 'EmptyAction 业务空状态',
+        title: 'EmptyAction 业务空状态',
+        summary: '移动业务空状态 — 带插画位、标题、说明和主行动按钮，适合购物车、订单和收藏页',
+        body: _MobileEmptyActionDoc(),
+        keywords: ['mobile', 'empty', '空状态', '行动按钮', '业务组件'],
+      ),
+      const _DocPage(
         routeKey: 'descriptions',
         group: '数据展示',
         navTitle: 'Descriptions 描述列表',
@@ -832,7 +1070,7 @@ class _HomePageState extends State<_HomePage>
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final isMobile = width < 760;
+    final isMobile = width < 900;
 
     return Stack(
       children: [
@@ -1066,7 +1304,7 @@ class _HomeHero extends StatelessWidget {
     final theme = AnimalTheme.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compactHero = isMobile || constraints.maxWidth < 760;
+        final compactHero = isMobile || constraints.maxWidth < 900;
         final textBlock = Column(
           crossAxisAlignment: compactHero
               ? CrossAxisAlignment.center
@@ -2243,7 +2481,7 @@ class _MobilePreviewHost extends StatelessWidget {
     return _DocsDetailShell(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final fullScreen = constraints.maxWidth < 760;
+          final fullScreen = constraints.maxWidth < 900;
           final preview = kIsWeb
               ? const MobilePreviewEmbed(
                   key: ValueKey('mobile-preview-iframe'),
@@ -7945,6 +8183,1273 @@ class _ResultDoc extends StatelessWidget {
   }
 }
 
+class _MobileNavBarDoc extends StatelessWidget {
+  const _MobileNavBarDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'MobileNavBar',
+      tags: ['移动端', '导航'],
+      sections: [
+        _DocSection(
+          label: '基础导航栏',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: AnimalMobileNavBar(
+              title: Text('岛屿背包'),
+              showBackButton: true,
+              safeAreaTop: false,
+              trailing: Icon(Icons.more_horiz_rounded),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileNavBarCode,
+      api: _mobileNavBarApi,
+    );
+  }
+}
+
+class _MobileBottomBarDoc extends StatelessWidget {
+  const _MobileBottomBarDoc({
+    required this.currentIndex,
+    required this.onChanged,
+  });
+
+  final int currentIndex;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'BottomBar',
+      tags: const ['移动端', '导航'],
+      sections: [
+        _DocSection(
+          label: '底部导航',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: AnimalBottomBar(
+              currentIndex: currentIndex,
+              onChanged: onChanged,
+              safeAreaBottom: false,
+              items: const [
+                AnimalBottomBarItem(
+                  icon: Icon(Icons.home_rounded),
+                  label: Text('首页'),
+                ),
+                AnimalBottomBarItem(
+                  icon: Icon(Icons.widgets_rounded),
+                  activeIcon: Icon(Icons.widgets_rounded),
+                  label: Text('组件'),
+                  badge: AnimalBadge(dot: true),
+                ),
+                AnimalBottomBarItem(
+                  icon: Icon(Icons.person_rounded),
+                  label: Text('我的'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileBottomBarCode,
+      api: _mobileBottomBarApi,
+    );
+  }
+}
+
+class _MobileBottomSheetDoc extends StatelessWidget {
+  const _MobileBottomSheetDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'BottomSheet',
+      tags: const ['移动端', '浮层'],
+      sections: [
+        _DocSection(
+          label: '打开底部弹层',
+          box: _DemoBoxStyle.soft,
+          child: AnimalButton(
+            type: AnimalButtonType.primary,
+            onPressed: () {
+              AnimalBottomSheet.show<void>(
+                context: context,
+                title: const Text('岛屿计划'),
+                child: const AnimalCellGroup(
+                  children: [
+                    AnimalListTile(
+                      leading: Icon(Icons.local_florist_rounded),
+                      title: Text('整理花园'),
+                      subtitle: Text('今天 16:00'),
+                    ),
+                    AnimalListTile(
+                      leading: Icon(Icons.shopping_bag_rounded),
+                      title: Text('采购家具'),
+                      subtitle: Text('狸然超市'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: const Text('打开 BottomSheet'),
+          ),
+        ),
+      ],
+      code: _mobileBottomSheetCode,
+      api: _mobileBottomSheetApi,
+    );
+  }
+}
+
+class _MobileActionSheetDoc extends StatelessWidget {
+  const _MobileActionSheetDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'ActionSheet',
+      tags: const ['移动端', '操作'],
+      sections: [
+        _DocSection(
+          label: '触摸操作面板',
+          box: _DemoBoxStyle.soft,
+          child: AnimalButton(
+            type: AnimalButtonType.primary,
+            onPressed: () async {
+              final value = await AnimalActionSheet.show<String>(
+                context: context,
+                title: const Text('更多操作'),
+                message: const Text('选择一个适合触摸场景的操作。'),
+                actions: const [
+                  AnimalActionSheetAction(
+                    value: 'share',
+                    icon: Icon(Icons.ios_share_rounded),
+                    label: Text('分享岛屿'),
+                  ),
+                  AnimalActionSheetAction(
+                    value: 'archive',
+                    icon: Icon(Icons.inventory_2_rounded),
+                    label: Text('归档记录'),
+                  ),
+                  AnimalActionSheetAction(
+                    value: 'delete',
+                    icon: Icon(Icons.delete_rounded),
+                    label: Text('删除记录'),
+                    destructive: true,
+                  ),
+                ],
+              );
+              if (context.mounted && value != null) {
+                AnimalMessage.info(context, Text('选择了 $value'));
+              }
+            },
+            child: const Text('打开 ActionSheet'),
+          ),
+        ),
+      ],
+      code: _mobileActionSheetCode,
+      api: _mobileActionSheetApi,
+    );
+  }
+}
+
+class _MobileListTileDoc extends StatelessWidget {
+  const _MobileListTileDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'ListTile',
+      tags: ['移动端', '列表'],
+      sections: [
+        _DocSection(
+          label: '列表项状态',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: AnimalCellGroup(
+              children: [
+                AnimalListTile(
+                  leading: Icon(Icons.notifications_rounded),
+                  title: Text('岛屿通知'),
+                  subtitle: Text('访客抵达时提醒我'),
+                  trailing: AnimalSwitch(size: AnimalSwitchSize.small),
+                ),
+                AnimalListTile(
+                  leading: Icon(Icons.delete_rounded),
+                  title: Text('删除记录'),
+                  destructive: true,
+                  showChevron: false,
+                ),
+                AnimalListTile(
+                  leading: Icon(Icons.lock_rounded),
+                  title: Text('未开放功能'),
+                  subtitle: Text('禁用态不会触发操作'),
+                  disabled: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileListTileCode,
+      api: _mobileListTileApi,
+    );
+  }
+}
+
+class _MobileCellGroupDoc extends StatelessWidget {
+  const _MobileCellGroupDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'CellGroup',
+      tags: ['移动端', '列表'],
+      sections: [
+        _DocSection(
+          label: '单元格组',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: AnimalCellGroup(
+              children: [
+                AnimalListTile(
+                  leading: Icon(Icons.person_rounded),
+                  title: Text('个人资料'),
+                ),
+                AnimalListTile(
+                  leading: Icon(Icons.palette_rounded),
+                  title: Text('主题偏好'),
+                  subtitle: Text('主色、字体和圆角'),
+                ),
+                AnimalListTile(
+                  leading: Icon(Icons.logout_rounded),
+                  title: Text('退出登录'),
+                  destructive: true,
+                  showChevron: false,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileCellGroupCode,
+      api: _mobileCellGroupApi,
+    );
+  }
+}
+
+class _MobileSearchBarDoc extends StatelessWidget {
+  const _MobileSearchBarDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'SearchBar',
+      tags: const ['移动端', '表单'],
+      sections: [
+        _DocSection(
+          label: '搜索栏与取消操作',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: AnimalMobileSearchBar(
+                initialValue: '樱桃',
+                hintText: '搜索岛屿商品',
+                showCancel: true,
+                onSearch: (value) =>
+                    AnimalMessage.info(context, Text('搜索 $value')),
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileSearchBarCode,
+      api: _mobileSearchBarApi,
+    );
+  }
+}
+
+class _MobilePickerDoc extends StatelessWidget {
+  const _MobilePickerDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'Picker',
+      tags: const ['移动端', '选择'],
+      sections: [
+        _DocSection(
+          label: '底部选择器',
+          box: _DemoBoxStyle.soft,
+          child: AnimalButton(
+            type: AnimalButtonType.primary,
+            onPressed: () async {
+              final value = await AnimalPicker.show<String>(
+                context: context,
+                title: const Text('选择配送岛屿'),
+                message: const Text('已禁用的岛屿不会触发选择。'),
+                value: 'north',
+                options: const [
+                  AnimalPickerOption(
+                    value: 'north',
+                    leading: Icon(Icons.park_rounded),
+                    label: Text('北岸森林岛'),
+                    subtitle: Text('预计 30 分钟送达'),
+                  ),
+                  AnimalPickerOption(
+                    value: 'south',
+                    leading: Icon(Icons.water_rounded),
+                    label: Text('南湾海风岛'),
+                    subtitle: Text('预计 45 分钟送达'),
+                  ),
+                  AnimalPickerOption(
+                    value: 'locked',
+                    leading: Icon(Icons.lock_rounded),
+                    label: Text('星愿岛'),
+                    subtitle: Text('暂未开放'),
+                    disabled: true,
+                  ),
+                ],
+              );
+              if (context.mounted && value != null) {
+                AnimalMessage.success(context, Text('选择了 $value'));
+              }
+            },
+            child: const Text('打开 Picker'),
+          ),
+        ),
+        const _DocSection(
+          label: '页面内选择列表',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: AnimalPicker<String>(
+                value: 'south',
+                onChanged: _noopStringChanged,
+                options: [
+                  AnimalPickerOption(
+                    value: 'north',
+                    label: Text('北岸森林岛'),
+                  ),
+                  AnimalPickerOption(
+                    value: 'south',
+                    label: Text('南湾海风岛'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobilePickerCode,
+      api: _mobilePickerApi,
+    );
+  }
+}
+
+class _MobileDatePickerDoc extends StatelessWidget {
+  const _MobileDatePickerDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'DatePicker',
+      tags: const ['移动端', '日期'],
+      sections: [
+        _DocSection(
+          label: '底部日期选择',
+          box: _DemoBoxStyle.soft,
+          child: AnimalButton(
+            type: AnimalButtonType.primary,
+            onPressed: () async {
+              final date = await AnimalMobileDatePicker.show(
+                context: context,
+                value: DateTime(2026, 5, 22),
+                firstDate: DateTime(2026, 5, 1),
+                lastDate: DateTime(2026, 6, 30),
+              );
+              if (context.mounted && date != null) {
+                AnimalMessage.success(
+                  context,
+                  Text('预约 ${date.month}/${date.day}'),
+                );
+              }
+            },
+            child: const Text('打开 DatePicker'),
+          ),
+        ),
+        _DocSection(
+          label: '嵌入页面内容',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: AnimalMobileDatePicker(
+                value: DateTime(2026, 5, 22),
+                firstDate: DateTime(2026, 5),
+                lastDate: DateTime(2026, 6, 30),
+                onChanged: (date) => AnimalMessage.info(
+                  context,
+                  Text('选择 ${date.month}/${date.day}'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileDatePickerCode,
+      api: _mobileDatePickerApi,
+    );
+  }
+}
+
+class _MobileStepperDoc extends StatelessWidget {
+  const _MobileStepperDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Stepper',
+      tags: ['移动端', '数量'],
+      sections: [
+        _DocSection(
+          label: '数量步进',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('樱桃果篮'),
+                  AnimalMobileStepper(
+                    defaultValue: 2,
+                    min: 0,
+                    max: 9,
+                    onChanged: _noopNumChanged,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileStepperCode,
+      api: _mobileStepperApi,
+    );
+  }
+}
+
+class _MobileSwipeActionDoc extends StatelessWidget {
+  const _MobileSwipeActionDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'SwipeAction',
+      tags: const ['移动端', '列表'],
+      sections: [
+        _DocSection(
+          label: '左滑露出快捷操作',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: AnimalSwipeAction(
+                actions: [
+                  AnimalSwipeActionItem(
+                    icon: const Icon(Icons.archive_rounded),
+                    label: const Text('归档'),
+                    onTap: () => AnimalMessage.info(context, const Text('已归档')),
+                  ),
+                  AnimalSwipeActionItem(
+                    icon: const Icon(Icons.delete_rounded),
+                    label: const Text('删除'),
+                    destructive: true,
+                    onTap: () =>
+                        AnimalMessage.error(context, const Text('已删除')),
+                  ),
+                ],
+                child: const AnimalListTile(
+                  leading: Icon(Icons.receipt_long_rounded),
+                  title: Text('订单 #A001'),
+                  subtitle: Text('向左拖动查看操作'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileSwipeActionCode,
+      api: _mobileSwipeActionApi,
+    );
+  }
+}
+
+class _MobilePullRefreshDoc extends StatefulWidget {
+  const _MobilePullRefreshDoc();
+
+  @override
+  State<_MobilePullRefreshDoc> createState() => _MobilePullRefreshDocState();
+}
+
+class _MobilePullRefreshDocState extends State<_MobilePullRefreshDoc> {
+  int _refreshCount = 0;
+
+  Future<void> _handleRefresh() async {
+    await Future<void>.delayed(const Duration(milliseconds: 420));
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _refreshCount += 1;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'PullRefresh',
+      tags: const ['移动端', '刷新'],
+      sections: [
+        _DocSection(
+          label: '下拉刷新列表',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: SizedBox(
+              height: 230,
+              child: AnimalPullRefresh(
+                onRefresh: _handleRefresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    AnimalMobileNoticeBar(
+                      type: AnimalMobileNoticeType.success,
+                      child: Text(
+                        _refreshCount == 0
+                            ? '向下拖动列表刷新今日任务'
+                            : '已刷新 $_refreshCount 次，今日任务已同步',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const AnimalCellGroup(
+                      children: [
+                        AnimalListTile(
+                          leading: Icon(Icons.local_florist_rounded),
+                          title: Text('整理花园'),
+                          subtitle: Text('下拉刷新今日任务'),
+                        ),
+                        AnimalListTile(
+                          leading: Icon(Icons.shopping_bag_rounded),
+                          title: Text('采购家具'),
+                        ),
+                        AnimalListTile(
+                          leading: Icon(Icons.cookie_rounded),
+                          title: Text('准备下午茶'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobilePullRefreshCode,
+      api: _mobilePullRefreshApi,
+    );
+  }
+}
+
+class _MobileSectionDoc extends StatelessWidget {
+  const _MobileSectionDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'Section',
+      tags: ['移动端', '布局'],
+      sections: [
+        _DocSection(
+          label: '移动页面分区',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: [
+                  AnimalMobileSection(
+                    title: Text('今日推荐'),
+                    extra: Text('查看全部'),
+                    child: AnimalMobileProductCard(
+                      title: Text('樱桃果篮'),
+                      subtitle: Text('岛屿直送，今日 18:00 前送达'),
+                      price: Text('120 铃钱'),
+                    ),
+                  ),
+                  AnimalMobileSection(
+                    title: Text('我的服务'),
+                    child: AnimalCellGroup(
+                      children: [
+                        AnimalListTile(
+                          leading: Icon(Icons.card_giftcard_rounded),
+                          title: Text('优惠券'),
+                        ),
+                        AnimalListTile(
+                          leading: Icon(Icons.inventory_2_rounded),
+                          title: Text('订单'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileSectionCode,
+      api: _mobileSectionApi,
+    );
+  }
+}
+
+class _MobileProductCardDoc extends StatelessWidget {
+  const _MobileProductCardDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'ProductCard',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '商品推荐列表',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: [
+                  AnimalMobileProductCard(
+                    title: Text('樱桃果篮'),
+                    subtitle: Text('岛屿直送，今日 18:00 前送达'),
+                    price: Text('120 铃钱'),
+                    tag: AnimalTag(
+                      color: AnimalTagColor.danger,
+                      size: AnimalTagSize.small,
+                      child: Text('热卖'),
+                    ),
+                    action: AnimalButton(
+                      type: AnimalButtonType.primary,
+                      size: AnimalButtonSize.small,
+                      child: Text('加购'),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  AnimalMobileProductCard(
+                    title: Text('手作花园椅'),
+                    subtitle: Text('适合放在庭院或露营区'),
+                    price: Text('320 铃钱'),
+                    tag: AnimalTag(
+                      color: AnimalTagColor.success,
+                      size: AnimalTagSize.small,
+                      child: Text('新品'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileProductCardCode,
+      api: _mobileProductCardApi,
+    );
+  }
+}
+
+class _MobileOrderCardDoc extends StatelessWidget {
+  const _MobileOrderCardDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'OrderCard',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '订单摘要',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: AnimalMobileOrderCard(
+                orderNo: Text('订单 #A001'),
+                status: Text('配送中'),
+                items: [
+                  AnimalMobileOrderItem(
+                    title: Text('樱桃果篮'),
+                    subtitle: Text('南湾海风岛'),
+                    quantity: 2,
+                    price: Text('120'),
+                  ),
+                  AnimalMobileOrderItem(
+                    title: Text('手作花园椅'),
+                    subtitle: Text('庭院家具'),
+                    quantity: 1,
+                    price: Text('320'),
+                  ),
+                ],
+                total: Text('合计 560 铃钱'),
+                footer: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    AnimalButton(
+                      size: AnimalButtonSize.small,
+                      child: Text('查看物流'),
+                    ),
+                    SizedBox(width: 8),
+                    AnimalButton(
+                      type: AnimalButtonType.primary,
+                      size: AnimalButtonSize.small,
+                      child: Text('确认收货'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileOrderCardCode,
+      api: _mobileOrderCardApi,
+    );
+  }
+}
+
+class _MobileProfileHeaderDoc extends StatelessWidget {
+  const _MobileProfileHeaderDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'ProfileHeader',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '我的页面头图',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: AnimalMobileProfileHeader(
+                name: Text('狸克'),
+                subtitle: Text('岛屿居民服务处 · Lv.8'),
+                stats: [
+                  AnimalMobileStatItem(
+                    label: Text('订单'),
+                    value: Text('12'),
+                    icon: Icon(Icons.inventory_2_rounded),
+                  ),
+                  AnimalMobileStatItem(
+                    label: Text('积分'),
+                    value: Text('840'),
+                    icon: Icon(Icons.stars_rounded),
+                  ),
+                  AnimalMobileStatItem(
+                    label: Text('优惠券'),
+                    value: Text('6'),
+                    icon: Icon(Icons.card_giftcard_rounded),
+                  ),
+                ],
+                actions: [
+                  AnimalButton(
+                    type: AnimalButtonType.primary,
+                    size: AnimalButtonSize.small,
+                    child: Text('编辑资料'),
+                  ),
+                  AnimalButton(
+                    size: AnimalButtonSize.small,
+                    child: Text('会员中心'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileProfileHeaderCode,
+      api: _mobileProfileHeaderApi,
+    );
+  }
+}
+
+class _MobileStatsGridDoc extends StatelessWidget {
+  const _MobileStatsGridDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'StatsGrid',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '业务指标宫格',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: AnimalMobileStatsGrid(
+                items: [
+                  AnimalMobileStatItem(
+                    label: Text('待付款'),
+                    value: Text('2'),
+                    description: Text('订单'),
+                    icon: Icon(Icons.payments_rounded),
+                  ),
+                  AnimalMobileStatItem(
+                    label: Text('配送中'),
+                    value: Text('5'),
+                    description: Text('包裹'),
+                    icon: Icon(Icons.local_shipping_rounded),
+                  ),
+                  AnimalMobileStatItem(
+                    label: Text('收藏'),
+                    value: Text('18'),
+                    description: Text('商品'),
+                    icon: Icon(Icons.favorite_rounded),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileStatsGridCode,
+      api: _mobileStatsGridApi,
+    );
+  }
+}
+
+class _MobileCouponCardDoc extends StatelessWidget {
+  const _MobileCouponCardDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'CouponCard',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '优惠券状态',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: [
+                  AnimalMobileCouponCard(
+                    amount: Text('-20'),
+                    title: Text('新人购物券'),
+                    description: Text('满 100 铃钱可用，今日有效'),
+                  ),
+                  SizedBox(height: 12),
+                  AnimalMobileCouponCard(
+                    amount: Text('8折'),
+                    title: Text('家具节折扣券'),
+                    description: Text('仅限庭院家具分类'),
+                    status: AnimalMobileCouponStatus.claimed,
+                  ),
+                  SizedBox(height: 12),
+                  AnimalMobileCouponCard(
+                    amount: Text('-10'),
+                    title: Text('过期补贴券'),
+                    description: Text('已超过使用时间'),
+                    status: AnimalMobileCouponStatus.expired,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileCouponCardCode,
+      api: _mobileCouponCardApi,
+    );
+  }
+}
+
+class _MobileNoticeBarDoc extends StatelessWidget {
+  const _MobileNoticeBarDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'NoticeBar',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '公告提醒',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: _DemoColumn(
+              children: [
+                AnimalMobileNoticeBar(
+                  action: Text('查看'),
+                  showChevron: true,
+                  child: Text('今日 18:00 前下单，岛屿直送免服务费。'),
+                ),
+                AnimalMobileNoticeBar(
+                  type: AnimalMobileNoticeType.warning,
+                  child: Text('部分海岛受天气影响，配送时间可能延迟。'),
+                ),
+                AnimalMobileNoticeBar(
+                  type: AnimalMobileNoticeType.success,
+                  child: Text('优惠券已自动抵扣，结算时可查看明细。'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileNoticeBarCode,
+      api: _mobileNoticeBarApi,
+    );
+  }
+}
+
+class _MobileAddressCardDoc extends StatelessWidget {
+  const _MobileAddressCardDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'AddressCard',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '收货地址',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: _DemoColumn(
+              children: [
+                AnimalMobileAddressCard(
+                  selected: true,
+                  name: Text('狸克'),
+                  phone: Text('138 0000 0522'),
+                  tag: AnimalTag(
+                    color: AnimalTagColor.primary,
+                    size: AnimalTagSize.small,
+                    child: Text('默认'),
+                  ),
+                  address: Text('星露岛 居民服务处旁 1 号营地'),
+                ),
+                AnimalMobileAddressCard(
+                  name: Text('西施惠'),
+                  phone: Text('139 0000 0618'),
+                  address: Text('南湾海风岛 花园路 8 号'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileAddressCardCode,
+      api: _mobileAddressCardApi,
+    );
+  }
+}
+
+class _MobilePriceSummaryDoc extends StatelessWidget {
+  const _MobilePriceSummaryDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'PriceSummary',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '订单费用',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: AnimalMobilePriceSummary(
+              items: [
+                AnimalMobilePriceItem(
+                    label: Text('商品金额'), value: Text('560 铃钱')),
+                AnimalMobilePriceItem(
+                    label: Text('配送服务'), value: Text('20 铃钱')),
+                AnimalMobilePriceItem(
+                  label: Text('优惠券'),
+                  value: Text('-20 铃钱'),
+                  emphasized: true,
+                ),
+              ],
+              total: Text('560 铃钱'),
+              footer: Text('价格明细适合订单确认页、服务预约页和会员结算页。'),
+            ),
+          ),
+        ),
+      ],
+      code: _mobilePriceSummaryCode,
+      api: _mobilePriceSummaryApi,
+    );
+  }
+}
+
+class _MobileCheckoutBarDoc extends StatelessWidget {
+  const _MobileCheckoutBarDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'CheckoutBar',
+      tags: const ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '底部结算',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const AnimalMobileProductCard(
+                  title: Text('樱桃果篮'),
+                  subtitle: Text('岛屿直送，今日 18:00 前送达'),
+                  price: Text('120 铃钱'),
+                ),
+                const SizedBox(height: 12),
+                AnimalMobileCheckoutBar(
+                  safeAreaBottom: false,
+                  total: const Text('560 铃钱'),
+                  extra: const Text('已优惠 20 铃钱'),
+                  action: AnimalButton(
+                    type: AnimalButtonType.primary,
+                    onPressed: () {},
+                    child: const Text('去结算'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileCheckoutBarCode,
+      api: _mobileCheckoutBarApi,
+    );
+  }
+}
+
+class _MobileCartItemDoc extends StatefulWidget {
+  const _MobileCartItemDoc();
+
+  @override
+  State<_MobileCartItemDoc> createState() => _MobileCartItemDocState();
+}
+
+class _MobileCartItemDocState extends State<_MobileCartItemDoc> {
+  var _selected = true;
+  num _quantity = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'CartItem',
+      tags: const ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '购物车商品项',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: _DemoColumn(
+              children: [
+                AnimalMobileCartItem(
+                  selected: _selected,
+                  onSelectedChanged: (value) =>
+                      setState(() => _selected = value),
+                  title: const Text('樱桃果篮'),
+                  subtitle: const Text('规格：大份 / 今日 18:00 前送达'),
+                  price: const Text('120 铃钱'),
+                  quantity: _quantity,
+                  onQuantityChanged: (value) =>
+                      setState(() => _quantity = value),
+                  tag: const AnimalTag(
+                    color: AnimalTagColor.danger,
+                    size: AnimalTagSize.small,
+                    child: Text('热卖'),
+                  ),
+                ),
+                const AnimalMobileCartItem(
+                  disabled: true,
+                  selected: false,
+                  title: Text('手作花园椅'),
+                  subtitle: Text('规格：原木色'),
+                  price: Text('320 铃钱'),
+                  quantity: 1,
+                  disabledText: Text('该商品暂时缺货'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileCartItemCode,
+      api: _mobileCartItemApi,
+    );
+  }
+}
+
+class _MobileOrderTimelineDoc extends StatelessWidget {
+  const _MobileOrderTimelineDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'OrderTimeline',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '物流进度',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: AnimalMobileOrderTimeline(
+              items: [
+                AnimalMobileTimelineItem(
+                  title: Text('订单已提交'),
+                  description: Text('居民服务处已收到你的订单。'),
+                  time: Text('09:30'),
+                  status: AnimalMobileTimelineStatus.success,
+                  icon: Icon(Icons.check_rounded),
+                ),
+                AnimalMobileTimelineItem(
+                  title: Text('正在配送'),
+                  description: Text('豆狸正在把包裹送往星露岛。'),
+                  time: Text('10:12'),
+                  status: AnimalMobileTimelineStatus.processing,
+                  icon: Icon(Icons.local_shipping_rounded),
+                ),
+                AnimalMobileTimelineItem(
+                  title: Text('等待签收'),
+                  description: Text('请在码头附近保持联络。'),
+                  status: AnimalMobileTimelineStatus.warning,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobileOrderTimelineCode,
+      api: _mobileOrderTimelineApi,
+    );
+  }
+}
+
+class _MobilePaymentMethodDoc extends StatelessWidget {
+  const _MobilePaymentMethodDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ComponentDoc(
+      title: 'PaymentMethod',
+      tags: ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '支付方式',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: _DemoColumn(
+              children: [
+                AnimalMobilePaymentMethodCard(
+                  selected: true,
+                  icon: Icon(Icons.account_balance_wallet_rounded),
+                  title: Text('铃钱钱包'),
+                  subtitle: Text('余额 8,400 铃钱，可直接抵扣'),
+                ),
+                AnimalMobilePaymentMethodCard(
+                  icon: Icon(Icons.credit_card_rounded),
+                  title: Text('岛屿信用卡'),
+                  subtitle: Text('尾号 0522'),
+                ),
+                AnimalMobilePaymentMethodCard(
+                  disabled: true,
+                  icon: Icon(Icons.lock_rounded),
+                  title: Text('博物馆积分'),
+                  subtitle: Text('当前订单暂不可用'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      code: _mobilePaymentMethodCode,
+      api: _mobilePaymentMethodApi,
+    );
+  }
+}
+
+class _MobileEmptyActionDoc extends StatelessWidget {
+  const _MobileEmptyActionDoc();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ComponentDoc(
+      title: 'EmptyAction',
+      tags: const ['移动端', '业务'],
+      sections: [
+        _DocSection(
+          label: '业务空状态',
+          box: _DemoBoxStyle.soft,
+          child: _MobileFrame(
+            child: AnimalMobileEmptyAction(
+              icon: const Icon(Icons.shopping_cart_rounded),
+              title: const Text('购物车还是空的'),
+              description: const Text('去挑选一些岛屿好物，结算栏会自动汇总金额。'),
+              action: AnimalButton(
+                type: AnimalButtonType.primary,
+                onPressed: () {},
+                child: const Text('去逛逛'),
+              ),
+            ),
+          ),
+        ),
+      ],
+      code: _mobileEmptyActionCode,
+      api: _mobileEmptyActionApi,
+    );
+  }
+}
+
+class _MobileFrame extends StatelessWidget {
+  const _MobileFrame({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 390),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: ColoredBox(
+          color: const Color(0xFFF8F4E8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TimeDoc extends StatelessWidget {
   const _TimeDoc();
 
@@ -8051,6 +9556,7 @@ const _docNavGroups = [
   '导航',
   '反馈',
   '浮层',
+  '移动端',
   'Animal 特色',
 ];
 
@@ -8099,6 +9605,32 @@ const _docNavMeta = <String, _DocNavMeta>{
   'dropdown': _DocNavMeta('浮层', 702),
   'drawer': _DocNavMeta('浮层', 703),
   'confirm-dialog': _DocNavMeta('浮层', 704),
+  'mobile-navbar': _DocNavMeta('移动端', 800),
+  'mobile-bottom-bar': _DocNavMeta('移动端', 801),
+  'mobile-bottom-sheet': _DocNavMeta('移动端', 802),
+  'mobile-action-sheet': _DocNavMeta('移动端', 803),
+  'mobile-list-tile': _DocNavMeta('移动端', 804),
+  'mobile-cell-group': _DocNavMeta('移动端', 805),
+  'mobile-search-bar': _DocNavMeta('移动端', 806),
+  'mobile-picker': _DocNavMeta('移动端', 807),
+  'mobile-date-picker': _DocNavMeta('移动端', 808),
+  'mobile-stepper': _DocNavMeta('移动端', 809),
+  'mobile-swipe-action': _DocNavMeta('移动端', 810),
+  'mobile-pull-refresh': _DocNavMeta('移动端', 811),
+  'mobile-section': _DocNavMeta('移动端', 812),
+  'mobile-product-card': _DocNavMeta('移动端', 813),
+  'mobile-order-card': _DocNavMeta('移动端', 814),
+  'mobile-profile-header': _DocNavMeta('移动端', 815),
+  'mobile-stats-grid': _DocNavMeta('移动端', 816),
+  'mobile-coupon-card': _DocNavMeta('移动端', 817),
+  'mobile-notice-bar': _DocNavMeta('移动端', 818),
+  'mobile-address-card': _DocNavMeta('移动端', 819),
+  'mobile-price-summary': _DocNavMeta('移动端', 820),
+  'mobile-checkout-bar': _DocNavMeta('移动端', 821),
+  'mobile-cart-item': _DocNavMeta('移动端', 822),
+  'mobile-order-timeline': _DocNavMeta('移动端', 823),
+  'mobile-payment-method': _DocNavMeta('移动端', 824),
+  'mobile-empty-action': _DocNavMeta('移动端', 825),
   'time': _DocNavMeta('Animal 特色', 900),
   'phone': _DocNavMeta('Animal 特色', 901),
   'cursor': _DocNavMeta('Animal 特色', 902),
@@ -8179,6 +9711,32 @@ const _docSearchKeywords = <String, List<String>>{
   'dropdown': ['下拉菜单', 'menu', 'action'],
   'drawer': ['抽屉', 'panel', 'sidebar'],
   'confirm-dialog': ['确认框', 'confirm', 'delete'],
+  'mobile-navbar': ['手机导航', 'navbar', 'appbar'],
+  'mobile-bottom-bar': ['底部导航', 'tabbar', 'phone'],
+  'mobile-bottom-sheet': ['底部弹层', 'bottom sheet', 'filter'],
+  'mobile-action-sheet': ['操作面板', 'action sheet', 'touch'],
+  'mobile-list-tile': ['移动列表项', 'cell', 'list item'],
+  'mobile-cell-group': ['单元格组', 'cell group', 'settings'],
+  'mobile-search-bar': ['移动搜索', 'search', 'cancel', 'clear'],
+  'mobile-picker': ['移动选择器', 'picker', 'bottom sheet'],
+  'mobile-date-picker': ['日期选择', 'date picker', 'calendar'],
+  'mobile-stepper': ['步进器', 'quantity', 'cart'],
+  'mobile-swipe-action': ['左滑操作', 'swipe', 'delete'],
+  'mobile-pull-refresh': ['下拉刷新', 'refresh', 'list'],
+  'mobile-section': ['移动分区', 'section', 'group'],
+  'mobile-product-card': ['商品卡片', 'product', 'shop'],
+  'mobile-order-card': ['订单卡片', 'order', 'business'],
+  'mobile-profile-header': ['个人头图', 'profile', 'mine'],
+  'mobile-stats-grid': ['统计宫格', 'stats', 'metrics'],
+  'mobile-coupon-card': ['优惠券', 'coupon', 'marketing'],
+  'mobile-notice-bar': ['公告栏', 'notice', 'notification', 'activity'],
+  'mobile-address-card': ['地址卡片', 'address', 'shipping', 'receiver'],
+  'mobile-price-summary': ['价格明细', 'price', 'summary', 'checkout'],
+  'mobile-checkout-bar': ['结算栏', 'checkout', 'cart', 'bottom bar'],
+  'mobile-cart-item': ['购物车', 'cart', 'product item', 'quantity'],
+  'mobile-order-timeline': ['订单时间线', 'logistics', 'delivery', 'timeline'],
+  'mobile-payment-method': ['支付方式', 'payment', 'checkout', 'method'],
+  'mobile-empty-action': ['业务空状态', 'empty', 'action', 'placeholder'],
   'time': ['时间', 'clock', 'hud'],
   'phone': ['手机', 'nook phone'],
   'cursor': ['光标', 'pointer', 'mouse'],
@@ -8285,6 +9843,10 @@ class _ThemeSwatch {
 
 enum _DemoBoxStyle { none, soft, dashed }
 
+void _noopStringChanged(String value) {}
+
+void _noopNumChanged(num value) {}
+
 const _themeSwatches = [
   _ThemeSwatch('Mint', '#19C8B9', Color(0xFF19C8B9)),
   _ThemeSwatch('Forest', '#4E8F75', Color(0xFF4E8F75)),
@@ -8301,9 +9863,9 @@ const _homeFeatures = [
   ),
   _FeatureInfo(
     icon: _DemoAssets.shopping,
-    title: '49 个组件',
+    title: '74 个组件',
     description:
-        'Button / Input / Switch / Modal / Table / Form / Popover / Calendar / Upload / Tree 等',
+        'Button / Input / Switch / Modal / Table / Form / Calendar / Upload / Mobile 业务组件等',
   ),
   _FeatureInfo(
     icon: _DemoAssets.camera,
@@ -8378,6 +9940,61 @@ const _homeComponents = [
   _ComponentInfo(key: 'drawer', name: 'Drawer', description: '左右抽屉和底部操作区'),
   _ComponentInfo(
       key: 'confirm-dialog', name: 'ConfirmDialog', description: '确认流程弹窗封装'),
+  _ComponentInfo(
+      key: 'mobile-navbar', name: 'MobileNavBar', description: '移动端顶部导航栏'),
+  _ComponentInfo(
+      key: 'mobile-bottom-bar', name: 'BottomBar', description: '移动端底部导航'),
+  _ComponentInfo(
+      key: 'mobile-bottom-sheet', name: 'BottomSheet', description: '移动端底部弹层'),
+  _ComponentInfo(
+      key: 'mobile-action-sheet', name: 'ActionSheet', description: '触摸操作面板'),
+  _ComponentInfo(
+      key: 'mobile-list-tile', name: 'ListTile', description: '移动列表项'),
+  _ComponentInfo(
+      key: 'mobile-cell-group', name: 'CellGroup', description: '单元格分组容器'),
+  _ComponentInfo(
+      key: 'mobile-search-bar', name: 'SearchBar', description: '移动端搜索栏'),
+  _ComponentInfo(key: 'mobile-picker', name: 'Picker', description: '移动底部选择器'),
+  _ComponentInfo(
+      key: 'mobile-date-picker', name: 'DatePicker', description: '移动日期选择'),
+  _ComponentInfo(key: 'mobile-stepper', name: 'Stepper', description: '数量步进器'),
+  _ComponentInfo(
+      key: 'mobile-swipe-action', name: 'SwipeAction', description: '左滑快捷操作'),
+  _ComponentInfo(
+      key: 'mobile-pull-refresh', name: 'PullRefresh', description: '下拉刷新容器'),
+  _ComponentInfo(key: 'mobile-section', name: 'Section', description: '移动页面分区'),
+  _ComponentInfo(
+      key: 'mobile-product-card', name: 'ProductCard', description: '移动商品卡片'),
+  _ComponentInfo(
+      key: 'mobile-order-card', name: 'OrderCard', description: '移动订单卡片'),
+  _ComponentInfo(
+      key: 'mobile-profile-header',
+      name: 'ProfileHeader',
+      description: '个人中心头图'),
+  _ComponentInfo(
+      key: 'mobile-stats-grid', name: 'StatsGrid', description: '移动统计宫格'),
+  _ComponentInfo(
+      key: 'mobile-coupon-card', name: 'CouponCard', description: '移动优惠券卡片'),
+  _ComponentInfo(
+      key: 'mobile-notice-bar', name: 'NoticeBar', description: '移动公告和业务提醒'),
+  _ComponentInfo(
+      key: 'mobile-address-card', name: 'AddressCard', description: '收货地址和选中态'),
+  _ComponentInfo(
+      key: 'mobile-price-summary', name: 'PriceSummary', description: '订单价格明细'),
+  _ComponentInfo(
+      key: 'mobile-checkout-bar', name: 'CheckoutBar', description: '底部结算操作栏'),
+  _ComponentInfo(
+      key: 'mobile-cart-item', name: 'CartItem', description: '购物车商品项'),
+  _ComponentInfo(
+      key: 'mobile-order-timeline',
+      name: 'OrderTimeline',
+      description: '物流和订单状态时间线'),
+  _ComponentInfo(
+      key: 'mobile-payment-method',
+      name: 'PaymentMethod',
+      description: '支付方式选择卡片'),
+  _ComponentInfo(
+      key: 'mobile-empty-action', name: 'EmptyAction', description: '移动业务空状态'),
   _ComponentInfo(key: 'time', name: 'Time', description: '可爱风格时间显示'),
   _ComponentInfo(key: 'phone', name: 'Phone', description: 'Phone 模拟器'),
   _ComponentInfo(key: 'cursor', name: 'Cursor', description: '自定义手指光标，支持多种尺寸'),
@@ -8398,6 +10015,7 @@ const _homeComponentGroupDescriptions = {
   '导航': '页面切换、路径提示、步骤流程和分页导航。',
   '反馈': '提示、消息、进度、加载和结果状态反馈。',
   '浮层': '弹窗、气泡、菜单、抽屉和确认流程。',
+  '移动端': '面向手机页面、触摸列表和底部操作的移动端组件。',
   'Animal 特色': '保留 Animal Island 氛围的装饰、光标和拟物化组件。',
 };
 
@@ -9147,6 +10765,323 @@ const _resultApi = [
   _ApiRow('status', '结果状态', 'AnimalResultStatus', 'info'),
   _ApiRow('extra', '补充内容', 'Widget?', '-'),
   _ApiRow('action', '操作区', 'Widget?', '-'),
+];
+
+const _mobileNavBarApi = [
+  _ApiRow('title', '标题', 'Widget', '-', required: true),
+  _ApiRow('leading', '左侧自定义内容', 'Widget?', '-'),
+  _ApiRow('trailing', '右侧自定义内容', 'Widget?', '-'),
+  _ApiRow('showBackButton', '是否显示默认返回按钮', 'bool', 'false'),
+  _ApiRow('onBack', '返回按钮回调；为空时尝试 Navigator.maybePop', 'VoidCallback?', '-'),
+  _ApiRow('safeAreaTop', '是否补偿顶部安全区', 'bool', 'true'),
+  _ApiRow('height', '导航栏内容高度', 'double', '56'),
+];
+
+const _mobileBottomBarApi = [
+  _ApiRow('items', '底部导航项', 'List<AnimalBottomBarItem>', '-', required: true),
+  _ApiRow('currentIndex', '当前选中索引', 'int', '-', required: true),
+  _ApiRow('onChanged', '切换回调', 'ValueChanged<int>', '-', required: true),
+  _ApiRow('safeAreaBottom', '是否补偿底部安全区', 'bool', 'true'),
+  _ApiRow('AnimalBottomBarItem.icon', '默认图标', 'Widget', '-', required: true),
+  _ApiRow('AnimalBottomBarItem.activeIcon', '选中图标', 'Widget?', '-'),
+  _ApiRow('AnimalBottomBarItem.label', '底部文字', 'Widget', '-', required: true),
+  _ApiRow('AnimalBottomBarItem.badge', '徽标', 'Widget?', '-'),
+];
+
+const _mobileBottomSheetApi = [
+  _ApiRow('context', '弹层上下文', 'BuildContext', '-', required: true),
+  _ApiRow('child', '弹层内容', 'Widget', '-', required: true),
+  _ApiRow('title', '标题', 'Widget?', '-'),
+  _ApiRow('footer', '底部操作区', 'Widget?', '-'),
+  _ApiRow('handle', '顶部拖拽把手显示策略', 'AnimalMobileBottomSheetHandle', 'visible'),
+  _ApiRow('padding', '内容内边距', 'EdgeInsetsGeometry', 'EdgeInsets(20,8,20,20)'),
+  _ApiRow('maxHeightFactor', '最大高度占屏幕比例', 'double', '0.84'),
+  _ApiRow('barrierDismissible', '点击遮罩和下拉关闭', 'bool', 'true'),
+];
+
+const _mobileActionSheetApi = [
+  _ApiRow('actions', '操作项列表', 'List<AnimalActionSheetAction<T>>', '-',
+      required: true),
+  _ApiRow('title', '标题', 'Widget?', '-'),
+  _ApiRow('message', '说明文案', 'Widget?', '-'),
+  _ApiRow('cancelText', '取消按钮内容', 'Widget', "Text('取消')"),
+  _ApiRow('AnimalActionSheetAction.value', '操作返回值', 'T', '-', required: true),
+  _ApiRow('AnimalActionSheetAction.label', '操作文案', 'Widget', '-',
+      required: true),
+  _ApiRow('AnimalActionSheetAction.icon', '前置图标', 'Widget?', '-'),
+  _ApiRow('AnimalActionSheetAction.destructive', '是否危险操作', 'bool', 'false'),
+  _ApiRow('AnimalActionSheetAction.disabled', '是否禁用', 'bool', 'false'),
+];
+
+const _mobileListTileApi = [
+  _ApiRow('title', '主标题', 'Widget', '-', required: true),
+  _ApiRow('subtitle', '副标题', 'Widget?', '-'),
+  _ApiRow('leading', '左侧图标或头像', 'Widget?', '-'),
+  _ApiRow('trailing', '右侧自定义内容', 'Widget?', '-'),
+  _ApiRow('onTap', '点击回调；为空时为展示态', 'VoidCallback?', '-'),
+  _ApiRow('disabled', '是否禁用', 'bool', 'false'),
+  _ApiRow('destructive', '是否危险文本色', 'bool', 'false'),
+  _ApiRow('showChevron', '是否显示默认右箭头', 'bool', 'true'),
+  _ApiRow('minHeight', '最小高度', 'double', '54'),
+  _ApiRow('textAlign', '文字对齐方式', 'TextAlign', 'start'),
+];
+
+const _mobileCellGroupApi = [
+  _ApiRow('children', '单元格列表，通常放 AnimalListTile', 'List<Widget>', '-',
+      required: true),
+  _ApiRow('margin', '外边距', 'EdgeInsetsGeometry', 'EdgeInsets.zero'),
+];
+
+const _mobileSearchBarApi = [
+  _ApiRow('controller', '外部文本控制器', 'TextEditingController?', '-'),
+  _ApiRow('initialValue', '非受控初始值', 'String?', '-'),
+  _ApiRow('hintText', '占位文案', 'String', '搜索'),
+  _ApiRow('enabled', '是否可输入', 'bool', 'true'),
+  _ApiRow('autofocus', '是否自动聚焦', 'bool', 'false'),
+  _ApiRow('showCancel', '是否显示取消按钮', 'bool', 'false'),
+  _ApiRow('cancelText', '取消按钮内容', 'Widget', "Text('取消')"),
+  _ApiRow('onChanged', '输入变化回调', 'ValueChanged<String>?', '-'),
+  _ApiRow('onSubmitted', '提交回调', 'ValueChanged<String>?', '-'),
+  _ApiRow('onSearch', '搜索动作回调', 'ValueChanged<String>?', '-'),
+  _ApiRow('onClear', '清空回调', 'VoidCallback?', '-'),
+  _ApiRow('onCancel', '取消回调', 'VoidCallback?', '-'),
+];
+
+const _mobilePickerApi = [
+  _ApiRow('options', '选项列表', 'List<AnimalPickerOption<T>>', '-',
+      required: true),
+  _ApiRow('value', '当前选中值', 'T?', '-'),
+  _ApiRow('onChanged', '选择回调', 'ValueChanged<T>', '-', required: true),
+  _ApiRow('closeOnSelect', '页面内选择后是否尝试关闭路由', 'bool', 'false'),
+  _ApiRow('AnimalPicker.show.context', '弹层上下文', 'BuildContext', '-',
+      required: true),
+  _ApiRow('AnimalPicker.show.title', '弹层标题', 'Widget?', '-'),
+  _ApiRow('AnimalPicker.show.message', '弹层说明', 'Widget?', '-'),
+  _ApiRow('AnimalPicker.show.cancelText', '取消按钮内容', 'Widget', "Text('取消')"),
+  _ApiRow('AnimalPickerOption.value', '选项值', 'T', '-', required: true),
+  _ApiRow('AnimalPickerOption.label', '选项标题', 'Widget', '-', required: true),
+  _ApiRow('AnimalPickerOption.subtitle', '选项说明', 'Widget?', '-'),
+  _ApiRow('AnimalPickerOption.leading', '前置图标', 'Widget?', '-'),
+  _ApiRow('AnimalPickerOption.disabled', '是否禁用', 'bool', 'false'),
+];
+
+const _mobileDatePickerApi = [
+  _ApiRow('value', '受控日期', 'DateTime?', '-'),
+  _ApiRow('defaultValue', '非受控默认日期', 'DateTime?', '-'),
+  _ApiRow('firstDate', '可选开始日期', 'DateTime?', '-'),
+  _ApiRow('lastDate', '可选结束日期', 'DateTime?', '-'),
+  _ApiRow('onChanged', '确认日期回调', 'ValueChanged<DateTime>?', '-'),
+  _ApiRow('showActions', '是否显示取消/确定按钮', 'bool', 'true'),
+  _ApiRow('confirmText', '确认按钮文案', 'String', '确定'),
+  _ApiRow('cancelText', '取消按钮文案', 'String', '取消'),
+  _ApiRow(
+      'AnimalMobileDatePicker.show.title', '底部弹层标题', 'Widget?', "Text('选择日期')"),
+];
+
+const _mobileStepperApi = [
+  _ApiRow('value', '受控值', 'num?', '-'),
+  _ApiRow('defaultValue', '非受控默认值', 'num', '0'),
+  _ApiRow('min', '最小值', 'num?', '-'),
+  _ApiRow('max', '最大值', 'num?', '-'),
+  _ApiRow('step', '步长', 'num', '1'),
+  _ApiRow('disabled', '是否禁用', 'bool', 'false'),
+  _ApiRow('onChanged', '数值变化回调', 'ValueChanged<num>?', '-'),
+  _ApiRow('formatter', '自定义数值展示', 'String Function(num)?', '-'),
+];
+
+const _mobileSwipeActionApi = [
+  _ApiRow('child', '前景列表项内容', 'Widget', '-', required: true),
+  _ApiRow('actions', '右侧操作按钮', 'List<AnimalSwipeActionItem>', '-',
+      required: true),
+  _ApiRow('actionExtent', '单个操作按钮宽度', 'double', '82'),
+  _ApiRow('enabled', '是否允许滑动', 'bool', 'true'),
+  _ApiRow('AnimalSwipeActionItem.label', '按钮文案', 'Widget', '-', required: true),
+  _ApiRow('AnimalSwipeActionItem.onTap', '点击回调', 'VoidCallback', '-',
+      required: true),
+  _ApiRow('AnimalSwipeActionItem.icon', '按钮图标', 'Widget?', '-'),
+  _ApiRow('AnimalSwipeActionItem.color', '自定义背景色', 'Color?', '-'),
+  _ApiRow('AnimalSwipeActionItem.destructive', '是否危险操作', 'bool', 'false'),
+  _ApiRow('AnimalSwipeActionItem.disabled', '是否禁用', 'bool', 'false'),
+];
+
+const _mobilePullRefreshApi = [
+  _ApiRow('child', '滚动内容', 'Widget', '-', required: true),
+  _ApiRow('onRefresh', '刷新回调', 'RefreshCallback', '-', required: true),
+  _ApiRow('displacement', 'Animal 小岛指示器高度', 'double', '58'),
+  _ApiRow('edgeOffset', '触发起始偏移', 'double', '0'),
+  _ApiRow('style', '刷新指示器样式，默认小岛海风动画，可切回 Material 原生圈',
+      'AnimalPullRefreshStyle', 'animal'),
+  _ApiRow(
+    'indicatorBuilder',
+    '自定义 Animal 刷新指示器内容',
+    'AnimalPullRefreshIndicatorBuilder?',
+    '-',
+  ),
+  _ApiRow(
+    'triggerMode',
+    '触发模式，复杂滚动页可改为 anywhere',
+    'RefreshIndicatorTriggerMode',
+    'onEdge',
+  ),
+  _ApiRow(
+    'notificationPredicate',
+    '滚动通知过滤器',
+    'ScrollNotificationPredicate',
+    'defaultScrollNotificationPredicate',
+  ),
+  _ApiRow('semanticsLabel', '无障碍标签', 'String?', '-'),
+  _ApiRow('semanticsValue', '无障碍状态', 'String?', '-'),
+];
+
+const _mobileSectionApi = [
+  _ApiRow('child', '分区内容', 'Widget', '-', required: true),
+  _ApiRow('title', '左侧标题', 'Widget?', '-'),
+  _ApiRow('extra', '右侧操作', 'Widget?', '-'),
+  _ApiRow(
+      'margin', '分区外边距', 'EdgeInsetsGeometry', 'EdgeInsets.only(bottom: 16)'),
+];
+
+const _mobileProductCardApi = [
+  _ApiRow('title', '商品标题', 'Widget', '-', required: true),
+  _ApiRow('subtitle', '商品说明', 'Widget?', '-'),
+  _ApiRow('price', '价格区域', 'Widget?', '-'),
+  _ApiRow('image', '商品图或自定义占位', 'Widget?', '-'),
+  _ApiRow('tag', '右上角标签', 'Widget?', '-'),
+  _ApiRow('action', '右下角操作', 'Widget?', '-'),
+  _ApiRow('onTap', '卡片点击回调', 'VoidCallback?', '-'),
+];
+
+const _mobileOrderCardApi = [
+  _ApiRow('orderNo', '订单号', 'Widget', '-', required: true),
+  _ApiRow('status', '订单状态', 'Widget', '-', required: true),
+  _ApiRow('items', '商品明细', 'List<AnimalMobileOrderItem>', '[]'),
+  _ApiRow('total', '合计信息', 'Widget?', '-'),
+  _ApiRow('footer', '底部操作区', 'Widget?', '-'),
+  _ApiRow('onTap', '卡片点击回调', 'VoidCallback?', '-'),
+  _ApiRow('AnimalMobileOrderItem.title', '明细标题', 'Widget', '-', required: true),
+  _ApiRow('AnimalMobileOrderItem.subtitle', '明细说明', 'Widget?', '-'),
+  _ApiRow('AnimalMobileOrderItem.quantity', '数量', 'int?', '-'),
+  _ApiRow('AnimalMobileOrderItem.price', '价格', 'Widget?', '-'),
+  _ApiRow('AnimalMobileOrderItem.leading', '缩略图', 'Widget?', '-'),
+];
+
+const _mobileProfileHeaderApi = [
+  _ApiRow('name', '用户名称', 'Widget', '-', required: true),
+  _ApiRow('avatar', '头像', 'Widget?', '-'),
+  _ApiRow('subtitle', '用户说明', 'Widget?', '-'),
+  _ApiRow('actions', '操作按钮列表', 'List<Widget>', '[]'),
+  _ApiRow('stats', '统计项列表', 'List<AnimalMobileStatItem>', '[]'),
+];
+
+const _mobileStatsGridApi = [
+  _ApiRow('items', '统计项列表', 'List<AnimalMobileStatItem>', '-', required: true),
+  _ApiRow('crossAxisCount', '每行列数，自动限制 1-4', 'int', '3'),
+  _ApiRow('AnimalMobileStatItem.label', '指标名称', 'Widget', '-', required: true),
+  _ApiRow('AnimalMobileStatItem.value', '指标值', 'Widget', '-', required: true),
+  _ApiRow('AnimalMobileStatItem.icon', '图标', 'Widget?', '-'),
+  _ApiRow('AnimalMobileStatItem.description', '补充说明', 'Widget?', '-'),
+  _ApiRow('AnimalMobileStatItem.color', '强调色', 'Color?', '-'),
+  _ApiRow('AnimalMobileStatItem.onTap', '点击回调', 'VoidCallback?', '-'),
+];
+
+const _mobileCouponCardApi = [
+  _ApiRow('amount', '券面金额或折扣', 'Widget', '-', required: true),
+  _ApiRow('title', '优惠券标题', 'Widget', '-', required: true),
+  _ApiRow('description', '优惠券说明', 'Widget?', '-'),
+  _ApiRow('status', '优惠券状态', 'AnimalMobileCouponStatus', 'available'),
+  _ApiRow('actionText', '可领取状态按钮文案', 'String', '领取'),
+  _ApiRow('onTap', '可领取状态点击回调', 'VoidCallback?', '-'),
+];
+
+const _mobileNoticeBarApi = [
+  _ApiRow('child', '公告内容', 'Widget', '-', required: true),
+  _ApiRow('type', '公告状态', 'AnimalMobileNoticeType', 'info'),
+  _ApiRow('icon', '前置图标', 'Widget?', '-'),
+  _ApiRow('action', '右侧操作内容', 'Widget?', '-'),
+  _ApiRow('onTap', '点击回调', 'VoidCallback?', '-'),
+  _ApiRow('showChevron', '是否显示右箭头', 'bool', 'false'),
+];
+
+const _mobileAddressCardApi = [
+  _ApiRow('name', '收货人', 'Widget', '-', required: true),
+  _ApiRow('phone', '手机号', 'Widget', '-', required: true),
+  _ApiRow('address', '详细地址', 'Widget', '-', required: true),
+  _ApiRow('tag', '地址标签', 'Widget?', '-'),
+  _ApiRow('leading', '左侧图标或头像', 'Widget?', '-'),
+  _ApiRow('trailing', '右侧自定义内容', 'Widget?', '-'),
+  _ApiRow('selected', '是否选中地址', 'bool', 'false'),
+  _ApiRow('onTap', '点击回调', 'VoidCallback?', '-'),
+];
+
+const _mobilePriceSummaryApi = [
+  _ApiRow('items', '费用明细列表', 'List<AnimalMobilePriceItem>', '-',
+      required: true),
+  _ApiRow('totalLabel', '合计标签', 'Widget?', "Text('合计')"),
+  _ApiRow('total', '合计金额', 'Widget?', '-'),
+  _ApiRow('footer', '底部补充说明', 'Widget?', '-'),
+  _ApiRow('AnimalMobilePriceItem.label', '明细名称', 'Widget', '-', required: true),
+  _ApiRow('AnimalMobilePriceItem.value', '明细金额', 'Widget', '-', required: true),
+  _ApiRow('AnimalMobilePriceItem.emphasized', '是否强调该行', 'bool', 'false'),
+  _ApiRow('AnimalMobilePriceItem.color', '自定义金额颜色', 'Color?', '-'),
+];
+
+const _mobileCheckoutBarApi = [
+  _ApiRow('total', '合计金额', 'Widget', '-', required: true),
+  _ApiRow('action', '右侧主操作', 'Widget', '-', required: true),
+  _ApiRow('label', '金额上方标签', 'Widget?', "Text('合计')"),
+  _ApiRow('extra', '金额下方说明', 'Widget?', '-'),
+  _ApiRow('safeAreaBottom', '是否补偿底部安全区', 'bool', 'true'),
+  _ApiRow('padding', '内边距', 'EdgeInsetsGeometry', 'EdgeInsets(14,10,14,10)'),
+];
+
+const _mobileCartItemApi = [
+  _ApiRow('title', '商品标题', 'Widget', '-', required: true),
+  _ApiRow('subtitle', '规格或补充说明', 'Widget?', '-'),
+  _ApiRow('price', '价格区域', 'Widget?', '-'),
+  _ApiRow('image', '商品图或占位', 'Widget?', '-'),
+  _ApiRow('quantity', '数量', 'num?', '-'),
+  _ApiRow('onQuantityChanged', '数量变化回调', 'ValueChanged<num>?', '-'),
+  _ApiRow('selected', '是否选中', 'bool', 'false'),
+  _ApiRow('onSelectedChanged', '选中变化回调', 'ValueChanged<bool>?', '-'),
+  _ApiRow('tag', '右上角标签', 'Widget?', '-'),
+  _ApiRow('action', '右下角自定义操作', 'Widget?', '-'),
+  _ApiRow('disabled', '是否失效/禁用', 'bool', 'false'),
+  _ApiRow('disabledText', '失效说明', 'Widget?', '-'),
+  _ApiRow('onTap', '卡片点击回调', 'VoidCallback?', '-'),
+];
+
+const _mobileOrderTimelineApi = [
+  _ApiRow('items', '时间线项', 'List<AnimalMobileTimelineItem>', '-',
+      required: true),
+  _ApiRow('padding', '内边距', 'EdgeInsetsGeometry', 'EdgeInsets.all(14)'),
+  _ApiRow('AnimalMobileTimelineItem.title', '节点标题', 'Widget', '-',
+      required: true),
+  _ApiRow('AnimalMobileTimelineItem.description', '节点说明', 'Widget?', '-'),
+  _ApiRow('AnimalMobileTimelineItem.time', '节点时间', 'Widget?', '-'),
+  _ApiRow('AnimalMobileTimelineItem.icon', '节点图标', 'Widget?', '-'),
+  _ApiRow('AnimalMobileTimelineItem.status', '节点状态',
+      'AnimalMobileTimelineStatus', 'defaultStatus'),
+  _ApiRow('AnimalMobileTimelineItem.onTap', '点击回调', 'VoidCallback?', '-'),
+  _ApiRow('AnimalMobileTimelineItem.disabled', '禁用点击态', 'bool', 'false'),
+];
+
+const _mobilePaymentMethodApi = [
+  _ApiRow('title', '支付方式名称', 'Widget', '-', required: true),
+  _ApiRow('subtitle', '支付方式说明', 'Widget?', '-'),
+  _ApiRow('icon', '左侧图标', 'Widget?', '-'),
+  _ApiRow('trailing', '右侧自定义内容', 'Widget?', '-'),
+  _ApiRow('selected', '是否选中', 'bool', 'false'),
+  _ApiRow('disabled', '是否禁用', 'bool', 'false'),
+  _ApiRow('onTap', '点击回调', 'VoidCallback?', '-'),
+];
+
+const _mobileEmptyActionApi = [
+  _ApiRow('title', '空状态标题', 'Widget', '-', required: true),
+  _ApiRow('description', '说明文案', 'Widget?', '-'),
+  _ApiRow('icon', '图标或插画位', 'Widget?', '-'),
+  _ApiRow('action', '主行动按钮', 'Widget?', '-'),
+  _ApiRow(
+      'padding', '内边距', 'EdgeInsetsGeometry', 'EdgeInsets.symmetric(22,26)'),
 ];
 
 const _timeApi = [
@@ -10385,6 +12320,359 @@ const _resultCode = r'''const AnimalResult(
     type: AnimalButtonType.primary,
     onPressed: null,
     child: Text('返回列表'),
+  ),
+)''';
+
+const _mobileNavBarCode = r'''AnimalMobileNavBar(
+  title: const Text('岛屿背包'),
+  showBackButton: true,
+  trailing: const Icon(Icons.more_horiz_rounded),
+  onBack: () => Navigator.maybePop(context),
+)''';
+
+const _mobileBottomBarCode = r'''AnimalBottomBar(
+  currentIndex: currentIndex,
+  onChanged: (index) => setState(() => currentIndex = index),
+  items: const [
+    AnimalBottomBarItem(
+      icon: Icon(Icons.home_rounded),
+      label: Text('首页'),
+    ),
+    AnimalBottomBarItem(
+      icon: Icon(Icons.widgets_rounded),
+      label: Text('组件'),
+      badge: AnimalBadge(dot: true),
+    ),
+    AnimalBottomBarItem(
+      icon: Icon(Icons.person_rounded),
+      label: Text('我的'),
+    ),
+  ],
+)''';
+
+const _mobileBottomSheetCode = r'''AnimalBottomSheet.show<void>(
+  context: context,
+  title: const Text('岛屿计划'),
+  child: const AnimalCellGroup(
+    children: [
+      AnimalListTile(
+        leading: Icon(Icons.local_florist_rounded),
+        title: Text('整理花园'),
+        subtitle: Text('今天 16:00'),
+      ),
+      AnimalListTile(
+        leading: Icon(Icons.shopping_bag_rounded),
+        title: Text('采购家具'),
+        subtitle: Text('狸然超市'),
+      ),
+    ],
+  ),
+)''';
+
+const _mobileActionSheetCode =
+    r'''final value = await AnimalActionSheet.show<String>(
+  context: context,
+  title: const Text('更多操作'),
+  message: const Text('选择一个适合触摸场景的操作。'),
+  actions: const [
+    AnimalActionSheetAction(
+      value: 'share',
+      icon: Icon(Icons.ios_share_rounded),
+      label: Text('分享岛屿'),
+    ),
+    AnimalActionSheetAction(
+      value: 'delete',
+      icon: Icon(Icons.delete_rounded),
+      label: Text('删除记录'),
+      destructive: true,
+    ),
+  ],
+)''';
+
+const _mobileListTileCode = r'''const AnimalListTile(
+  leading: Icon(Icons.notifications_rounded),
+  title: Text('岛屿通知'),
+  subtitle: Text('访客抵达时提醒我'),
+  trailing: AnimalSwitch(size: AnimalSwitchSize.small),
+)''';
+
+const _mobileCellGroupCode = r'''const AnimalCellGroup(
+  children: [
+    AnimalListTile(
+      leading: Icon(Icons.person_rounded),
+      title: Text('个人资料'),
+    ),
+    AnimalListTile(
+      leading: Icon(Icons.palette_rounded),
+      title: Text('主题偏好'),
+      subtitle: Text('主色、字体和圆角'),
+    ),
+    AnimalListTile(
+      leading: Icon(Icons.logout_rounded),
+      title: Text('退出登录'),
+      destructive: true,
+      showChevron: false,
+    ),
+  ],
+)''';
+
+const _mobileSearchBarCode = r'''AnimalMobileSearchBar(
+  initialValue: '樱桃',
+  hintText: '搜索岛屿商品',
+  showCancel: true,
+  onSearch: (value) => AnimalMessage.info(context, Text('搜索 $value')),
+  onClear: () {},
+  onCancel: () {},
+)''';
+
+const _mobilePickerCode = r'''final value = await AnimalPicker.show<String>(
+  context: context,
+  title: const Text('选择配送岛屿'),
+  value: 'north',
+  options: const [
+    AnimalPickerOption(
+      value: 'north',
+      leading: Icon(Icons.park_rounded),
+      label: Text('北岸森林岛'),
+      subtitle: Text('预计 30 分钟送达'),
+    ),
+    AnimalPickerOption(
+      value: 'south',
+      leading: Icon(Icons.water_rounded),
+      label: Text('南湾海风岛'),
+      subtitle: Text('预计 45 分钟送达'),
+    ),
+  ],
+)''';
+
+const _mobileDatePickerCode =
+    r'''final date = await AnimalMobileDatePicker.show(
+  context: context,
+  value: DateTime(2026, 5, 22),
+  firstDate: DateTime(2026, 5, 1),
+  lastDate: DateTime(2026, 6, 30),
+)''';
+
+const _mobileStepperCode = r'''AnimalMobileStepper(
+  defaultValue: 2,
+  min: 0,
+  max: 9,
+  onChanged: (value) {},
+)''';
+
+const _mobileSwipeActionCode = r'''AnimalSwipeAction(
+  actions: [
+    AnimalSwipeActionItem(
+      icon: const Icon(Icons.archive_rounded),
+      label: const Text('归档'),
+      onTap: () {},
+    ),
+    AnimalSwipeActionItem(
+      icon: const Icon(Icons.delete_rounded),
+      label: const Text('删除'),
+      destructive: true,
+      onTap: () {},
+    ),
+  ],
+  child: const AnimalListTile(
+    leading: Icon(Icons.receipt_long_rounded),
+    title: Text('订单 #A001'),
+    subtitle: Text('向左拖动查看操作'),
+  ),
+)''';
+
+const _mobilePullRefreshCode = r'''AnimalPullRefresh(
+  onRefresh: () async {
+    await Future<void>.delayed(const Duration(milliseconds: 360));
+  },
+  child: ListView(
+    physics: const AlwaysScrollableScrollPhysics(),
+    children: const [
+      AnimalListTile(title: Text('下拉刷新今日任务')),
+    ],
+  ),
+)''';
+
+const _mobileSectionCode = r'''const AnimalMobileSection(
+  title: Text('今日推荐'),
+  extra: Text('查看全部'),
+  child: AnimalMobileProductCard(
+    title: Text('樱桃果篮'),
+    subtitle: Text('岛屿直送，今日 18:00 前送达'),
+    price: Text('120 铃钱'),
+  ),
+)''';
+
+const _mobileProductCardCode = r'''const AnimalMobileProductCard(
+  title: Text('樱桃果篮'),
+  subtitle: Text('岛屿直送，今日 18:00 前送达'),
+  price: Text('120 铃钱'),
+  tag: AnimalTag(
+    color: AnimalTagColor.danger,
+    size: AnimalTagSize.small,
+    child: Text('热卖'),
+  ),
+  action: AnimalButton(
+    type: AnimalButtonType.primary,
+    size: AnimalButtonSize.small,
+    child: Text('加购'),
+  ),
+)''';
+
+const _mobileOrderCardCode = r'''const AnimalMobileOrderCard(
+  orderNo: Text('订单 #A001'),
+  status: Text('配送中'),
+  items: [
+    AnimalMobileOrderItem(
+      title: Text('樱桃果篮'),
+      subtitle: Text('南湾海风岛'),
+      quantity: 2,
+      price: Text('120'),
+    ),
+  ],
+  total: Text('合计 560 铃钱'),
+)''';
+
+const _mobileProfileHeaderCode = r'''const AnimalMobileProfileHeader(
+  name: Text('狸克'),
+  subtitle: Text('岛屿居民服务处 · Lv.8'),
+  stats: [
+    AnimalMobileStatItem(
+      label: Text('订单'),
+      value: Text('12'),
+      icon: Icon(Icons.inventory_2_rounded),
+    ),
+    AnimalMobileStatItem(
+      label: Text('积分'),
+      value: Text('840'),
+      icon: Icon(Icons.stars_rounded),
+    ),
+  ],
+  actions: [
+    AnimalButton(
+      type: AnimalButtonType.primary,
+      size: AnimalButtonSize.small,
+      child: Text('编辑资料'),
+    ),
+  ],
+)''';
+
+const _mobileStatsGridCode = r'''const AnimalMobileStatsGrid(
+  items: [
+    AnimalMobileStatItem(
+      label: Text('待付款'),
+      value: Text('2'),
+      description: Text('订单'),
+      icon: Icon(Icons.payments_rounded),
+    ),
+    AnimalMobileStatItem(
+      label: Text('配送中'),
+      value: Text('5'),
+      description: Text('包裹'),
+      icon: Icon(Icons.local_shipping_rounded),
+    ),
+  ],
+)''';
+
+const _mobileCouponCardCode = r'''const AnimalMobileCouponCard(
+  amount: Text('-20'),
+  title: Text('新人购物券'),
+  description: Text('满 100 铃钱可用，今日有效'),
+)
+
+const AnimalMobileCouponCard(
+  amount: Text('8折'),
+  title: Text('家具节折扣券'),
+  status: AnimalMobileCouponStatus.claimed,
+)''';
+
+const _mobileNoticeBarCode = r'''AnimalMobileNoticeBar(
+  type: AnimalMobileNoticeType.warning,
+  action: const Text('查看'),
+  showChevron: true,
+  onTap: () {},
+  child: const Text('部分海岛受天气影响，配送时间可能延迟。'),
+)''';
+
+const _mobileAddressCardCode = r'''const AnimalMobileAddressCard(
+  selected: true,
+  name: Text('狸克'),
+  phone: Text('138 0000 0522'),
+  tag: AnimalTag(
+    color: AnimalTagColor.primary,
+    size: AnimalTagSize.small,
+    child: Text('默认'),
+  ),
+  address: Text('星露岛 居民服务处旁 1 号营地'),
+)''';
+
+const _mobilePriceSummaryCode = r'''const AnimalMobilePriceSummary(
+  items: [
+    AnimalMobilePriceItem(label: Text('商品金额'), value: Text('560 铃钱')),
+    AnimalMobilePriceItem(label: Text('配送服务'), value: Text('20 铃钱')),
+    AnimalMobilePriceItem(
+      label: Text('优惠券'),
+      value: Text('-20 铃钱'),
+      emphasized: true,
+    ),
+  ],
+  total: Text('560 铃钱'),
+)''';
+
+const _mobileCheckoutBarCode = r'''AnimalMobileCheckoutBar(
+  total: const Text('560 铃钱'),
+  extra: const Text('已优惠 20 铃钱'),
+  action: AnimalButton(
+    type: AnimalButtonType.primary,
+    onPressed: () {},
+    child: const Text('去结算'),
+  ),
+)''';
+
+const _mobileCartItemCode = r'''AnimalMobileCartItem(
+  selected: selected,
+  onSelectedChanged: (value) => setState(() => selected = value),
+  title: const Text('樱桃果篮'),
+  subtitle: const Text('规格：大份 / 今日 18:00 前送达'),
+  price: const Text('120 铃钱'),
+  quantity: quantity,
+  onQuantityChanged: (value) => setState(() => quantity = value),
+)''';
+
+const _mobileOrderTimelineCode = r'''const AnimalMobileOrderTimeline(
+  items: [
+    AnimalMobileTimelineItem(
+      title: Text('订单已提交'),
+      description: Text('居民服务处已收到你的订单。'),
+      time: Text('09:30'),
+      status: AnimalMobileTimelineStatus.success,
+      icon: Icon(Icons.check_rounded),
+    ),
+    AnimalMobileTimelineItem(
+      title: Text('正在配送'),
+      description: Text('豆狸正在把包裹送往星露岛。'),
+      time: Text('10:12'),
+      status: AnimalMobileTimelineStatus.processing,
+      icon: Icon(Icons.local_shipping_rounded),
+    ),
+  ],
+)''';
+
+const _mobilePaymentMethodCode = r'''const AnimalMobilePaymentMethodCard(
+  selected: true,
+  icon: Icon(Icons.account_balance_wallet_rounded),
+  title: Text('铃钱钱包'),
+  subtitle: Text('余额 8,400 铃钱，可直接抵扣'),
+)''';
+
+const _mobileEmptyActionCode = r'''AnimalMobileEmptyAction(
+  icon: const Icon(Icons.shopping_cart_rounded),
+  title: const Text('购物车还是空的'),
+  description: const Text('去挑选一些岛屿好物，结算栏会自动汇总金额。'),
+  action: AnimalButton(
+    type: AnimalButtonType.primary,
+    onPressed: () {},
+    child: const Text('去逛逛'),
   ),
 )''';
 

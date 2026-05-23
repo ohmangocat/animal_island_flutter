@@ -19,6 +19,7 @@ export 'src/components/input.dart';
 export 'src/components/input_variants.dart';
 export 'src/components/loading.dart';
 export 'src/components/message.dart';
+export 'src/components/mobile.dart';
 export 'src/components/overlay.dart';
 export 'src/components/pagination.dart';
 export 'src/components/phone.dart';

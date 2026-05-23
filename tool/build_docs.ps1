@@ -1,8 +1,8 @@
-$ErrorActionPreference = "Stop"
-
 param(
   [string]$Flutter = "C:\Dev\tools\flutter_3.41.0\bin\flutter.bat"
 )
+
+$ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
 $example = Join-Path $root "example"

@@ -121,6 +121,29 @@ void main() {
     await tester.enterText(docsSearchInput(), 'timeline');
     await tester.pump();
     expect(find.text('Timeline 时间线'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), 'mobile');
+    await tester.pump();
+    expect(find.text('MobileNavBar 导航栏'), findsWidgets);
+    expect(find.text('BottomBar 底部栏'), findsWidgets);
+    expect(find.text('ProductCard 商品卡片'), findsWidgets);
+    expect(find.text('CouponCard 优惠券'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), 'checkout');
+    await tester.pump();
+    expect(find.text('CheckoutBar 结算栏'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), '地址');
+    await tester.pump();
+    expect(find.text('AddressCard 地址卡片'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), 'cart');
+    await tester.pump();
+    expect(find.text('CartItem 购物车项'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), 'payment');
+    await tester.pump();
+    expect(find.text('PaymentMethod 支付方式'), findsWidgets);
   });
 
   testWidgets('desktop docs sidebar supports global search', (tester) async {
@@ -167,6 +190,27 @@ void main() {
     await tester.pump();
 
     expect(find.text('Upload 上传'), findsWidgets);
+
+    await tester.enterText(docsSearchInput(), '优惠券');
+    await tester.pump();
+    expect(find.text('CouponCard 优惠券'), findsWidgets);
+  });
+
+  testWidgets('tablet width uses compact docs layout without overflow',
+      (tester) async {
+    setViewSize(tester, const Size(761, 910));
+    await tester.pump();
+
+    await openDocs(tester);
+
+    expect(find.text('Animal Docs'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget.runtimeType.toString() == '_Sidebar',
+      ),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('desktop docs open phone simulator preview flow', (tester) async {

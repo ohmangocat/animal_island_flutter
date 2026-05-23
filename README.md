@@ -40,7 +40,7 @@ flutter run -d web-server --web-hostname 127.0.0.1 --web-port 5178
 
 ```yaml
 dependencies:
-  animal_island_flutter: ^0.1.2
+  animal_island_flutter: ^0.1.3
 ```
 
 入口导入：
@@ -61,7 +61,7 @@ dependencies:
 
 | 项目 | 版本 |
 | --- | --- |
-| Package | `animal_island_flutter: ^0.1.2` |
+| Package | `animal_island_flutter: ^0.1.3` |
 | Flutter SDK | `>=3.19.0` |
 | Dart SDK | `>=3.3.0 <4.0.0` |
 | `flutter_svg` | `^2.0.17` |
@@ -199,14 +199,17 @@ AnimalTheme(data: theme, child: const App());
 | Advanced basics | `AnimalAlert` / `AnimalAvatar` / `AnimalBreadcrumb` / `AnimalSteps` / `AnimalSlider` / `AnimalRate` / `AnimalSegmented` / `AnimalSkeleton` |
 | Phase 3 business components | `AnimalForm` / `AnimalTextarea` / `AnimalPasswordInput` / `AnimalSearchInput` / `AnimalNumberInput` / `AnimalPopover` / `AnimalDropdown` / `AnimalDrawer` / `AnimalConfirmDialog` / `AnimalDescriptions` / `AnimalStatistic` / `AnimalTimeline` |
 | Phase 4 complex business components | `AnimalCalendar` / `AnimalUpload` / `AnimalTree` / `AnimalResult` |
+| Mobile components | `AnimalMobileNavBar` / `AnimalBottomBar` / `AnimalBottomSheet` / `AnimalActionSheet` / `AnimalListTile` / `AnimalCellGroup` / `AnimalMobileSearchBar` / `AnimalPicker` / `AnimalMobileDatePicker` / `AnimalMobileStepper` / `AnimalSwipeAction` / `AnimalPullRefresh` / `AnimalMobileSection` / `AnimalMobileProductCard` / `AnimalMobileOrderCard` / `AnimalMobileProfileHeader` / `AnimalMobileStatsGrid` / `AnimalMobileCouponCard` / `AnimalMobileNoticeBar` / `AnimalMobileAddressCard` / `AnimalMobilePriceSummary` / `AnimalMobileCheckoutBar` / `AnimalMobileCartItem` / `AnimalMobileOrderTimeline` / `AnimalMobilePaymentMethodCard` / `AnimalMobileEmptyAction` |
 
 ## 组件覆盖
 
-当前包含 48 个 Flutter 组件页面：`Button`、`Input`、`Switch`、`Modal`、`Card`、`Collapse`、`Cursor`、`Time`、`Phone`、`Footer`、`Divider`、`Typewriter`、`Icon`、`Select`、`Tabs`、`Checkbox`、`CodeBlock`、`Loading`、`Table`、`Radio`、`Tag`、`Badge`、`Tooltip`、`Message`、`Progress`、`Pagination`、`Empty`、`Alert`、`Avatar`、`Breadcrumb`、`Steps`、`Slider`、`Rate`、`Segmented`、`Skeleton`、`Form`、`Input Plus`、`Popover`、`Dropdown`、`Drawer`、`ConfirmDialog`、`Descriptions`、`Statistic`、`Timeline`、`Calendar`、`Upload`、`Tree`、`Result`。
+当前包含 74 个 Flutter 组件页面：`Button`、`Input`、`Switch`、`Modal`、`Card`、`Collapse`、`Cursor`、`Time`、`Phone`、`Footer`、`Divider`、`Typewriter`、`Icon`、`Select`、`Tabs`、`Checkbox`、`CodeBlock`、`Loading`、`Table`、`Radio`、`Tag`、`Badge`、`Tooltip`、`Message`、`Progress`、`Pagination`、`Empty`、`Alert`、`Avatar`、`Breadcrumb`、`Steps`、`Slider`、`Rate`、`Segmented`、`Skeleton`、`Form`、`Input Plus`、`Popover`、`Dropdown`、`Drawer`、`ConfirmDialog`、`Descriptions`、`Statistic`、`Timeline`、`Calendar`、`Upload`、`Tree`、`Result`、`MobileNavBar`、`BottomBar`、`BottomSheet`、`ActionSheet`、`ListTile`、`CellGroup`、`SearchBar`、`Picker`、`DatePicker`、`Stepper`、`SwipeAction`、`PullRefresh`、`Section`、`ProductCard`、`OrderCard`、`ProfileHeader`、`StatsGrid`、`CouponCard`、`NoticeBar`、`AddressCard`、`PriceSummary`、`CheckoutBar`、`CartItem`、`OrderTimeline`、`PaymentMethod` 和 `EmptyAction`。
 
 表单类场景可直接使用 `AnimalForm` 和 `AnimalFormItem` 做布局，再搭配 `AnimalInputFormField`、`AnimalSelectFormField`、`AnimalCheckboxFormField`、`AnimalRadioFormField`、`AnimalSwitchFormField`、`AnimalSliderFormField`、`AnimalRateFormField`、`AnimalCalendarFormField`、`AnimalUploadFormField` 和 `AnimalTreeFormField`，支持 Flutter `Form` 的 `validator`、`onSaved` 和 `autovalidateMode`。业务输入增强可使用 `AnimalTextarea`、`AnimalPasswordInput`、`AnimalSearchInput` 和 `AnimalNumberInput`。
 
 浮层和详情类场景包含 `AnimalPopover`、`AnimalDropdown`、`AnimalDrawer`、`AnimalConfirmDialog`、`AnimalDescriptions`、`AnimalStatistic` 和 `AnimalTimeline`，可用于后台详情页、设置面板、数据概览和确认流程。阶段四复杂业务组件补充了 `AnimalCalendar`、`AnimalUpload`、`AnimalTree` 和 `AnimalResult`，覆盖日期选择、上传队列、层级导航和结果反馈页。
+
+移动端组件补充了手机页面壳、底部导航、触摸列表、底部操作面板、搜索栏、底部选择器、日期选择、步进器、左滑操作、下拉刷新和移动分区；业务化组件包含商品卡片、订单卡片、个人头图、统计宫格、优惠券卡片、公告栏、地址卡片、价格明细、底部结算栏、购物车项、订单时间线、支付方式卡片和业务空状态。桌面文档内置 iframe 手机模拟器，`example/mobile_preview` 也可以作为独立 Flutter 项目打包到 Android / Windows / Web 预览。
 
 Flutter 版本会优先保持视觉和交互语义一致；少量 Web/React 专属 API 会转换成 Flutter 习惯写法：
 

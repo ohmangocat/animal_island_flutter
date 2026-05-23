@@ -40,7 +40,7 @@ Install the published package from pub.dev:
 
 ```yaml
 dependencies:
-  animal_island_flutter: ^0.1.2
+  animal_island_flutter: ^0.1.3
 ```
 
 Import the library entry point:
@@ -61,7 +61,7 @@ dependencies:
 
 | Item | Version |
 | --- | --- |
-| Package | `animal_island_flutter: ^0.1.2` |
+| Package | `animal_island_flutter: ^0.1.3` |
 | Flutter SDK | `>=3.19.0` |
 | Dart SDK | `>=3.3.0 <4.0.0` |
 | `flutter_svg` | `^2.0.17` |
@@ -199,14 +199,17 @@ Set `fontPackage` to `null` when the font is registered by your app instead of b
 | Advanced basics | `AnimalAlert` / `AnimalAvatar` / `AnimalBreadcrumb` / `AnimalSteps` / `AnimalSlider` / `AnimalRate` / `AnimalSegmented` / `AnimalSkeleton` |
 | Phase 3 business components | `AnimalForm` / `AnimalTextarea` / `AnimalPasswordInput` / `AnimalSearchInput` / `AnimalNumberInput` / `AnimalPopover` / `AnimalDropdown` / `AnimalDrawer` / `AnimalConfirmDialog` / `AnimalDescriptions` / `AnimalStatistic` / `AnimalTimeline` |
 | Phase 4 complex business components | `AnimalCalendar` / `AnimalUpload` / `AnimalTree` / `AnimalResult` |
+| Mobile components | `AnimalMobileNavBar` / `AnimalBottomBar` / `AnimalBottomSheet` / `AnimalActionSheet` / `AnimalListTile` / `AnimalCellGroup` / `AnimalMobileSearchBar` / `AnimalPicker` / `AnimalMobileDatePicker` / `AnimalMobileStepper` / `AnimalSwipeAction` / `AnimalPullRefresh` / `AnimalMobileSection` / `AnimalMobileProductCard` / `AnimalMobileOrderCard` / `AnimalMobileProfileHeader` / `AnimalMobileStatsGrid` / `AnimalMobileCouponCard` / `AnimalMobileNoticeBar` / `AnimalMobileAddressCard` / `AnimalMobilePriceSummary` / `AnimalMobileCheckoutBar` / `AnimalMobileCartItem` / `AnimalMobileOrderTimeline` / `AnimalMobilePaymentMethodCard` / `AnimalMobileEmptyAction` |
 
 ## Component Coverage
 
-The package currently includes 48 Flutter component pages: `Button`, `Input`, `Switch`, `Modal`, `Card`, `Collapse`, `Cursor`, `Time`, `Phone`, `Footer`, `Divider`, `Typewriter`, `Icon`, `Select`, `Tabs`, `Checkbox`, `CodeBlock`, `Loading`, `Table`, `Radio`, `Tag`, `Badge`, `Tooltip`, `Message`, `Progress`, `Pagination`, `Empty`, `Alert`, `Avatar`, `Breadcrumb`, `Steps`, `Slider`, `Rate`, `Segmented`, `Skeleton`, `Form`, `Input Plus`, `Popover`, `Dropdown`, `Drawer`, `ConfirmDialog`, `Descriptions`, `Statistic`, `Timeline`, `Calendar`, `Upload`, `Tree`, and `Result`.
+The package currently includes 74 Flutter component pages: `Button`, `Input`, `Switch`, `Modal`, `Card`, `Collapse`, `Cursor`, `Time`, `Phone`, `Footer`, `Divider`, `Typewriter`, `Icon`, `Select`, `Tabs`, `Checkbox`, `CodeBlock`, `Loading`, `Table`, `Radio`, `Tag`, `Badge`, `Tooltip`, `Message`, `Progress`, `Pagination`, `Empty`, `Alert`, `Avatar`, `Breadcrumb`, `Steps`, `Slider`, `Rate`, `Segmented`, `Skeleton`, `Form`, `Input Plus`, `Popover`, `Dropdown`, `Drawer`, `ConfirmDialog`, `Descriptions`, `Statistic`, `Timeline`, `Calendar`, `Upload`, `Tree`, `Result`, `MobileNavBar`, `BottomBar`, `BottomSheet`, `ActionSheet`, `ListTile`, `CellGroup`, `SearchBar`, `Picker`, `DatePicker`, `Stepper`, `SwipeAction`, `PullRefresh`, `Section`, `ProductCard`, `OrderCard`, `ProfileHeader`, `StatsGrid`, `CouponCard`, `NoticeBar`, `AddressCard`, `PriceSummary`, `CheckoutBar`, `CartItem`, `OrderTimeline`, `PaymentMethod`, and `EmptyAction`.
 
 For Flutter forms, use `AnimalForm` and `AnimalFormItem` for layout, then combine them with `AnimalInputFormField`, `AnimalSelectFormField`, `AnimalCheckboxFormField`, `AnimalRadioFormField`, `AnimalSwitchFormField`, `AnimalSliderFormField`, `AnimalRateFormField`, `AnimalCalendarFormField`, `AnimalUploadFormField`, and `AnimalTreeFormField`. They support `validator`, `onSaved`, and `autovalidateMode` from Flutter `Form`. Enhanced input scenarios can use `AnimalTextarea`, `AnimalPasswordInput`, `AnimalSearchInput`, and `AnimalNumberInput`.
 
 Overlay and data-detail scenarios include `AnimalPopover`, `AnimalDropdown`, `AnimalDrawer`, `AnimalConfirmDialog`, `AnimalDescriptions`, `AnimalStatistic`, and `AnimalTimeline` for settings panels, dashboards, detail pages, and confirmation flows. Phase 4 adds `AnimalCalendar`, `AnimalUpload`, `AnimalTree`, and `AnimalResult` for date selection, upload queues, hierarchy navigation, and result feedback pages.
+
+Mobile components now cover phone shells, bottom navigation, touch lists, bottom action panels, search bars, bottom pickers, date picking, steppers, swipe actions, pull refresh, and mobile sections. Business-oriented mobile widgets include product cards, order cards, profile headers, stats grids, coupon cards, notice bars, address cards, price summaries, checkout bars, cart items, order timelines, payment method cards, and mobile empty actions. The desktop docs embed the standalone `example/mobile_preview` app through an iframe, and that project can also be built independently for Android, Windows, or Web previews.
 
 The Flutter version keeps the visual and interaction semantics aligned with the React version where possible. A few web-specific APIs are translated into Flutter conventions:
 

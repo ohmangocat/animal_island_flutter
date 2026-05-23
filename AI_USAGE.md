@@ -84,6 +84,7 @@ export 'src/components/input.dart';
 export 'src/components/input_variants.dart';
 export 'src/components/loading.dart';
 export 'src/components/message.dart';
+export 'src/components/mobile.dart';
 export 'src/components/overlay.dart';
 export 'src/components/pagination.dart';
 export 'src/components/phone.dart';
@@ -973,6 +974,324 @@ AnimalResult({
 })
 ```
 
+### 2.18 Mobile Components
+
+```dart
+enum AnimalMobileBottomSheetHandle { visible, hidden }
+
+AnimalMobileNavBar({
+  required Widget title,
+  Widget? leading,
+  Widget? trailing,
+  VoidCallback? onBack,
+  bool showBackButton = false,
+  bool safeAreaTop = true,
+  double height = 56,
+})
+
+AnimalBottomBar({
+  required List<AnimalBottomBarItem> items,
+  required int currentIndex,
+  required ValueChanged<int> onChanged,
+  bool safeAreaBottom = true,
+})
+
+AnimalBottomBarItem({
+  required Widget icon,
+  required Widget label,
+  Widget? activeIcon,
+  Widget? badge,
+})
+```
+
+```dart
+AnimalBottomSheet.show<T>({
+  required BuildContext context,
+  required Widget child,
+  Widget? title,
+  Widget? footer,
+  AnimalMobileBottomSheetHandle handle = AnimalMobileBottomSheetHandle.visible,
+  EdgeInsetsGeometry padding = const EdgeInsets.fromLTRB(20, 8, 20, 20),
+  double maxHeightFactor = 0.84,
+  bool barrierDismissible = true,
+})
+
+AnimalActionSheet.show<T>({
+  required BuildContext context,
+  required List<AnimalActionSheetAction<T>> actions,
+  Widget? title,
+  Widget? message,
+  Widget cancelText = const Text('取消'),
+})
+
+AnimalActionSheetAction<T>({
+  required T value,
+  required Widget label,
+  Widget? icon,
+  bool destructive = false,
+  bool disabled = false,
+})
+```
+
+```dart
+AnimalCellGroup({
+  required List<Widget> children,
+  EdgeInsetsGeometry margin = EdgeInsets.zero,
+})
+
+AnimalListTile({
+  required Widget title,
+  Widget? subtitle,
+  Widget? leading,
+  Widget? trailing,
+  VoidCallback? onTap,
+  bool disabled = false,
+  bool destructive = false,
+  bool showChevron = true,
+  double minHeight = 54,
+  TextAlign textAlign = TextAlign.start,
+})
+```
+
+```dart
+enum AnimalMobileCouponStatus { available, claimed, expired }
+enum AnimalMobileNoticeType { info, success, warning, error }
+
+AnimalMobileSearchBar({
+  TextEditingController? controller,
+  String? initialValue,
+  String hintText = '搜索',
+  bool enabled = true,
+  bool autofocus = false,
+  bool showCancel = false,
+  Widget cancelText = const Text('取消'),
+  ValueChanged<String>? onChanged,
+  ValueChanged<String>? onSubmitted,
+  ValueChanged<String>? onSearch,
+  VoidCallback? onClear,
+  VoidCallback? onCancel,
+})
+
+AnimalPicker<T>({
+  required List<AnimalPickerOption<T>> options,
+  required T? value,
+  required ValueChanged<T> onChanged,
+  bool closeOnSelect = false,
+})
+
+AnimalPicker.show<T>({
+  required BuildContext context,
+  required List<AnimalPickerOption<T>> options,
+  T? value,
+  Widget? title,
+  Widget? message,
+  Widget cancelText = const Text('取消'),
+})
+
+AnimalMobileDatePicker({
+  DateTime? value,
+  DateTime? defaultValue,
+  DateTime? firstDate,
+  DateTime? lastDate,
+  ValueChanged<DateTime>? onChanged,
+  bool showActions = true,
+  String confirmText = '确定',
+  String cancelText = '取消',
+})
+
+AnimalMobileStepper({
+  num? value,
+  num defaultValue = 0,
+  num? min,
+  num? max,
+  num step = 1,
+  bool disabled = false,
+  ValueChanged<num>? onChanged,
+  String Function(num value)? formatter,
+})
+```
+
+```dart
+AnimalSwipeAction({
+  required Widget child,
+  required List<AnimalSwipeActionItem> actions,
+  double actionExtent = 82,
+  bool enabled = true,
+})
+
+AnimalPullRefresh({
+  required Widget child,
+  required RefreshCallback onRefresh,
+  double displacement = 58,
+  double edgeOffset = 0,
+  AnimalPullRefreshStyle style = AnimalPullRefreshStyle.animal,
+  AnimalPullRefreshIndicatorBuilder? indicatorBuilder,
+  RefreshIndicatorTriggerMode triggerMode = RefreshIndicatorTriggerMode.onEdge,
+  ScrollNotificationPredicate notificationPredicate =
+      defaultScrollNotificationPredicate,
+  String? semanticsLabel,
+  String? semanticsValue,
+})
+```
+
+默认 `AnimalPullRefreshStyle.animal` 会显示小岛、海风和状态文案组成的 Animal
+风格刷新反馈；需要 Flutter 原生转圈样式时可以改为
+`AnimalPullRefreshStyle.material`。`indicatorBuilder` 可替换默认指示器内容。
+
+```dart
+AnimalMobileSection({
+  required Widget child,
+  Widget? title,
+  Widget? extra,
+  EdgeInsetsGeometry margin = const EdgeInsets.only(bottom: 16),
+})
+```
+
+```dart
+AnimalMobileProductCard({
+  required Widget title,
+  Widget? subtitle,
+  Widget? price,
+  Widget? image,
+  Widget? tag,
+  Widget? action,
+  VoidCallback? onTap,
+})
+
+AnimalMobileOrderCard({
+  required Widget orderNo,
+  required Widget status,
+  List<AnimalMobileOrderItem> items = const [],
+  Widget? total,
+  Widget? footer,
+  VoidCallback? onTap,
+})
+
+AnimalMobileProfileHeader({
+  required Widget name,
+  Widget? avatar,
+  Widget? subtitle,
+  List<Widget> actions = const [],
+  List<AnimalMobileStatItem> stats = const [],
+})
+
+AnimalMobileStatsGrid({
+  required List<AnimalMobileStatItem> items,
+  int crossAxisCount = 3,
+})
+
+AnimalMobileCouponCard({
+  required Widget amount,
+  required Widget title,
+  Widget? description,
+  AnimalMobileCouponStatus status = AnimalMobileCouponStatus.available,
+  String actionText = '领取',
+  VoidCallback? onTap,
+})
+
+AnimalMobileNoticeBar({
+  required Widget child,
+  AnimalMobileNoticeType type = AnimalMobileNoticeType.info,
+  Widget? icon,
+  Widget? action,
+  VoidCallback? onTap,
+  bool showChevron = false,
+})
+
+AnimalMobileAddressCard({
+  required Widget name,
+  required Widget phone,
+  required Widget address,
+  Widget? tag,
+  Widget? leading,
+  Widget? trailing,
+  VoidCallback? onTap,
+  bool selected = false,
+})
+
+AnimalMobilePriceSummary({
+  required List<AnimalMobilePriceItem> items,
+  Widget? totalLabel,
+  Widget? total,
+  Widget? footer,
+})
+
+AnimalMobilePriceItem({
+  required Widget label,
+  required Widget value,
+  bool emphasized = false,
+  Color? color,
+})
+
+AnimalMobileCheckoutBar({
+  required Widget total,
+  required Widget action,
+  Widget? label,
+  Widget? extra,
+  bool safeAreaBottom = true,
+  EdgeInsetsGeometry padding = const EdgeInsets.fromLTRB(14, 10, 14, 10),
+})
+
+enum AnimalMobileTimelineStatus {
+  defaultStatus,
+  success,
+  warning,
+  error,
+  processing,
+}
+
+AnimalMobileCartItem({
+  required Widget title,
+  Widget? subtitle,
+  Widget? price,
+  Widget? image,
+  num? quantity,
+  ValueChanged<num>? onQuantityChanged,
+  bool selected = false,
+  ValueChanged<bool>? onSelectedChanged,
+  Widget? action,
+  Widget? tag,
+  bool disabled = false,
+  Widget? disabledText,
+  VoidCallback? onTap,
+})
+
+AnimalMobileOrderTimeline({
+  required List<AnimalMobileTimelineItem> items,
+  EdgeInsetsGeometry padding = const EdgeInsets.all(14),
+})
+
+AnimalMobileTimelineItem({
+  required Widget title,
+  Widget? description,
+  Widget? time,
+  Widget? icon,
+  AnimalMobileTimelineStatus status = AnimalMobileTimelineStatus.defaultStatus,
+  VoidCallback? onTap,
+  bool disabled = false,
+})
+
+AnimalMobilePaymentMethodCard({
+  required Widget title,
+  Widget? subtitle,
+  Widget? icon,
+  Widget? trailing,
+  bool selected = false,
+  bool disabled = false,
+  VoidCallback? onTap,
+})
+
+AnimalMobileEmptyAction({
+  required Widget title,
+  Widget? description,
+  Widget? icon,
+  Widget? action,
+  EdgeInsetsGeometry padding = const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+})
+```
+
+移动端页面优先用 `AnimalMobileNavBar` + `Expanded` 内容 + `AnimalBottomBar` 组合；触摸列表使用 `AnimalCellGroup` 包裹多个 `AnimalListTile`。`AnimalBottomSheet.show`、`AnimalActionSheet.show<T>`、`AnimalPicker.show<T>` 和 `AnimalMobileDatePicker.show` 都会使用底部弹层，适合 Android / iOS / Web 手机宽度；桌面端仍保留 hover、小手光标、focus 和 `Enter` / `Space` 键盘触发。更业务化的手机页面可以用 `AnimalMobileSection` 组织内容，再组合 `AnimalMobileProductCard`、`AnimalMobileOrderCard`、`AnimalMobileProfileHeader`、`AnimalMobileStatsGrid`、`AnimalMobileCouponCard`、`AnimalMobileNoticeBar`、`AnimalMobileAddressCard`、`AnimalMobilePriceSummary`、`AnimalMobileCheckoutBar`、`AnimalMobileCartItem`、`AnimalMobileOrderTimeline`、`AnimalMobilePaymentMethodCard` 和 `AnimalMobileEmptyAction` 搭建商城、订单、我的页面、营销券包、订单确认页和购物车页面。
+
 ## 3. Common Recipes
 
 ### Form
@@ -1103,6 +1422,156 @@ const AnimalTimeline(
 )
 ```
 
+### Mobile App Shell
+
+```dart
+Scaffold(
+  body: Column(
+    children: [
+      AnimalMobileNavBar(
+        title: const Text('组件列表'),
+        showBackButton: true,
+        onBack: () => Navigator.maybePop(context),
+      ),
+      Expanded(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: const [
+            AnimalCellGroup(
+              children: [
+                AnimalListTile(
+                  leading: Icon(Icons.palette_rounded),
+                  title: Text('主题偏好'),
+                  subtitle: Text('主色、字体和圆角'),
+                ),
+                AnimalListTile(
+                  leading: Icon(Icons.notifications_rounded),
+                  title: Text('消息通知'),
+                  trailing: AnimalSwitch(size: AnimalSwitchSize.small),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      AnimalBottomBar(
+        currentIndex: 0,
+        onChanged: (index) {},
+        items: const [
+          AnimalBottomBarItem(icon: Icon(Icons.home_rounded), label: Text('首页')),
+          AnimalBottomBarItem(icon: Icon(Icons.widgets_rounded), label: Text('组件')),
+        ],
+      ),
+    ],
+  ),
+)
+```
+
+### Mobile Commerce Page
+
+```dart
+ListView(
+  padding: const EdgeInsets.all(16),
+  children: const [
+    AnimalMobileSearchBar(
+      hintText: '搜索岛屿商品',
+      showCancel: true,
+    ),
+    SizedBox(height: 16),
+    AnimalMobileProfileHeader(
+      name: Text('狸克'),
+      subtitle: Text('岛屿居民服务处 · Lv.8'),
+      stats: [
+        AnimalMobileStatItem(label: Text('订单'), value: Text('12')),
+        AnimalMobileStatItem(label: Text('积分'), value: Text('840')),
+        AnimalMobileStatItem(label: Text('优惠券'), value: Text('6')),
+      ],
+    ),
+    SizedBox(height: 16),
+    AnimalMobileSection(
+      title: Text('今日推荐'),
+      extra: Text('查看全部'),
+      child: AnimalMobileProductCard(
+        title: Text('樱桃果篮'),
+        subtitle: Text('岛屿直送，今日 18:00 前送达'),
+        price: Text('120 铃钱'),
+      ),
+    ),
+    AnimalMobileOrderCard(
+      orderNo: Text('订单 #A001'),
+      status: Text('配送中'),
+      items: [
+        AnimalMobileOrderItem(
+          title: Text('樱桃果篮'),
+          quantity: 2,
+          price: Text('120'),
+        ),
+      ],
+      total: Text('合计 240 铃钱'),
+    ),
+    SizedBox(height: 16),
+    AnimalMobileCouponCard(
+      amount: Text('-20'),
+      title: Text('新人购物券'),
+      description: Text('满 100 铃钱可用'),
+    ),
+    SizedBox(height: 16),
+    AnimalMobileNoticeBar(
+      child: Text('今日 18:00 前下单，岛屿直送免服务费。'),
+      action: Text('查看'),
+      showChevron: true,
+    ),
+    SizedBox(height: 16),
+    AnimalMobileAddressCard(
+      selected: true,
+      name: Text('狸克'),
+      phone: Text('138 0000 0522'),
+      address: Text('星露岛 居民服务处旁 1 号营地'),
+    ),
+    SizedBox(height: 16),
+    AnimalMobilePriceSummary(
+      items: [
+        AnimalMobilePriceItem(label: Text('商品金额'), value: Text('560 铃钱')),
+        AnimalMobilePriceItem(
+          label: Text('优惠券'),
+          value: Text('-20 铃钱'),
+          emphasized: true,
+        ),
+      ],
+      total: Text('540 铃钱'),
+    ),
+    SizedBox(height: 16),
+    AnimalMobileCartItem(
+      selected: true,
+      title: Text('樱桃果篮'),
+      subtitle: Text('规格：大份'),
+      price: Text('120 铃钱'),
+      quantity: 2,
+    ),
+    SizedBox(height: 16),
+    AnimalMobilePaymentMethodCard(
+      selected: true,
+      icon: Icon(Icons.account_balance_wallet_rounded),
+      title: Text('铃钱钱包'),
+      subtitle: Text('余额 8,400 铃钱'),
+    ),
+    SizedBox(height: 16),
+    AnimalMobileOrderTimeline(
+      items: [
+        AnimalMobileTimelineItem(
+          title: Text('订单已提交'),
+          status: AnimalMobileTimelineStatus.success,
+        ),
+        AnimalMobileTimelineItem(
+          title: Text('正在配送'),
+          status: AnimalMobileTimelineStatus.processing,
+        ),
+      ],
+    ),
+  ],
+)
+```
+
 ### Confirm Dialog
 
 ```dart
@@ -1153,6 +1622,9 @@ AnimalTable<Item>(
 18. `AnimalPopover.open` 仅用于受控模式；不要像 React 一样传 `visible` 或 `openChange`。
 19. `AnimalNumberInput.value` 是 `num?`，回调也是 `ValueChanged<num>`，需要整数时在业务层 `round()`。
 20. `AnimalDescriptions.column` 至少按 `1` 处理，`span` 会被限制在 `1..column`。
+21. 移动端底部弹层使用 `AnimalBottomSheet.show` / `AnimalActionSheet.show<T>` / `AnimalPicker.show<T>` / `AnimalMobileDatePicker.show`，不要用全屏 Dialog 假装底部面板。
+22. 移动列表项没有点击行为时不要传 `onTap`；需要右侧开关时放在 `trailing`，并根据业务决定是否给整行 `onTap`。
+23. 手机业务页优先用 `AnimalMobileSection` 组织分区，商品、订单、我的页面和券包不要重新手写卡片样式，优先复用 `AnimalMobileProductCard`、`AnimalMobileOrderCard`、`AnimalMobileProfileHeader`、`AnimalMobileStatsGrid`、`AnimalMobileCouponCard`、`AnimalMobileCartItem`、`AnimalMobileOrderTimeline`、`AnimalMobilePaymentMethodCard` 和 `AnimalMobileEmptyAction`。
 
 ## 5. Minimal Boilerplate
 

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.1.3 - 2026-05-24
+
+- Refined `AnimalPullRefresh` with a more distinctive Animal Island indicator, including island, wave, and status animations.
+- Fixed `AnimalPullRefresh` so pressing without dragging no longer shows the refresh indicator or triggers refresh behavior.
+- Added regression tests for press-only, active drag, and continuous pull-refresh indicator motion.
+
 ## 0.1.2 - 2026-05-23
 
 - Started phase 2 with theme customization improvements: brand-color palette derivation, app font support, text-height tokens, and Theme docs.

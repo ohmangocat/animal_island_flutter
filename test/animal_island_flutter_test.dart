@@ -3358,6 +3358,817 @@ void main() {
     expect(horizontalScroll, findsOneWidget);
   });
 
+  testWidgets('mobile nav bar renders back action and triggers callback',
+      (tester) async {
+    var backs = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalMobileNavBar(
+              title: const Text('移动页面'),
+              showBackButton: true,
+              safeAreaTop: false,
+              onBack: () => backs += 1,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('移动页面'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pump();
+
+    expect(backs, 1);
+  });
+
+  testWidgets('bottom bar changes selection and exposes selected semantics',
+      (tester) async {
+    var current = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Scaffold(
+                bottomNavigationBar: AnimalBottomBar(
+                  currentIndex: current,
+                  safeAreaBottom: false,
+                  onChanged: (value) => setState(() => current = value),
+                  items: const [
+                    AnimalBottomBarItem(
+                      icon: Icon(Icons.home_rounded),
+                      label: Text('首页'),
+                    ),
+                    AnimalBottomBarItem(
+                      icon: Icon(Icons.widgets_rounded),
+                      label: Text('组件'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    expect(current, 0);
+    await tester.tap(find.text('组件'));
+    await tester.pumpAndSettle();
+
+    expect(current, 1);
+
+    final selectedSemantics = find
+        .ancestor(
+          of: find.text('组件'),
+          matching: find.byType(Semantics),
+        )
+        .evaluate()
+        .map((element) => element.widget)
+        .whereType<Semantics>()
+        .where((widget) => widget.properties.selected == true);
+    expect(selectedSemantics, isNotEmpty);
+  });
+
+  testWidgets('mobile list tile supports tap and keyboard activation',
+      (tester) async {
+    var taps = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalCellGroup(
+              children: [
+                AnimalListTile(
+                  title: const Text('打开设置'),
+                  subtitle: const Text('Enter 或 Space 也可以触发'),
+                  onTap: () => taps += 1,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('打开设置'));
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pump();
+
+    expect(taps, 3);
+  });
+
+  testWidgets('bottom sheet show displays title and content', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: AnimalButton(
+                  onPressed: () {
+                    AnimalBottomSheet.show<void>(
+                      context: context,
+                      title: const Text('底部弹层'),
+                      child: const Text('弹层内容'),
+                    );
+                  },
+                  child: const Text('打开弹层'),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('打开弹层'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('底部弹层'), findsOneWidget);
+    expect(find.text('弹层内容'), findsOneWidget);
+  });
+
+  testWidgets('action sheet returns selected action value', (tester) async {
+    String? selected;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: AnimalButton(
+                  onPressed: () async {
+                    selected = await AnimalActionSheet.show<String>(
+                      context: context,
+                      title: const Text('操作面板'),
+                      actions: const [
+                        AnimalActionSheetAction(
+                          value: 'share',
+                          label: Text('分享'),
+                        ),
+                        AnimalActionSheetAction(
+                          value: 'delete',
+                          label: Text('删除'),
+                          destructive: true,
+                        ),
+                      ],
+                    );
+                  },
+                  child: const Text('打开操作'),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('打开操作'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('分享'));
+    await tester.pumpAndSettle();
+
+    expect(selected, 'share');
+  });
+
+  testWidgets('mobile search bar changes, searches and clears text',
+      (tester) async {
+    final changes = <String>[];
+    String? searched;
+    var cleared = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalMobileSearchBar(
+              initialValue: '岛',
+              hintText: '搜索组件',
+              onChanged: changes.add,
+              onSearch: (value) => searched = value,
+              onClear: () => cleared = true,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), '岛屿');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pump();
+
+    expect(changes.last, '岛屿');
+    expect(searched, '岛屿');
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pump();
+
+    expect(changes.last, '');
+    expect(cleared, isTrue);
+  });
+
+  testWidgets('picker bottom sheet returns selected option', (tester) async {
+    String? selected;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: AnimalButton(
+                  onPressed: () async {
+                    selected = await AnimalPicker.show<String>(
+                      context: context,
+                      title: const Text('选择岛屿'),
+                      options: const [
+                        AnimalPickerOption(
+                          value: 'forest',
+                          label: Text('森林岛'),
+                        ),
+                        AnimalPickerOption(
+                          value: 'sea',
+                          label: Text('海风岛'),
+                        ),
+                      ],
+                    );
+                  },
+                  child: const Text('打开选择器'),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('打开选择器'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('海风岛'));
+    await tester.pumpAndSettle();
+
+    expect(selected, 'sea');
+  });
+
+  testWidgets('mobile date picker confirms selected date', (tester) async {
+    DateTime? selected;
+    final date = DateTime(2026, 5, 22);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalMobileDatePicker(
+              value: date,
+              onChanged: (value) => selected = value,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(AnimalButton, '确定'));
+    await tester.pump();
+
+    expect(selected, DateTime(2026, 5, 22));
+  });
+
+  testWidgets('mobile stepper clamps value and emits changes', (tester) async {
+    final values = <num>[];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalMobileStepper(
+              defaultValue: 1,
+              min: 0,
+              max: 2,
+              onChanged: values.add,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.remove_rounded));
+    await tester.pump();
+
+    expect(values, [2, 1]);
+    expect(find.text('1'), findsOneWidget);
+  });
+
+  testWidgets('swipe action reveals and triggers action', (tester) async {
+    var deleted = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: SizedBox(
+              width: 320,
+              height: 80,
+              child: AnimalSwipeAction(
+                actions: [
+                  AnimalSwipeActionItem(
+                    label: const Text('删除'),
+                    icon: const Icon(Icons.delete_rounded),
+                    destructive: true,
+                    onTap: () => deleted = true,
+                  ),
+                ],
+                child: const AnimalListTile(title: Text('可左滑项目')),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.drag(find.text('可左滑项目'), const Offset(-120, 0));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('删除'));
+    await tester.pumpAndSettle();
+
+    expect(deleted, isTrue);
+  });
+
+  testWidgets('pull refresh delegates refresh callback', (tester) async {
+    var refreshed = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalPullRefresh(
+              onRefresh: () async => refreshed += 1,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 700, child: Text('下拉刷新')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.drag(find.text('下拉刷新'), const Offset(0, 320));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(refreshed, 1);
+  });
+
+  testWidgets('pull refresh uses animal indicator and supports desktop drag',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalPullRefresh(
+              onRefresh: () async {},
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 700, child: Text('Animal 下拉刷新')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final configuration = tester.widget<ScrollConfiguration>(
+      find.descendant(
+        of: find.byType(AnimalPullRefresh),
+        matching: find.byType(ScrollConfiguration),
+      ),
+    );
+
+    expect(
+        configuration.behavior.dragDevices, contains(PointerDeviceKind.mouse));
+    expect(
+      configuration.behavior.dragDevices,
+      contains(PointerDeviceKind.trackpad),
+    );
+    expect(find.byType(RefreshProgressIndicator), findsNothing);
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Animal 下拉刷新')),
+    );
+    await gesture.moveBy(const Offset(0, 120));
+    await tester.pump();
+
+    expect(
+      find.text('下拉唤醒岛屿').evaluate().isNotEmpty ||
+          find.text('松开刷新岛屿').evaluate().isNotEmpty,
+      isTrue,
+    );
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('pull refresh does not show indicator or refresh on press only',
+      (tester) async {
+    var refreshed = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalPullRefresh(
+              onRefresh: () async {
+                refreshed += 1;
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 700, child: Text('按住不刷新')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('按住不刷新')),
+    );
+    await tester.pump(const Duration(milliseconds: 260));
+
+    expect(find.text('下拉唤醒岛屿'), findsNothing);
+    expect(find.text('松开刷新岛屿'), findsNothing);
+    expect(refreshed, 0);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(refreshed, 0);
+  });
+
+  testWidgets('pull refresh animal indicator keeps moving while visible',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalPullRefresh(
+              onRefresh: () async {
+                await Future<void>.delayed(const Duration(milliseconds: 700));
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 700, child: Text('持续动画刷新')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('持续动画刷新')),
+    );
+    await gesture.moveBy(const Offset(0, 120));
+    await tester.pump();
+    final firstRotationValues = tester
+        .widgetList<RotationTransition>(find.byType(RotationTransition))
+        .map((widget) => widget.turns.value)
+        .toList();
+
+    await tester.pump(const Duration(milliseconds: 220));
+    final secondRotationValues = tester
+        .widgetList<RotationTransition>(find.byType(RotationTransition))
+        .map((widget) => widget.turns.value)
+        .toList();
+
+    expect(firstRotationValues, isNotEmpty);
+    expect(secondRotationValues.length, firstRotationValues.length);
+    expect(
+      Iterable<int>.generate(firstRotationValues.length).any((index) {
+        return (secondRotationValues[index] - firstRotationValues[index])
+                .abs() >
+            0.0001;
+      }),
+      isTrue,
+    );
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('pull refresh can use material indicator options',
+      (tester) async {
+    bool notificationPredicate(ScrollNotification notification) => true;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: AnimalPullRefresh(
+              onRefresh: () async {},
+              style: AnimalPullRefreshStyle.material,
+              triggerMode: RefreshIndicatorTriggerMode.anywhere,
+              notificationPredicate: notificationPredicate,
+              semanticsLabel: '刷新任务',
+              semanticsValue: '准备刷新',
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 700, child: Text('桌面下拉刷新')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final configuration = tester.widget<ScrollConfiguration>(
+      find.descendant(
+        of: find.byType(AnimalPullRefresh),
+        matching: find.byType(ScrollConfiguration),
+      ),
+    );
+    final indicator = tester.widget<RefreshIndicator>(
+      find.descendant(
+        of: find.byType(AnimalPullRefresh),
+        matching: find.byType(RefreshIndicator),
+      ),
+    );
+
+    expect(
+      configuration.behavior.dragDevices,
+      contains(PointerDeviceKind.mouse),
+    );
+    expect(
+      configuration.behavior.dragDevices,
+      contains(PointerDeviceKind.trackpad),
+    );
+    expect(indicator.triggerMode, RefreshIndicatorTriggerMode.anywhere);
+    expect(indicator.notificationPredicate, same(notificationPredicate));
+    expect(indicator.semanticsLabel, '刷新任务');
+    expect(indicator.semanticsValue, '准备刷新');
+  });
+
+  testWidgets('mobile business cards render content and trigger callbacks',
+      (tester) async {
+    var productTaps = 0;
+    var orderTaps = 0;
+    var statTaps = 0;
+    var couponTaps = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  AnimalMobileProductCard(
+                    title: const Text('樱桃果篮'),
+                    subtitle: const Text('今日特价'),
+                    price: const Text('120 铃钱'),
+                    onTap: () => productTaps += 1,
+                  ),
+                  AnimalMobileOrderCard(
+                    orderNo: const Text('订单 #A001'),
+                    status: const Text('配送中'),
+                    total: const Text('合计 320'),
+                    onTap: () => orderTaps += 1,
+                    items: const [
+                      AnimalMobileOrderItem(
+                        title: Text('花园椅'),
+                        quantity: 2,
+                        price: Text('160'),
+                      ),
+                    ],
+                  ),
+                  AnimalMobileProfileHeader(
+                    name: const Text('狸克'),
+                    subtitle: const Text('岛屿居民服务处'),
+                    stats: [
+                      AnimalMobileStatItem(
+                        label: const Text('订单'),
+                        value: const Text('12'),
+                        onTap: () => statTaps += 1,
+                      ),
+                    ],
+                  ),
+                  AnimalMobileCouponCard(
+                    amount: const Text('-20'),
+                    title: const Text('新人券'),
+                    description: const Text('满 100 可用'),
+                    onTap: () => couponTaps += 1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('樱桃果篮'), findsOneWidget);
+    expect(find.text('订单 #A001'), findsOneWidget);
+    expect(find.text('狸克'), findsOneWidget);
+    expect(find.text('新人券'), findsOneWidget);
+
+    await tester.tap(find.text('樱桃果篮'));
+    await tester.pump();
+    await tester.tap(find.text('订单 #A001'));
+    await tester.pump();
+    await tester.tap(find.text('12'));
+    await tester.pump();
+    await tester.tap(find.text('领取'));
+    await tester.pump();
+
+    expect(productTaps, 1);
+    expect(orderTaps, 1);
+    expect(statTaps, 1);
+    expect(couponTaps, 1);
+  });
+
+  testWidgets('mobile checkout business components render and trigger actions',
+      (tester) async {
+    var noticeTaps = 0;
+    var addressTaps = 0;
+    var checkoutTaps = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: Column(
+              children: [
+                AnimalMobileNoticeBar(
+                  type: AnimalMobileNoticeType.warning,
+                  action: const Text('查看'),
+                  showChevron: true,
+                  onTap: () => noticeTaps += 1,
+                  child: const Text('配送可能延迟'),
+                ),
+                AnimalMobileAddressCard(
+                  selected: true,
+                  name: const Text('狸克'),
+                  phone: const Text('138 0000 0522'),
+                  address: const Text('星露岛 居民服务处旁'),
+                  onTap: () => addressTaps += 1,
+                ),
+                const AnimalMobilePriceSummary(
+                  items: [
+                    AnimalMobilePriceItem(
+                      label: Text('商品金额'),
+                      value: Text('560 铃钱'),
+                    ),
+                    AnimalMobilePriceItem(
+                      label: Text('优惠券'),
+                      value: Text('-20 铃钱'),
+                      emphasized: true,
+                    ),
+                  ],
+                  total: Text('540 铃钱'),
+                ),
+                AnimalMobileCheckoutBar(
+                  safeAreaBottom: false,
+                  total: const Text('540 铃钱'),
+                  action: AnimalButton(
+                    type: AnimalButtonType.primary,
+                    onPressed: () => checkoutTaps += 1,
+                    child: const Text('去结算'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('配送可能延迟'), findsOneWidget);
+    expect(find.text('星露岛 居民服务处旁'), findsOneWidget);
+    expect(find.text('优惠券'), findsOneWidget);
+    expect(find.text('去结算'), findsOneWidget);
+
+    await tester.tap(find.text('配送可能延迟'));
+    await tester.pump();
+    await tester.tap(find.text('狸克'));
+    await tester.pump();
+    await tester.tap(find.text('去结算'));
+    await tester.pump();
+
+    expect(noticeTaps, 1);
+    expect(addressTaps, 1);
+    expect(checkoutTaps, 1);
+  });
+
+  testWidgets('mobile cart and order flow components trigger callbacks',
+      (tester) async {
+    bool? selected;
+    num? quantity;
+    var timelineTaps = 0;
+    var paymentTaps = 0;
+    var emptyTaps = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalTheme(
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  AnimalMobileCartItem(
+                    selected: true,
+                    onSelectedChanged: (value) => selected = value,
+                    title: const Text('樱桃果篮'),
+                    subtitle: const Text('规格：大份'),
+                    price: const Text('120 铃钱'),
+                    quantity: 2,
+                    onQuantityChanged: (value) => quantity = value,
+                  ),
+                  AnimalMobileOrderTimeline(
+                    items: [
+                      AnimalMobileTimelineItem(
+                        title: const Text('订单已提交'),
+                        time: const Text('09:30'),
+                        status: AnimalMobileTimelineStatus.success,
+                        onTap: () => timelineTaps += 1,
+                      ),
+                      const AnimalMobileTimelineItem(
+                        title: Text('等待签收'),
+                        status: AnimalMobileTimelineStatus.warning,
+                      ),
+                    ],
+                  ),
+                  AnimalMobilePaymentMethodCard(
+                    selected: true,
+                    title: const Text('铃钱钱包'),
+                    subtitle: const Text('余额充足'),
+                    onTap: () => paymentTaps += 1,
+                  ),
+                  AnimalMobileEmptyAction(
+                    title: const Text('购物车还是空的'),
+                    description: const Text('去挑选一些岛屿好物'),
+                    action: AnimalButton(
+                      type: AnimalButtonType.primary,
+                      onPressed: () => emptyTaps += 1,
+                      child: const Text('去逛逛'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('樱桃果篮'), findsOneWidget);
+    expect(find.text('订单已提交'), findsOneWidget);
+    expect(find.text('铃钱钱包'), findsOneWidget);
+    expect(find.text('购物车还是空的'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.check_rounded).first);
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.add_rounded).first);
+    await tester.pump();
+    await tester.tap(find.text('订单已提交'));
+    await tester.pump();
+    await tester.tap(find.text('铃钱钱包'));
+    await tester.pump();
+    await tester.tap(find.text('去逛逛'));
+    await tester.pump();
+
+    expect(selected, false);
+    expect(quantity, 3);
+    expect(timelineTaps, 1);
+    expect(paymentTaps, 1);
+    expect(emptyTaps, 1);
+  });
+
   test('release metadata and scripts are ready for pub.dev', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
     final pubignore = File('.pubignore').readAsStringSync();

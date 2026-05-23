@@ -71,6 +71,16 @@ AnimalNumberInput, AnimalPopover, AnimalDropdown, AnimalDrawer,
 AnimalConfirmDialog, AnimalDescriptions, AnimalStatistic and AnimalTimeline.
 Phase 4 complex widgets should also be covered:
 AnimalCalendar, AnimalUpload, AnimalTree and AnimalResult.
+Mobile widgets should also be covered:
+AnimalMobileNavBar, AnimalBottomBar, AnimalBottomSheet, AnimalActionSheet,
+AnimalCellGroup, AnimalListTile, AnimalMobileSearchBar, AnimalPicker,
+AnimalMobileDatePicker, AnimalMobileStepper, AnimalSwipeAction,
+AnimalPullRefresh, AnimalMobileSection, AnimalMobileProductCard,
+AnimalMobileOrderCard, AnimalMobileProfileHeader, AnimalMobileStatsGrid and
+AnimalMobileCouponCard, AnimalMobileNoticeBar, AnimalMobileAddressCard,
+AnimalMobilePriceSummary, AnimalMobileCheckoutBar, AnimalMobileCartItem,
+AnimalMobileOrderTimeline, AnimalMobilePaymentMethodCard and
+AnimalMobileEmptyAction.
 
 === LOADING ===
 Button loading uses smooth diagonal stripes:
@@ -154,6 +164,8 @@ high resolution, clean component library documentation screen.
 - `AnimalPopover`、`AnimalDropdown`、`AnimalDrawer`、`AnimalConfirmDialog` 属于浮层体系，背景使用 `elevatedBackgroundColor` 或 `contentBackgroundColor`，保留暖色边框、圆角和底部阴影，不使用 Material 默认蓝灰阴影。
 - `AnimalDescriptions`、`AnimalStatistic`、`AnimalTimeline` 属于详情展示体系，适合详情页、抽屉和仪表盘；文字层级要清晰，状态点使用主题 success/warning/error/primary，不要变成冷色 SaaS 面板。详情表在窄容器中应自动减少列数，可点击时间线节点需要 hover、小手、focus 和键盘触发状态。
 - `AnimalCalendar`、`AnimalUpload`、`AnimalTree`、`AnimalResult` 属于阶段四复杂业务组件；保留暖色容器、圆角、手型光标、键盘可达性和明确的 success/warning/error/info 语义，不要直接使用默认 Material 日期选择器、上传面板或结果页样式。上传文件删除按钮也要作为真正的交互按钮处理。
+- `AnimalMobileNavBar`、`AnimalBottomBar`、`AnimalBottomSheet`、`AnimalActionSheet`、`AnimalCellGroup`、`AnimalListTile`、`AnimalMobileSearchBar`、`AnimalPicker`、`AnimalMobileDatePicker`、`AnimalMobileStepper`、`AnimalSwipeAction`、`AnimalPullRefresh` 和 `AnimalMobileSection` 属于移动端基础组件；顶部/底部栏需要处理安全区，底部弹层不能全屏化，触摸列表要保留暖色边框、分割线、pressed/focus 状态和桌面小手光标。
+- `AnimalMobileProductCard`、`AnimalMobileOrderCard`、`AnimalMobileProfileHeader`、`AnimalMobileStatsGrid`、`AnimalMobileCouponCard`、`AnimalMobileNoticeBar`、`AnimalMobileAddressCard`、`AnimalMobilePriceSummary`、`AnimalMobileCheckoutBar`、`AnimalMobileCartItem`、`AnimalMobileOrderTimeline`、`AnimalMobilePaymentMethodCard` 和 `AnimalMobileEmptyAction` 属于移动端业务组件；它们应保留 Animal Island 暖色卡片、底部 tactile shadow、圆形图标/头像占位、清晰的金额/状态层级和可点击态，不要改成普通 Material ListTile/Card。底部结算栏要处理安全区，价格明细要保留右侧金额对齐和强调行，购物车项和支付方式卡片要有明确选中态。
 - Web/Windows 需要鼠标 hover 和手型光标；Android/iOS 需要触摸反馈自然。
 - 固定尺寸装饰组件要保留 `AspectRatio` 或约束，避免小屏溢出。
 - 代码示例必须是 Dart，不写 JSX、TSX、CSS Modules。
