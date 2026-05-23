@@ -11,6 +11,9 @@ on:
 jobs:
   flutter-quality:
     runs-on: ubuntu-latest
+    env:
+      PUB_HOSTED_URL: https://pub.dev
+      FLUTTER_STORAGE_BASE_URL: https://storage.googleapis.com
 
     steps:
       - name: Checkout repository
@@ -35,13 +38,21 @@ jobs:
         shell: bash
         run: flutter --version
 
-      - name: Root checks
+      - name: Root pub get
         shell: bash
-        run: |
-          flutter pub get
-          flutter analyze
-          flutter test
-          flutter pub publish --dry-run
+        run: flutter pub get
+
+      - name: Root analyze
+        shell: bash
+        run: flutter analyze
+
+      - name: Root test
+        shell: bash
+        run: flutter test
+
+      - name: Root publish dry run
+        shell: bash
+        run: flutter pub publish --dry-run
 
       - name: Example checks
         shell: bash
