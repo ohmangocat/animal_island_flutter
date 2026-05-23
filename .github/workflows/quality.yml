@@ -53,11 +53,4 @@ jobs:
       - name: Build docs web
         shell: pwsh
         run: |
-          if (Test-Path example/web/mobile_preview) {
-            Remove-Item -LiteralPath example/web/mobile_preview -Recurse -Force
-          }
-          New-Item -ItemType Directory -Force -Path example/web/mobile_preview | Out-Null
-          Copy-Item -Path example/mobile_preview/build/web/* -Destination example/web/mobile_preview -Recurse -Force
-          Push-Location example
-          flutter build web --pwa-strategy=none
-          Pop-Location
+          ./tool/build_docs.ps1 -Flutter flutter

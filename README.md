@@ -238,6 +238,13 @@ flutter test
 powershell -ExecutionPolicy Bypass -File tool\build_docs.ps1 -Flutter C:\Dev\tools\flutter_3.41.0\bin\flutter.bat
 ```
 
+部署到 GitHub Pages 时，仓库已内置 `.github/workflows/pages.yml`。在 GitHub 仓库的 `Settings -> Pages` 中将 Source 设置为 `GitHub Actions` 后，每次推送 `main` 都会自动构建并发布：
+
+```text
+https://ohmangocat.github.io/animal_island_flutter/
+https://ohmangocat.github.io/animal_island_flutter/mobile_preview/
+```
+
 完整质量检查：
 
 ```powershell
