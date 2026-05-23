@@ -190,7 +190,7 @@ if (-not $SkipDryRun) {
 }
 
 if ($Publish) {
-  Invoke-Step "Pub publish" $root { & $Flutter pub publish }
+  Invoke-Step "Pub publish" $root { & $Flutter pub publish --force }
 } else {
   Write-Host ""
   Write-Host "Dry-run flow completed. Re-run with -Publish to publish to pub.dev." -ForegroundColor Yellow
